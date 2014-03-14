@@ -1,7 +1,7 @@
 name: Rails 指南
 author: Andor Chen
 author_url: http://about.ac
-baseurl: http://docs-china.com/rails/
+baseurl: http://docs-china.com/rails
 home: http://docs-china.com
 github: rails
 license: <a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a>
