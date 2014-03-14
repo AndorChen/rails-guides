@@ -1,0 +1,45 @@
+- title: 起跑
+  docs:
+  - getting_started
+
+- title: 模型
+  docs:
+  - active_record_basics
+  - migrations
+  - active_record_validations
+  - active_record_callbacks
+  - association_basics
+  - active_record_quering
+
+- title: 视图
+  docs:
+  - action_view_overview
+  - layouts_and_rendering
+  - form_helpers
+
+- title: 控制器
+  docs:
+  - action_controller_overview
+  - routing
+
+- title: 深入
+  docs:
+  - active_support_core_extensions
+  - i18n
+  - action_mailer_basics
+  - testing
+  - security
+  - debugging_rails_applications
+  - configuring
+  - command_line
+  - caching_with_rails
+  - asset_pipeline
+  - working_with_javascript_in_rails
+  - engines
+  - initialization
+
+- title: 扩展
+  docs:
+  - plugins
+  - rails_on_rack
+  - generators
