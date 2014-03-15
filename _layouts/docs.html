@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>{% if page.no_head_title == null %}{{ page.title }} - {% endif %}{{ site.name }}</title>
     <meta name="viewport" content="width=device-width" />
-
+    <script src="{{ site.baseurl }}/scripts/docs.js"></script>
     <link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="{{site.baseurl}}/styles/docs.css" />
+    <link rel="stylesheet" href="{{site.baseurl}}/scripts/docs.css" />
 </head>
 <body>
     <a class="sr-only" href="#content">跳到正文</a>
@@ -52,7 +52,7 @@
             <div>
                 <ul class="social">
                     <li class="github">
-                        <a href="https://github.com/docs-china/{{ site.github }}/" title="在 GitHub 上关注我们">Github</a>
+                        <a href="https://github.com/docs-china/{{ site.repo }}/" title="在 GitHub 上关注我们">Github</a>
                     </li>
                     <li class="weibo">
                         <a href="http://weibo.com/docschina" title="关注我们的微博">@DocsChina</a>

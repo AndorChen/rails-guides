@@ -3,12 +3,12 @@ author: Andor Chen
 author_url: http://about.ac
 baseurl: http://docs-china.com/rails
 home: http://docs-china.com
-github: rails
+repo: rails
 license: <a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a>
 
 pages: _docs
 exclude: ['Rakefile', 'Gemfile', 'Gemfile.lock', 'README.md']
-keep_files: ['.git', 'images', 'styles', '.nojekyll', 'README.md']
+keep_files: ['.git', 'images', 'scripts', '.nojekyll', 'README.md']
 markdown_ext: foolish
 kramdown:
   auto_ids: false

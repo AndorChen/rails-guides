@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Active Record Migrations
+title: Active Record 数据库迁移
 prev_section: active_record_basics
 next_section: active_record_validations
 not_translated: yes

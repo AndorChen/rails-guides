@@ -109,7 +109,7 @@ module Kramdown
 
       def convert_table(el, indent)
         title = el.attr.delete('title')
-        output = '<div class="table'
+        output = '<div class="table-responsive'
         if title
           title_el = ::Kramdown::Parser::DCKramdown.parse(title).first
           title_html = inner(title_el.children.first, 0)

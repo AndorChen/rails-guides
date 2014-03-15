@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Active Record Validations
+title: Active Record 数据验证
 prev_section: migrations
 next_section: active_record_callbacks
 not_translated: yes

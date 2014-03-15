@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Ruby on Rails Security Guide
+title: Ruby on Rails 安全指南
 prev_section: testing
 next_section: debugging_rails_applications
 not_translated: yes
