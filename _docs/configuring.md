@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Configuring Rails Applications
+title: Rails 程序设置
 prev_section: debugging_rails_applications
 next_section: command_line
 not_translated: yes

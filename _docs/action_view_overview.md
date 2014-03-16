@@ -1,13 +1,10 @@
 ---
 layout: docs
-title: Action View Overview
+title: Action View 基础
 prev_section: active_record_quering
 next_section: layouts_and_rendering
 not_translated: yes
 ---
-
-Action View Overview
-====================
 
 After reading this guide, you will know:
 

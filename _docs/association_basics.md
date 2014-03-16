@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Active Record Associations
+title: Active Record 关联
 prev_section: active_record_callbacks
 next_section: active_record_quering
 not_translated: yes

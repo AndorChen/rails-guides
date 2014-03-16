@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Active Support Core Extensions
+title: Active Support 核心扩展
 prev_section: routing
 next_section: i18n
 not_translated: yes

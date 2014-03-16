@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Active Record Query Interface
+title: Active Record 查询
 prev_section: association_basics
 next_section: action_view_overview
 not_translated: yes

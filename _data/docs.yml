@@ -9,7 +9,7 @@
   - active_record_validations
   - active_record_callbacks
   - association_basics
-  - active_record_quering
+  - active_record_querying
 
 - title: 视图
   docs:

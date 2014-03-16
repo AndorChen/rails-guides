@@ -1,13 +1,10 @@
 ---
 layout: docs
-title: Action Mailer Basics
+title: Action Mailer 基础
 prev_section: i18n
 next_section: testing
 not_translated: yes
 ---
-
-Action Mailer Basics
-====================
 
 This guide provides you with all you need to get started in sending and
 receiving emails from and to your application, and many internals of Action

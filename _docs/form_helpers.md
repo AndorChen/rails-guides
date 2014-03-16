@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Form Helpers
+title: 表单帮助方法
 prev_section: layouts_and_rendering
 next_section: action_controller_overview
 not_translated: yes

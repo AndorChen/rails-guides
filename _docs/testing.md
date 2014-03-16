@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: A Guide to Testing Rails Applications
+title: Rails 程序测试指南
 prev_section: action_mailer_basics
 next_section: security
 not_translated: yes

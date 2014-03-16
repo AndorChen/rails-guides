@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Debugging Rails Applications
+title: Rails 程序调试
 prev_section: security
 next_section: configuring
 not_translated: yes

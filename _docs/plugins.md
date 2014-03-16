@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: The Basics of Creating Rails Plugins
+title: Rails 插件开发基础
 prev_section: initialization
 next_section: rails_on_rack
 not_translated: yes

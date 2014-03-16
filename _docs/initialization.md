@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: The Rails Initialization Process
+title: Rails 初始化过程
 prev_section: engines
 next_section: plugins
 not_translated: yes

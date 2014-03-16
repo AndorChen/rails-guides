@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Working with JavaScript in Rails
+title: 在 Rails 中使用 JavaScript
 prev_section: asset_pipeline
 next_section: engines
 not_translated: yes

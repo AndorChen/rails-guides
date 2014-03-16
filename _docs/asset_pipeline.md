@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: The Asset Pipeline
+title: Asset Pipeline
 prev_section: caching_with_rails
 next_section: working_with_javascript_in_rails
 not_translated: yes

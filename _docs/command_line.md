@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: The Rails Command Line
+title: Rails 命令行
 prev_section: configuring
 next_section: caching_with_rails
 not_translated: yes
