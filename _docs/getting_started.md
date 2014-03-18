@@ -1043,7 +1043,7 @@ $ rails generate model Comment commenter:string body:text article:references
 这个命令生成四个文件：
 
 | 文件                                         | 作用                                                |
-| ---------------------------------------------|------------------------------————————--------------- |
+|----------------------------------------------|----------------------------------------------------|
 | db/migrate/20140120201010_create_comments.rb | 生成 comments 表所用的迁移文件（你得到的文件名稍有不同） |
 | app/models/comment.rb                        | Comment 模型文件                                    |
 | test/models/comment_test.rb                  | Comment 模型的测试文件                               |
