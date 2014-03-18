@@ -1,0 +1,10 @@
+<div class="menu-mobile visible-xs">
+  <select onchange="if (this.value) window.location.href=this.value">
+    <option value="">目录</option>
+    {% for section in site.data.docs %}
+    <optgroup label="{{ section.title }}">
+      {% include docs_option.html items=section.docs %}
+    </optgroup>
+    {% endfor %}
+  </select>
+</div>
