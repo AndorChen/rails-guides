@@ -5,7 +5,7 @@ prev_section: active_record_validations
 next_section: association_basics
 ---
 
-本文介绍如何勾入 Active Record 对象的生命周期。
+本文介绍如何介入 Active Record 对象的生命周期。
 
 读完后，你将学会：
 
