@@ -4,6 +4,7 @@ author_url: http://about.ac
 baseurl: http://docs-china.com/rails
 home: http://docs-china.com
 repo: rails
+buy_url: https://leanpub.com/rails-guides-cn
 license: <a href="http://creativecommons.org/licenses/by-sa/4.0/deed.zh" title="CC BY-SA 4.0">CC BY-SA 4.0</a>
 
 pages: _docs
