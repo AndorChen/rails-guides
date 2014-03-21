@@ -15,7 +15,7 @@ next_section: action_view_overview
 * 如何使用动态查询方法；
 * 如何检查某个记录是否存在；
 * 如何在 Active Record 模型中做各种计算；
-* How to run EXPLAIN on relations.
+* 如何执行 EXPLAIN 命令；
 
 ---
 
