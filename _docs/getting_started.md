@@ -455,7 +455,7 @@ end
 $ rails generate model Article title:string text:text
 ~~~
 
-这个命令告知 Rails，我们要创建 `Article` 模型，以及一个字符串属性 `ttile` 和文本属性 `text`。这两个属性会自动添加到 `articles` 数据表中，映射到 `Article` 模型。
+这个命令告知 Rails，我们要创建 `Article` 模型，以及一个字符串属性 `title` 和文本属性 `text`。这两个属性会自动添加到 `articles` 数据表中，映射到 `Article` 模型。
 
 执行这个命令后，Rails 会生成一堆文件。现在我们只关注 `app/models/article.rb` 和 `db/migrate/20140120191729_create_articles.rb`（你得到的文件名可能有点不一样）这两个文件。后者用来创建数据库结构，下一节会详细说明。
 
