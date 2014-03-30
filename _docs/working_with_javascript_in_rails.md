@@ -308,7 +308,7 @@ Rails 4 提供了 [Turbolinks gem](https://github.com/rails/turbolinks)，这个
 
 ### Turbolinks 的工作原理 {#how-turbolinks-works}
 
-Turbolinks 为页面中所有的 `<a>` 元素添加了一个点击事件处理程序。如果浏览器支持 [PushState](https://developer.mozilla.org/en-US/docs/DOM/Manipulating_the_browser_history#The_pushState(\).C2.A0method)，Turbolinks 会发起 Ajax 请求，处理响应，然后使用响应主体替换原始页面的整个 `<body>` 元素。最后，使用 PushState 技术更改页面的 URL，让新页面可刷新，并且有个精美的 URL。
+Turbolinks 为页面中所有的 `<a>` 元素添加了一个点击事件处理程序。如果浏览器支持 [PushState](http://dwz.cn/pushstate)，Turbolinks 会发起 Ajax 请求，处理响应，然后使用响应主体替换原始页面的整个 `<body>` 元素。最后，使用 PushState 技术更改页面的 URL，让新页面可刷新，并且有个精美的 URL。
 
 要想使用 Turbolinks，只需将其加入 `Gemfile`，然后在 `app/assets/javascripts/application.js` 中加入 `//= require turbolinks` 即可。
 
