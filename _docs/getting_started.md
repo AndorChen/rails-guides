@@ -1163,7 +1163,7 @@ $ rails generate controller Comments
 | app/assets/javascripts/comment.js.coffee     | 控制器的 CoffeeScript 文件                |
 | app/assets/stylesheets/comment.css.scss      | 控制器的样式表文件                         |
 
-在任何一个博客中，读者读完文章后就可以发布评论。评论发布后，会转会文章显示页面，查看自己的评论是否显示出来了。所以，`CommentsController` 中要定义新建评论的和删除垃圾评论的方法。
+在任何一个博客中，读者读完文章后就可以发布评论。评论发布后，会转向文章显示页面，查看自己的评论是否显示出来了。所以，`CommentsController` 中要定义新建评论的和删除垃圾评论的方法。
 
 首先，修改显示文章的模板（`app/views/articles/show.html.erb`），允许读者发布评论：
 
