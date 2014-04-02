@@ -827,16 +827,16 @@ I> ~~~
 I> get '*pages', to: 'pages#show', format: true
 I> ~~~
 
-### 转向 {#redirection}
+### 重定向 {#redirection}
 
-在路由中可以使用 `redirect` 帮助方法把一个路径转向另一个路径：
+在路由中可以使用 `redirect` 帮助方法把一个路径重定向到另一个路径：
 
 {:lang="ruby"}
 ~~~
 get '/stories', to: redirect('/posts')
 ~~~
 
-转向时还可使用匹配的动态路径片段：
+重定向时还可使用匹配的动态路径片段：
 
 {:lang="ruby"}
 ~~~
@@ -851,7 +851,7 @@ get '/stories/:name', to: redirect {|path_params, req| "/posts/#{path_params[:na
 get '/stories', to: redirect {|path_params, req| "/posts/#{req.subdomain}" }
 ~~~
 
-注意，`redirect` 实现的是 301 "Moved Permanently" 转向，有些浏览器或代理服务器会缓存这种转向，导致旧的页面不可用。
+注意，`redirect` 实现的是 301 "Moved Permanently" 重定向，有些浏览器或代理服务器会缓存这种重定向，导致旧的页面不可用。
 
 如果不指定主机（`http://www.example.com`），Rails 会从当前请求中获取。
 
