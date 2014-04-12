@@ -27,7 +27,7 @@ next_section: form_helpers
 从控制器的角度来看，创建 HTTP 响应有三种方法：
 
 * 调用 `render` 方法，向浏览器发送一个完整的响应；
-* 调用 `redirect_to` 方法，向浏览器发送一个 HTTP 转向状态码；
+* 调用 `redirect_to` 方法，向浏览器发送一个 HTTP 重定向状态码；
 * 调用 `head` 方法，向浏览器发送只含报头的响应；
 
 ### 渲染视图 {#rendering-by-default-convention-over-configuration-in-action}
@@ -56,7 +56,7 @@ resources :books
 
 那么，访问 `/books` 时，Rails 会自动渲染视图 `app/views/books/index.html.erb`，网页中会看到显示有“Books are coming soon!”。
 
-网页中显示这些文字没什么用，所以后面你可能会创建一个 `Book` 模型，然后在 `BooksController` 中添加 `index` 动作：
+网页中显示这些文字没什么用，所以后续你可能会创建一个 `Book` 模型，然后在 `BooksController` 中添加 `index` 动作：
 
 {:lang="ruby"}
 ~~~
@@ -172,7 +172,7 @@ end
 
 #### 渲染其他控制器中的动作模板 {#rendering-an-action-s-template-from-another-controller}
 
-如果想渲染其他控制器中的模板该怎么做呢？还是使用 `render` 方法，指定模板的完成路径即可。例如，如果控制器 `AdminProductsController` 在 `app/controllers/admin` 文件夹中，可使用下面的方式渲染 `app/views/products` 文件夹中的模板：
+如果想渲染其他控制器中的模板该怎么做呢？还是使用 `render` 方法，指定模板的完整路径即可。例如，如果控制器 `AdminProductsController` 在 `app/controllers/admin` 文件夹中，可使用下面的方式渲染 `app/views/products` 文件夹中的模板：
 
 {:lang="ruby"}
 ~~~
@@ -202,7 +202,7 @@ render "/u/apps/warehouse_app/current/app/views/products/show"
 render file: "/u/apps/warehouse_app/current/app/views/products/show"
 ~~~
 
-`:file` 选项的值是文件系统中的决定路径。当然，你要对使用的文件拥有相应权限。
+`:file` 选项的值是文件系统中的绝对路径。当然，你要对使用的文件拥有相应权限。
 
 I> 默认情况下，渲染文件时不会使用当前程序的布局。如果想让 Rails 把文件套入布局，要指定 `layout: true` 选项。
 
@@ -243,7 +243,7 @@ render inline: "<% products.each do |p| %><p><%= p.name %></p><% end %>"
 
 W> 但是很少这么做。在控制器中混用 ERB 代码违反了 MVC 架构原则，也让程序的其他开发者难以理解程序的逻辑思路。请使用单独的 ERB 视图。
 
-默认情况下，行间渲染使用 ERB 模板。你可以使用 `:type` 选项指定使用其他 Builder：
+默认情况下，行间渲染使用 ERB 模板。你可以使用 `:type` 选项指定使用其他处理程序：
 
 {:lang="ruby"}
 ~~~
@@ -472,7 +472,7 @@ end
 
 ##### 运行时选择布局 {#choosing-layouts-at-runtime}
 
-可以使用一个 Symbol，处理请求时再选择布局：
+可以使用一个 Symbol，在处理请求时选择布局：
 
 {:lang="ruby"}
 ~~~
@@ -493,7 +493,7 @@ end
 
 如果当前用户是特殊用户，会使用一个特殊布局渲染产品视图。
 
-还可使用行间方法，例如 Proc，决定使用哪个布局。例如，如果使用 Proc，其代码块可以访问 `controller` 实例，这样就能根据当前请求决定使用哪个布局：
+还可使用行间方法，例如 Proc，决定使用哪个布局。如果使用 Proc，其代码块可以访问 `controller` 实例，这样就能根据当前请求决定使用哪个布局：
 
 {:lang="ruby"}
 ~~~
@@ -517,7 +517,7 @@ end
 
 ##### 布局继承 {#layout-inheritance}
 
-布局声明按层级顺序向下顺眼，专用布局比通用布局优先级高。例如：
+布局声明按层级顺序向下顺延，专用布局比通用布局优先级高。例如：
 
 *   `application_controller.rb`
 
@@ -589,7 +589,7 @@ def show
 end
 ~~~
 
-如果 `@book.special?` 的结果是 `true`，Rails 开始渲染，把 `@book` 变量导入 `special_show` 视图中。但是，`show` 动作并不会就此停止运行，当 Rails 运行到动作的末尾时，会渲染 `regular_show` 视图，导致错误出现。解决的办法很简单，确保在一次代码运行路线中只调用一次 `render` 或 `redirect` 方法。有一个语句可以提供帮助，那就是 `and return`。下面的代码对上述代码做了修改：
+如果 `@book.special?` 的结果是 `true`，Rails 开始渲染，把 `@book` 变量导入 `special_show` 视图中。但是，`show` 动作并不会就此停止运行，当 Rails 运行到动作的末尾时，会渲染 `regular_show` 视图，导致错误出现。解决的办法很简单，确保在一次代码运行路线中只调用一次 `render` 或 `redirect_to` 方法。有一个语句可以提供帮助，那就是 `and return`。下面的代码对上述代码做了修改：
 
 {:lang="ruby"}
 ~~~
@@ -627,7 +627,7 @@ end
 redirect_to photos_url
 ~~~
 
-`redirect_to` 方法的参数和 `link_to` 和 `url_for` 一样。有个特殊的重定向，返回到前一个页面：
+`redirect_to` 方法的参数与 `link_to` 和 `url_for` 一样。有个特殊的重定向，返回到前一个页面：
 
 {:lang="ruby"}
 ~~~
@@ -643,7 +643,7 @@ redirect_to :back
 redirect_to photos_path, status: 301
 ~~~
 
-和 `render` 方法的 `:status` 选项一样，`redirect_to` 方法的 `:status` 选项同样即可使用状态码数字和符号。
+和 `render` 方法的 `:status` 选项一样，`redirect_to` 方法的 `:status` 选项同样可使用数字状态码或符号。
 
 #### `render` 和 `redirect_to` 的区别 {#the-difference-between-render-and-redirect-to}
 
@@ -683,7 +683,7 @@ end
 
 这样修改之后，浏览器会向 `index` 动作发起新请求，执行 `index` 方法中的代码，一切都能正常运行。
 
-这种方法有个缺点，增加了浏览器的工作量。浏览器通过 `/books/1` 向 `show` 动作发起请求，控制器做了查询，但没有找到对应的图书，所以返回 302 重定向响应，告诉浏览器访问 `/books/`。浏览器收到指令，向控制器的 `index` 动作发起新请求，控制器从数据库中取出所有图书，渲染 `index` 模板，将其返回浏览器，在屏幕上显示所有图书。
+这种方法有个缺点，增加了浏览器的工作量。浏览器通过 `/books/1` 向 `show` 动作发起请求，控制器做了查询，但没有找到对应的图书，所以返回 302 重定向响应，告诉浏览器访问 `/books/`。浏览器收到指令后，向控制器的 `index` 动作发起新请求，控制器从数据库中取出所有图书，渲染 `index` 模板，将其返回浏览器，在屏幕上显示所有图书。
 
 在小型程序中，额外增加的时间不是个问题。如果响应时间很重要，这个问题就值得关注了。下面举个虚拟的例子演示如何解决这个问题：
 
@@ -944,7 +944,7 @@ W> 注意，必须指定图片的扩展名。
 
 * `poster: "image_name.png"`：指定视频播放前在视频的位置显示的图片；
 * `autoplay: true`：页面加载后开始播放视频；
-* `loop: true`：视频播完后重新播放；
+* `loop: true`：视频播完后再次播放；
 * `controls: true`：为用户提供浏览器对视频的控制支持，用于和视频交互；
 * `autobuffer: true`：页面加载时预先加载视频文件；
 
@@ -964,7 +964,7 @@ W> 注意，必须指定图片的扩展名。
 
 #### 使用 `audio_tag` 链接音频 {#linking-to-audio-files-with-the-audio-tag}
 
-`audio_tag` 帮助方法为指定的文件生成 HTML5 `<audio>` 标签。默认情况下，视频文件存放在 `public/audio` 文件夹中。
+`audio_tag` 帮助方法为指定的文件生成 HTML5 `<audio>` 标签。默认情况下，音频文件存放在 `public/audio` 文件夹中。
 
 {:lang="erb"}
 ~~~
@@ -1084,7 +1084,7 @@ W> 注意，必须指定图片的扩展名。
 <%= render "shared/footer" %>
 ~~~
 
-这里，局部视图 `_ad_banner.html.erb` 和 `_footer.html.erb` 可以包含程序多个页面共用的内容。在编写某个页面的视图时，无需关系这些局部视图中的详细内容。
+这里，局部视图 `_ad_banner.html.erb` 和 `_footer.html.erb` 可以包含程序多个页面共用的内容。在编写某个页面的视图时，无需关心这些局部视图中的详细内容。
 
 T> 程序所有页面共用的内容，可以直接在布局中使用局部视图渲染。
 
@@ -1103,7 +1103,7 @@ T> 程序所有页面共用的内容，可以直接在布局中使用局部视�
 
 #### 传递本地变量 {#passing-local-variables}
 
-本地变量可以传入局部视图，这么做可以把局部视图变得更强大和灵活。例如，可以使用这种方法去除新建和编辑页面的重复代码，但仍然保有不同的内容：
+本地变量可以传入局部视图，这么做可以把局部视图变得更强大、更灵活。例如，可以使用这种方法去除新建和编辑页面的重复代码，但仍然保有不同的内容：
 
 {:lang="erb" title="`new.html.erb`"}
 ~~~
@@ -1132,7 +1132,7 @@ T> 程序所有页面共用的内容，可以直接在布局中使用局部视�
 
 虽然两个视图使用同一个局部视图，但 Action View 的 `submit` 帮助方法为 `new` 动作生成的提交按钮名为“Create Zone”，为 `edit` 动作生成的提交按钮名为“Update Zone”。
 
-每个局部视图中都有个和局部视图同名的本地变量（去掉前面的下划线）。通过 `object` 选项可以把对象传入这个变量：
+每个局部视图中都有个和局部视图同名的本地变量（去掉前面的下划线）。通过 `object` 选项可以把对象传给这个变量：
 
 {:lang="erb"}
 ~~~
@@ -1175,7 +1175,7 @@ T> 程序所有页面共用的内容，可以直接在布局中使用局部视�
 <%= render @products %>
 ~~~
 
-Rails 根据集合中个元素的模型名决定使用哪个局部视图。其实，集合中的元素可以来自不同的模型，Rails 会选择正确的局部视图渲染。
+Rails 根据集合中各元素的模型名决定使用哪个局部视图。其实，集合中的元素可以来自不同的模型，Rails 会选择正确的局部视图进行渲染。
 
 {:lang="erb" title="`index.html.erb`"}
 ~~~
@@ -1193,9 +1193,9 @@ Rails 根据集合中个元素的模型名决定使用哪个局部视图。其�
 <p>Employee: <%= employee.name %></p>
 ~~~
 
-在上面几段代码中，Rails 会根据集合中个成员所属的模型选择正确的局部视图。
+在上面几段代码中，Rails 会根据集合中各成员所属的模型选择正确的局部视图。
 
-如果集合为空，`render` 方法会返回 `nil`，最好提供替代文本。
+如果集合为空，`render` 方法会返回 `nil`，所以最好提供替代文本。
 
 {:lang="erb"}
 ~~~
@@ -1205,7 +1205,7 @@ Rails 根据集合中个元素的模型名决定使用哪个局部视图。其�
 
 #### 本地变量 {#local-variables}
 
-要在局部视图中使用自定义的本地变量，调用局部视图时可通过 `:as` 选项指定：
+要在局部视图中自定义本地变量的名字，调用局部视图时可通过 `:as` 选项指定：
 
 {:lang="erb"}
 ~~~
@@ -1222,7 +1222,7 @@ Rails 根据集合中个元素的模型名决定使用哪个局部视图。其�
            as: :item, locals: {title: "Products Page"} %>
 ~~~
 
-在局部视图中可以使用局部变量 `title`，其值为 `"Products Page"`。
+在局部视图中可以使用本地变量 `title`，其值为 `"Products Page"`。
 
 T> 在局部视图中还可使用计数器变量，变量名是在集合后加上 `_counter`。例如，渲染 `@products` 时，在局部视图中可以使用 `product_counter` 表示局部视图渲染了多少次。不过不能和 `as: :value` 一起使用。
 
