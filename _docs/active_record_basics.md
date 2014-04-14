@@ -87,7 +87,7 @@ class Product < ActiveRecord::Base
 end
 ~~~
 
-上面的代码会创建 `Product` 模型，对应于数据库中的 `products` 表。同时，`products` 表中的字段也映射到 `Product` 模型实例的属性上。假如 `products` 表由厦门的 SQL 语句创建：
+上面的代码会创建 `Product` 模型，对应于数据库中的 `products` 表。同时，`products` 表中的字段也映射到 `Product` 模型实例的属性上。假如 `products` 表由下面的 SQL 语句创建：
 
 {:lang="sql"}
 ~~~
