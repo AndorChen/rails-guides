@@ -762,7 +762,7 @@ Active Record 在模型中，而不是数据库中设置关联。因此，需要
 
 `validates :foreign_key, uniqueness: true` 这个验证是模型保证数据完整性的一种方法。在关联中设置 `:dependent` 选项，可以保证父对象删除后，子对象也会被删除。和任何一种程序层的操作一样，这些无法完全保证引用完整性，所以很多人还是会在数据库中使用外键约束。
 
-Active Record 并没有为使用这些功能提供任何工具，不过 `execute` 方法可以执行任意的 SQL 语句。还可以使用 [foreigner](https://github.com/matthuhiggins/foreigner) 等 gem，为 Active Record 添加外键支持（还能白外键导出到 `db/schema.rb` 文件）。
+Active Record 并没有为使用这些功能提供任何工具，不过 `execute` 方法可以执行任意的 SQL 语句。还可以使用 [foreigner](https://github.com/matthuhiggins/foreigner) 等 gem，为 Active Record 添加外键支持（还能把外键导出到 `db/schema.rb` 文件）。
 
 ## 迁移和种子数据 {#migrations-and-seed-data}
 
