@@ -1,56 +1,52 @@
 ---
 layout: docs
-title: Caching with Rails An overview
+title: Rails 缓存简介
 prev_section: command_line
 next_section: asset_pipeline
-not_translated: yes
 ---
 
-This guide will teach you what you need to know about avoiding that expensive round-trip to your database and returning what you need to return to the web clients in the shortest time possible.
+本文要教你如果避免频繁查询数据库，在最短的时间内把真正需要的内容返回给客户端。
 
-After reading this guide, you will know:
+本完后，你将学会：
 
-* Page and action caching (moved to separate gems as of Rails 4).
-* Fragment caching.
-* Alternative cache stores.
-* Conditional GET support.
+* 页面和动作缓存（在 Rails 4 中被提取成单独的 gem）；
+* 片段缓存；
+* 存储缓存的方法；
+* Rails 对条件 GET 请求的支持；
 
---------------------------------------------------------------------------------
+---
 
 Basic Caching
 -------------
 
-This is an introduction to three types of caching techniques: page, action and
-fragment caching. Rails provides by default fragment caching. In order to use
-page and action caching, you will need to add `actionpack-page_caching` and
-`actionpack-action_caching` to your Gemfile.
+本节介绍三种缓存技术：页面，动作和片段。Rails 默认支持片段缓存。如果想使用页面缓存和动作缓存，要在 `Gemfile` 中加入 `actionpack-page_caching` 和 `actionpack-action_caching`。
 
-To start playing with caching you'll want to ensure that `config.action_controller.perform_caching` is set to `true`, if you're running in development mode. This flag is normally set in the corresponding `config/environments/*.rb` and caching is disabled by default for development and test, and enabled for production.
+在开发环境中若想使用缓存，要把 `config.action_controller.perform_caching` 选项设为 `true`。这个选项一般都在各环境的设置文件（`config/environments/*.rb`）中设置，在开发环境和测试环境默认是禁用的，在生产环境中默认是开启的。
 
 {:lang="ruby"}
 ~~~
 config.action_controller.perform_caching = true
 ~~~
 
-### Page Caching
+### 页面缓存 {#page-caching}
 
-Page caching is a Rails mechanism which allows the request for a generated page to be fulfilled by the webserver (i.e. Apache or nginx), without ever having to go through the Rails stack at all. Obviously, this is super-fast. Unfortunately, it can't be applied to every situation (such as pages that need authentication) and since the webserver is literally just serving a file from the filesystem, cache expiration is an issue that needs to be dealt with.
+页面缓存机制允许网页服务器（Apache 或 Nginx 等）直接处理请求，不经 Rails 处理。这么做显然速度超快，但并不适用于所有情况（例如需要身份认证的页面）。服务器直接从文件系统上伺服文件，所以缓存过期是一个很棘手的问题。
 
-INFO: Page Caching has been removed from Rails 4. See the [actionpack-page_caching gem](https://github.com/rails/actionpack-page_caching). See [DHH's key-based cache expiration overview](http://37signals.com/svn/posts/3113-how-key-based-cache-expiration-works) for the newly-preferred method.
+I> Rails 4 删除了对页面缓存的支持，如想使用就得安装 [actionpack-page_caching gem](https://github.com/rails/actionpack-page_caching)。最新推荐的缓存方法参见 [DHH 对键基缓存过期的介绍](http://37signals.com/svn/posts/3113-how-key-based-cache-expiration-works)。
 
-### Action Caching
+### 动作缓存 {#action-caching}
 
-Page Caching cannot be used for actions that have before filters - for example, pages that require authentication. This is where Action Caching comes in. Action Caching works like Page Caching except the incoming web request hits the Rails stack so that before filters can be run on it before the cache is served. This allows authentication and other restrictions to be run while still serving the result of the output from a cached copy.
+如果动作上有前置过滤器就不能使用页面缓存，例如需要身份认证的页面，这时需要使用动作缓存。动作缓存和页面缓存的工作方式差不多，但请求还是会经由 Rails 处理，所以在伺服缓存之前会执行前置过滤器。使用动作缓存可以执行身份认证等限制，然后再从缓存中取出结果返回客户端。
 
-INFO: Action Caching has been removed from Rails 4. See the [actionpack-action_caching gem](https://github.com/rails/actionpack-action_caching). See [DHH's key-based cache expiration overview](http://37signals.com/svn/posts/3113-how-key-based-cache-expiration-works) for the newly-preferred method.
+I> Rails 4 删除了对动作缓存的支持，如想使用就得安装 [actionpack-action_caching gem](https://github.com/rails/actionpack-action_caching)。最新推荐的缓存方法参见 [DHH 对键基缓存过期的介绍](http://37signals.com/svn/posts/3113-how-key-based-cache-expiration-works)。
 
-### Fragment Caching
+### 片段缓存 {#fragment-caching}
 
-Life would be perfect if we could get away with caching the entire contents of a page or action and serving it out to the world. Unfortunately, dynamic web applications usually build pages with a variety of components not all of which have the same caching characteristics. In order to address such a dynamically created page where different parts of the page need to be cached and expired differently, Rails provides a mechanism called Fragment Caching.
+如果能缓存整个页面或动作的内容，再伺服给客户端，这个世界就完美了。但是，动态网页程序的页面一般都由很多部分组成，使用的缓存机制也不尽相同。在动态生成的页面中，不同的内容要使用不同的缓存方式和过期日期。为此，Rails 提供了一种缓存机制叫做“片段缓存”。
 
-Fragment Caching allows a fragment of view logic to be wrapped in a cache block and served out of the cache store when the next request comes in.
+片段缓存把视图逻辑的一部分打包放在 `cache` 块中，后续请求都会从缓存中伺服这部分内容。
 
-As an example, if you wanted to show all the orders placed on your website in real time and didn't want to cache that part of the page, but did want to cache the part of the page which lists all products available, you could use this piece of code:
+例如，如果想实时显示网站的订单，而且不想缓存这部分内容，但想缓存显示所有可选商品的部分，就可以使用下面这段代码：
 
 {:lang="erb"}
 ~~~
@@ -66,7 +62,7 @@ As an example, if you wanted to show all the orders placed on your website in re
 <% end %>
 ~~~
 
-The cache block in our example will bind to the action that called it and is written out to the same place as the Action Cache, which means that if you want to cache multiple fragments per action, you should provide an `action_suffix` to the cache call:
+上述代码中的 `cache` 块会绑定到调用它的动作上，输出到动作缓存的所在位置。因此，如果要在动作中使用多个片段缓存，就要使用 `action_suffix` 为 `cache` 块指定前缀：
 
 {:lang="erb"}
 ~~~
@@ -74,14 +70,14 @@ The cache block in our example will bind to the action that called it and is wri
   All available products:
 ~~~
 
-and you can expire it using the `expire_fragment` method, like so:
+`expire_fragment` 方法可以把缓存设为过期，例如：
 
 {:lang="ruby"}
 ~~~
 expire_fragment(controller: 'products', action: 'recent', action_suffix: 'all_products')
 ~~~
 
-If you don't want the cache block to bind to the action that called it, you can also use globally keyed fragments by calling the `cache` method with a key:
+如果不想把缓存绑定到调用它的动作上，调用 `cahce` 方法时可以使用全局片段名：
 
 {:lang="erb"}
 ~~~
@@ -90,13 +86,14 @@ If you don't want the cache block to bind to the action that called it, you can 
 <% end %>
 ~~~
 
-This fragment is then available to all actions in the `ProductsController` using the key and can be expired the same way:
+在 `ProductsController` 的所有动作中都可以使用片段名调用这个片段缓存，而且过期的设置方式不变：
 
 {:lang="ruby"}
 ~~~
 expire_fragment('all_available_products')
 ~~~
-If you want to avoid expiring the fragment manually, whenever an action updates a product, you can define a helper method:
+
+如果不想手动设置片段缓存过期，而想每次更新商品后自动过期，可以定义一个帮助方法：
 
 {:lang="ruby"}
 ~~~
@@ -109,7 +106,7 @@ module ProductsHelper
 end
 ~~~
 
-This method generates a cache key that depends on all products and can be used in the view:
+这个方法生成一个缓存键，用于所有商品的缓存。在视图中可以这么做：
 
 {:lang="erb"}
 ~~~
@@ -118,7 +115,7 @@ This method generates a cache key that depends on all products and can be used i
 <% end %>
 ~~~
 
-If you want to cache a fragment under certain condition you can use `cache_if` or `cache_unless`
+如果想在满足某个条件时缓存片段，可以使用 `cache_if` 或 `cache_unless` 方法：
 
 {:lang="erb"}
 ~~~
@@ -127,7 +124,7 @@ If you want to cache a fragment under certain condition you can use `cache_if` o
 <% end %>
 ~~~
 
-You can also use an Active Record model as the cache key:
+缓存的键名还可使用 Active Record 模型：
 
 {:lang="erb"}
 ~~~
@@ -138,9 +135,9 @@ You can also use an Active Record model as the cache key:
 <% end %>
 ~~~
 
-Behind the scenes, a method called `cache_key` will be invoked on the model and it returns a string like `products/23-20130109142513`. The cache key includes the model name, the id and finally the updated_at timestamp. Thus it will automatically generate a new fragment when the product is updated because the key changes.
+Rails 会在模型上调用 `cache_key` 方法，返回一个字符串，例如 `products/23-20130109142513`。键名中包含模型名，ID 以及 `updated_at` 字段的时间戳。所以更新商品后会自动生成一个新片段缓存，因为键名变了。
 
-You can also combine the two schemes which is called "Russian Doll Caching":
+上述两种缓存机制还可以结合在一起使用，这叫做“俄罗斯套娃缓存”（Russian Doll Caching）：
 
 {:lang="erb"}
 ~~~
@@ -154,15 +151,15 @@ You can also combine the two schemes which is called "Russian Doll Caching":
 <% end %>
 ~~~
 
-It's called "Russian Doll Caching" because it nests multiple fragments. The advantage is that if a single product is updated, all the other inner fragments can be reused when regenerating the outer fragment.
+之所以叫“俄罗斯套娃缓存”，是因为嵌套了多个片段缓存。这种缓存的优点是，更新单个商品后，重新生成外层片段缓存时可以继续使用内层片段缓存。
 
-### Low-Level Caching
+### 低层缓存 {#low-level-caching}
 
-Sometimes you need to cache a particular value or query result, instead of caching view fragments. Rails caching mechanism works great for storing __any__ kind of information.
+有时不想缓存视图片段，只想缓存特定的值或者查询结果。Rails 中的缓存机制可以存储各种信息。
 
-The most efficient way to implement low-level caching is using the `Rails.cache.fetch` method. This method does both reading and writing to the cache. When passed only a single argument, the key is fetched and value from the cache is returned. If a block is passed, the result of the block will be cached to the given key and the result is returned.
+实现低层缓存最有效地方式是使用 `Rails.cache.fetch` 方法。这个方法既可以从缓存中读取数据，也可以把数据写入缓存。传入单个参数时，读取指定键对应的值。传入代码块时，会把代码块的计算结果存入缓存的指定键中，然后返回计算结果。
 
-Consider the following example. An application has a `Product` model with an instance method that looks up the product’s price on a competing website. The data returned by this method would be perfect for low-level caching:
+以下面的代码为例。程序中有个 `Product` 模型，其中定义了一个实例方法，用来查询竞争对手网站上的商品价格。这个方法的返回结果最好使用低层缓存：
 
 {:lang="ruby"}
 ~~~
@@ -175,9 +172,10 @@ class Product < ActiveRecord::Base
 end
 ~~~
 
-NOTE: Notice that in this example we used `cache_key` method, so the resulting cache-key will be something like `products/233-20140225082222765838000/competing_price`. `cache_key` generates a string based on the model’s `id` and `updated_at` attributes. This is a common convention and has the benefit of invalidating the cache whenever the product is updated. In general, when you use low-level caching for instance level information, you need to generate a cache key.
+I> 注意，在这个例子中使用了 `cache_key` 方法，所以得到的缓存键名是这种形式：`products/233-20140225082222765838000/competing_price`。`cache_key` 方法根据模型的 `id` 和 `updated_at` 属性生成键名。这是最常见的做法，因为商品更新后，缓存就失效了。一般情况下，使用低层缓存保存实例的相关信息时，都要生成缓存键。
 
-### SQL Caching
+### SQL 缓存 {#sql-caching}
+
 
 Query caching is a Rails feature that caches the result set returned by each query so that if Rails encounters the same query again for that request, it will use the cached result set as opposed to running the query against the database again.
 
