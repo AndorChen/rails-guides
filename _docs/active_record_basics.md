@@ -7,11 +7,11 @@ next_section: migrations
 
 本文介绍 Active Record。
 
-读完本文后，你讲了解：
+读完本文后，你将了解：
 
 * 对象关系映射（Object Relational Mapping，ORM）和 Active Record 是什么，以及如何在 Rails 中使用；
 * Active Record 在 MVC 中的作用；
-* 如果使用 Active Record 模型处理保存在关系型数据库中的数据；
+* 如何使用 Active Record 模型处理保存在关系型数据库中的数据；
 * Active Record 模式（schema）命名约定；
 * 数据库迁移，数据验证和回调；
 
