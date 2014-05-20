@@ -282,7 +282,6 @@ end
 ~~~
 
 默认的错误消息是“is invalid”。
-The default error message is _"is invalid"_.
 
 ### `inclusion` {#inclusion}
 
@@ -468,7 +467,7 @@ end
 
 这个验证会在模型对应的数据表中执行一个 SQL 查询，检查现有的记录中该字段是否已经出现过相同的值。
 
-`:scope` 选线可以指定其他属性，用来约束唯一性验证：
+`:scope` 选项可以指定其他属性，用来约束唯一性验证：
 
 {:lang="ruby"}
 ~~~
@@ -478,7 +477,7 @@ class Holiday < ActiveRecord::Base
 end
 ~~~
 
-还有个 `:case_sensitive` 选线，指定唯一性验证是否要区分大小写，默认只为 `true`。
+还有个 `:case_sensitive` 选线，指定唯一性验证是否要区分大小写，默认值为 `true`。
 
 {:lang="ruby"}
 ~~~
@@ -858,7 +857,7 @@ person.errors[:name]
 
 ### `errors.add` {#errors-add}
 
-`add` 方法可以手动添加某属性的错误消息。使用 `errors.full_messages` 或 `errors.to_a` 方法会以最终显示给用户的形式显示错误消息。这些错误消息的前面都会加上字段名的复数形式。`add` 方法接受两个参数：错误消息要添加到的字段名和错误消息本身。
+`add` 方法可以手动添加某属性的错误消息。使用 `errors.full_messages` 或 `errors.to_a` 方法会以最终显示给用户的形式显示错误消息。这些错误消息的前面都会加上字段名可读形式（并且首字母大写）。`add` 方法接受两个参数：错误消息要添加到的字段名和错误消息本身。
 
 {:lang="ruby"}
 ~~~
