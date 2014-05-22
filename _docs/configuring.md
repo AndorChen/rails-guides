@@ -64,7 +64,7 @@ Rails 会使用指定的设置配置 Active Record。
 
 *   `config.autoload_paths`：一个由路径组成的数组，Rails 从这些路径中自动加载常量。默认值为 `app` 文件夹中的所有子文件夹。
 
-*   `config.cache_classes`：决定程序中的类和模块在每次请求中是否要重新加载。在生产环境中的默认值是 `false`，在测试环境和生产环境中的默认值是 `true`。调用 `threadsafe!` 方法的作用和设为 `true` 一样。
+*   `config.cache_classes`：决定程序中的类和模块在每次请求中是否要重新加载。在开发环境中的默认值是 `false`，在测试环境和生产环境中的默认值是 `true`。调用 `threadsafe!` 方法的作用和设为 `true` 一样。
 
 *   `config.action_view.cache_template_loading`：决定模板是否要在每次请求时重新加载。默认值等于 `config.cache_classes` 的值。
 
