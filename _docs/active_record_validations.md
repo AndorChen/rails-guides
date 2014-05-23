@@ -477,7 +477,7 @@ class Holiday < ActiveRecord::Base
 end
 ~~~
 
-还有个 `:case_sensitive` 选线，指定唯一性验证是否要区分大小写，默认值为 `true`。
+还有个 `:case_sensitive` 选项，指定唯一性验证是否要区分大小写，默认值为 `true`。
 
 {:lang="ruby"}
 ~~~
