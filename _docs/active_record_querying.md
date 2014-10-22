@@ -1451,7 +1451,7 @@ Active Record 为数据表中的每个字段都提供了一个查询方法。例
 
 ## 查找或构建新对象 {#find-or-build-a-new-object}
 
-I> 某些动态查询方法在 Rails 4.0 中已经启用，会在 Rails 4.1 中删除。推荐的做法是使用 Active Record 作用域。废弃的方法可以在这个 gem 中查看：<https://github.com/rails/activerecord-deprecated_finders>。
+I> 某些动态查询方法在 Rails 4.0 中已经弃用，会在 Rails 4.1 中删除。推荐的做法是使用 Active Record 作用域。废弃的方法可以在这个 gem 中查看：<https://github.com/rails/activerecord-deprecated_finders>。
 
 我们经常需要在查询不到记录时创建一个新记录。这种需求可以使用 `find_or_create_by` 或 `find_or_create_by!` 方法实现。
 
