@@ -1,1 +1,2 @@
+[part]
 = 扩展 Rails
