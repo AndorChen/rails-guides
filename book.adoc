@@ -26,6 +26,7 @@
 :pdf-cover-image: cover.jpg
 :epub-cover-image: cover.jpg
 :cover-page-title: 封面
+:ebook-theme: rails_guides
 :rails-version: 5.0.0.1
 
 :numbered:

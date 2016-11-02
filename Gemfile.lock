@@ -1,4 +1,9 @@
 PATH
+  remote: ~/Projects/persie_theme_rails_guides
+  specs:
+    persie_theme_rails_guides (0.0.1)
+
+PATH
   remote: ~/Projects/persie
   specs:
     persie (0.0.2.beta.1)
@@ -40,6 +45,7 @@ PLATFORMS
 
 DEPENDENCIES
   persie!
+  persie_theme_rails_guides!
   rake
 
 BUNDLED WITH
