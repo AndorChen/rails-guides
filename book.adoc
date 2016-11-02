@@ -1,0 +1,113 @@
+= Rails 指南
+:slug: rails-guides-cn
+:translator: 安道/chinakr
+:translator-email: andor.chen.27@email.com
+:revnumber: 0.0.1
+:revdate: 2016-11-02T13:32:37+08:00
+:lang: zh-CN
+:description: Rails 全方位解读。
+:keywords: rails, guide, guides, 指南
+:uuid: urn:uuid:bcb9fde0-5d33-0134-172d-482a140fb2a7
+:author-label: {author} 著
+:translator-label: {translator} 译
+:version-label: rev
+:toc:
+:toc-title: 目录
+:listing-caption: 代码清单 %NUM%-%SUBNUM%
+:image-caption: 图 %NUM%-%SUBNUM%
+:table-caption: 表 %NUM%-%SUBNUM%
+:sidebar-caption: 旁注 %NUM%-%SUBNUM%
+:caption-trailing: ：
+:chapter-caption: 第 %NUM% 章
+:section-caption: %NUM% 节
+:appendix-caption: 附录 %NUM%
+:epub-identifier-scheme: uuid
+:highlight:
+:pdf-cover-image: cover.jpg
+:epub-cover-image: cover.jpg
+:cover-page-title: 封面
+:rails-version: 5.0.0.1
+
+:numbered:
+
+include::manuscript/start_here.adoc[]
+
+include::manuscript/getting_started.adoc[]
+
+include::manuscript/models.adoc[]
+
+include::manuscript/active_record_basics.adoc[]
+
+include::manuscript/active_record_migrations.adoc[]
+
+include::manuscript/active_record_validations.adoc[]
+
+include::manuscript/active_record_callbacks.adoc[]
+
+include::manuscript/association_basics.adoc[]
+
+include::manuscript/active_record_querying.adoc[]
+
+include::manuscript/active_model_basics.adoc[]
+
+include::manuscript/views.adoc[]
+
+include::manuscript/action_view_overview.adoc[]
+
+include::manuscript/layouts_and_rendering.adoc[]
+
+include::manuscript/form_helpers.adoc[]
+
+include::manuscript/controllers.adoc[]
+
+include::manuscript/action_controller_overview.adoc[]
+
+include::manuscript/routing.adoc[]
+
+include::manuscript/digging_depper.adoc[]
+
+include::manuscript/active_support_core_extensions.adoc[]
+
+include::manuscript/i18n.adoc[]
+
+include::manuscript/action_mailer_basics.adoc[]
+
+include::manuscript/active_job_basics.adoc[]
+
+include::manuscript/testing.adoc[]
+
+include::manuscript/security.adoc[]
+
+include::manuscript/debugging_rails_applications.adoc[]
+
+include::manuscript/configuring.adoc[]
+
+include::manuscript/command_line.adoc[]
+
+include::manuscript/asset_pipeline.adoc[]
+
+include::manuscript/working_with_javascript_in_rails.adoc[]
+
+include::manuscript/initialization.adoc[]
+
+include::manuscript/autoloading_and_reloading_constants.adoc[]
+
+include::manuscript/caching_with_rails.adoc[]
+
+include::manuscript/active_support_instrumentation.adoc[]
+
+include::manuscript/profiling.adoc[]
+
+include::manuscript/api_app.adoc[]
+
+include::manuscript/action_cable_overview.adoc[]
+
+include::manuscript/extending_rails.adoc[]
+
+include::manuscript/plugins.adoc[]
+
+include::manuscript/rails_on_rack.adoc[]
+
+include::manuscript/generators.adoc[]
+
+include::manuscript/engines.adoc[]

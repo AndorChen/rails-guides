@@ -1,25 +1,29 @@
-desc "Push to github"
-task :push do
-  puts   "Pushing to `master' branch:"
-  system "git push origin master"
-  puts   "`master' branch updated."
-  puts
-
-  puts   "Building site...."
-  system "bundle exec jekyll build"
-  puts   "Site updated."
-  puts
-
-  cd '_site' do
-    puts   "Pushing to `gh-pages' branch:"
-    system "git add -A"
-    system "git commit -m 'update at #{Time.now.utc}'"
-    system "git push origin gh-pages"
-    puts   "`gh-pages' branch updated."
-  end
+desc 'Build pdf format'
+task :pdf do
+  system 'bundle exec persie build pdf'
 end
 
-desc "Launch local preview"
+desc 'Build pdf sample'
+task :sample do
+  system 'bundle exec persie build pdf -s'
+end
+
+desc 'Build epub format'
+task :epub do
+  system 'bundle exec persie build epub -c'
+end
+
+desc 'Build mobi format'
+task :mobi do
+  system 'bundle exec persie build mobi'
+end
+
+desc 'Build site format'
+task :site do
+  system 'bundle exec persie build html -m'
+end
+
+desc 'Preview site'
 task :preview do
-  system "bundle exec jekyll server --watch --baseurl=''"
+  system 'bundle exec persie preview multiple'
 end
