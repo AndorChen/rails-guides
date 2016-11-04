@@ -1,1 +1,305 @@
-== Getting Started with Rails
+[[getting-started-with-rails]]
+== Rails 入门
+
+[.chapter-abstract]
+--
+本文介绍如何开始使用 Ruby on Rails。
+
+读完后，你将学会：
+
+* 如何安装 Rails，创建 Rails 程序，如何连接数据库。
+* Rails 程序的基本文件结构。
+* MVC（模型，视图，控制器）和 REST 架构的基本原理。
+* 如何快速生成 Rails 程序骨架。
+--
+
+[[guide-assumptions]]
+=== 前提条件
+
+本文针对想从零开始开发 Rails 程序的初学者，不要求 Rails 使用经验。不过，为了能顺利阅读，还是需要事先安装好一些软件：
+
+* link:https://www.ruby-lang.org/en/downloads[Ruby] 2.2.2 及以上版本
+* link:http://rubyinstaller.org/downloads/[开发工具箱] 的正确版本（针对 Windows 用户）
+* 包管理工具 link:https://rubygems.org/[RubyGems]，随 Ruby 预装。想深入了解 RubyGems，请参阅 link:http://guides.rubygems.org/[RubyGems 指南]
+* link:https://www.sqlite.org/[SQLite3 数据库]
+
+Rails 是使用 Ruby 语言开发的 Web 应用程序框架。如果之前没接触过 Ruby，会感到直接学习 Rails 的学习曲线很陡。这里提供几个学习 Ruby 的在线资源列表：
+
+* link:https://www.ruby-lang.org/en/documentation/[Ruby 语言官方网站]
+* link:https://github.com/vhf/free-programming-books/blob/master/free-programming-books.md#ruby[免费编程图书列表]
+
+需要注意的是，有些资源虽然很好，但针对的是 Ruby 1.8 甚至 1.6 这些老版本，因此不涉及一些 Rails 日常开发的常见语法。
+
+[[what-is-rails]]
+=== Rails 是什么？
+
+Rails 是使用 Ruby 语言编写的 Web 应用程序开发框架，目的是通过解决快速开发中的共性问题，简化 Web 应用程序开发。与其他编程语言和框架相比，使用 Rails 只需编写更少代码就能实现更多功能。有经验的 Rails 程序员常说，Rails 让 Web 应用程序开发变得更有趣。
+
+Rails 有自己的设计原则，认为问题总有最好的解决方法，并且有意识地通过设计来鼓励用户使用最好的解决方法，而不是其他替代方案。一旦掌握了“Rails 之道”，就可能获得生产力的巨大提升。在 Rails 开发中，如果不改变使用其他编程语言时养成的习惯，总想应用原有的设计模式，开发体验可能就不那么让人愉快了。
+
+Rails 哲学包含两大指导思想：
+
+* 不要自我重复（DRY）： DRY 是软件开发中的一个原则，意思是“系统中的每个功能都要具有单一、准确、可信的实现。”。不重复表述同一件事，写出的代码才能更易维护，更具扩展性，也更不容易出问题。
+* 多约定，少配置： Rails 为 Web 应用程序的大多数需求都提供了最好的解决方法，并且默认使用这些约定，而不是在长长的配置文件中设置每个细节。
+
+[[creating-a-new-rails-project]]
+=== 创建 Rails 项目
+
+阅读本文的最佳方法是一步一步跟着操作。所有这些步骤对于运行示例程序都是必不可少的，同时也不需要更多的代码或步骤。
+
+通过学习本文，你将学会如何创建一个名为 Blog 的 Rails 项目，这是一个非常简单的博客。在动手开发之前，请确保已经安装了 Rails。
+
+TIP: 文中的示例代码使用 UNIX 风格的命令行提示符 $，如果你的命令行提示符是自定义的看起来可能会不一样。在 Windows 中，命令行提示符可能类似 `c:\source_code>``。
+
+[[installing-rails]]
+==== 安装 Rails
+
+打开命令行：在 Mac OS X 中打开 Terminal.app，在 Windows 中要在开始菜单中选择“运行”并输入“cmd.exe”。本文中所有以 $ 开头的代码，都应该在命令行中执行。首先确认是否安装了 Ruby 的最新版本：
+
+----
+$ ruby -v
+ruby 2.3.0p0
+----
+
+TIP: 有很多工具可以帮助你快速地在系统中安装 Ruby 和 Ruby on Rails。Windows 用户可以使用 link:http://railsinstaller.org/[Rails Installer]，Mac OS X 用户可以使用 link:https://github.com/tokaido/tokaidoapp[Tokaido]。更多操作系统中的安装方法请访问 link:https://www.ruby-lang.org/en/documentation/installation/[ruby-lang.org]。
+
+很多类 UNIX 系统都预装了版本较新的 SQLite3。在 Windows 中，通过 Rails Installer 安装 Rails 会同时安装 SQLite3。其他操作系统中 SQLite3 的安装方法请参阅 link:https://www.sqlite.org/[SQLite3 官网]。接下来，确认 SQLite3 是否在 PATH 中：
+
+----
+$ sqlite3 --version
+----
+
+执行结果应该显示 SQLite3 的版本号。
+
+安装 Rails，请使用 RubyGems 提供的 `gem install` 命令：
+
+----
+$ gem install rails
+----
+
+执行下面的命令来确认所有软件是否都已正确安装：
+
+----
+$ rails --version
+----
+
+如果执行结果类似 `Rails 5.0.0`，那么就可以继续往下读了。
+
+
+[[creating-the-blog-application]]
+==== 创建 Blog 程序
+
+Rails 提供了许多名为“生成器”的脚本，这些脚本可以为特定任务生成所需的全部文件，从而简化开发。其中包括新程序生成器，这个脚本用于创建 Rails 程序骨架，避免了手动编写基础代码。
+
+要使用新程序生成器，请打开终端，进入具有写权限的文件夹，输入：
+
+----
+$ rails new blog
+----
+
+这个命令会在文件夹 `blog` 中创建名为 Blog 的 Rails 程序，然后执行 `bundle install` 命令安装 Gemfile 中列出的 gem 及其依赖关系。
+
+TIP: 执行 `rails new -h` 可以查看新程序生成器的所有命令行选项。
+
+创建 blog 程序后，进入该文件夹：
+
+----
+$ cd blog
+----
+
+`blog` 文件夹中有许多自动生成的文件和文件夹，这些文件和文件夹组成了 Rails 程序的结构。本文涉及的大部分工作都在 app 文件夹中完成。下面简单介绍一下这些用新程序生成器默认选项生成的文件和文件夹的功能：
+
+|===
+| 文件/文件夹 | 作用
+
+| `app/`
+| 包含程序的控制器、模型、视图、帮助方法、邮件程序和静态资源文件。这个文件夹是本文剩余内容关注的重点。
+
+| `bin/`
+| 包含用于启动程序的 rails 脚本，以及用于安装、更新、部署或运行程序的其他脚本。
+
+| `config/`
+| 配置程序的路由、数据库等。详情请参阅“link:http://guides.rubyonrails.org/configuring.html[配置 Rails 程序]”。
+
+| `config.ru`
+| 基于 Rack 的服务器所需的 Rack 配置，用于启动程序。
+
+| `db/`
+| 包含当前数据库的模式，以及数据库迁移文件。
+
+| `Gemfile`, `Gemfile.lock`
+| 这两个文件用于指定 Rails 程序所需的 gem 的依赖关系。Bundler gem 需要用到这两个文件。关于 Bundler 的详细介绍，请访问 link:http://bundler.io/[Bundler 官网]。
+
+| `lib/`
+| 程序的扩展模块。
+
+| `log/`
+| 程序日志文件。
+
+| `public/`
+| 仅有的可以直接从外部访问的文件夹，包含静态文件和编译后的静态资源文件。
+
+| `Rakefile`
+| 定位并加载可在命令行中执行的任务。这些任务在 Rails 的各个组件中定义。如果要添加自定义任务，请不要修改 Rakefile，真接把自定义任务保存在 `lib/tasks` 文件夹中即可。
+
+| `README.md`
+| 程序的自述文件，说明程序的用途、安装方法等。
+
+| `test/`
+| 单元测试、夹具和其他测试装置。详情请参阅“link:http://guides.rubyonrails.org/testing.html[测试 Rails 程序]”。
+
+| `tmp/`
+| 临时文件（如缓存和 PID 文件）。
+
+| `vendor/`
+| 包含第三方代码，如第三方 gem。 |
+|===
+
+[[hello-rails]]
+=== Hello, Rails!
+
+首先，让我们快速地在页面中添加一些文字。为了访问页面，需要运行 Rails 程序服务器（即 Web 服务器）。
+
+[[starting-up-the-web-server]]
+==== 启动 Web 服务器
+
+实际上这个 Rails 程序已经可以正常运行了。要访问程序，需要在开发电脑上启动 Web 服务器。请在 `blog` 文件夹中执行下面的命令：
+
+----
+$ bin/rails server
+----
+
+TIP: Windows 用户需要把 `bin` 文件夹下的脚本文件直接传递给 Ruby 解析器，例如 `ruby bin\rails server`。
+
+TIP: 编译 CoffeeScript 和 压缩 JavaScript 静态资源文件需要 JavaScript 运行时，如果没有运行时，在压缩静态资源文件时就会报错，提示没有 `execjs`。Mac OS X 和 Windows 一般都提供了 JavaScript 运行时。在创建 Rails 程序的 Gemfile 中，`therubyracer` gem 被注释掉了，如果需要使用这个 gem，请去掉注释。对于 JRuby 用户，推荐使用 `therubyrhino` 这个运行时，在 JRuby 中创建 Rails 程序的 Gemfile 中默认包含了这个 gem。要查看 Rails 支持的所有运行时，请参阅 link:https://github.com/rails/execjs#readme[ExecJS]。
+
+上述命令会启动 Puma，这是 Ruby 内置的 Web 服务器。要查看运行中的程序，请打开浏览器窗口，访问 link:$$http://localhost:3000$$[]。这时应该看到默认的 Rails 欢迎页面：
+
+.默认的 Rails 欢迎页面
+image::http://guides.rubyonrails.org/images/getting_started/rails_welcome.png[默认的 Rails 欢迎页面]
+
+TIP: 要停止 Web 服务器，请在终端中按 Ctrl+C 键。服务器停止后命令行提示符会重新出现。在大多数类 Unix 系统中，包括 Mac OS X，命令行提示符是 $ 符号。在开发模式中，一般情况下无需重启服务器，服务器会自动加载修改后的文件。
+
+欢迎页面是创建 Rails 程序的冒烟测试，看到这个页面就表示程序已经正确配置，能够正常工作了。
+
+[[say-hello-rails]]
+==== 显示“Hello, Rails!”
+
+要让 Rails 显示“Hello, Rails!”，需要创建控制器和视图。
+
+控制器接受向应用程序发起的特定访问请求。路由决定哪些访问请求被哪些控制器接受。一般情况下，一个控制器会对应多个路由，不同路由对应不同动作。动作搜集数据并把数据提供给视图。
+
+视图以人类能看懂的格式显示数据。有一点要特别注意，数据是在控制器而不是视图中获取的，视图只是显示数据。默认情况下，视图模板使用 eRuby（嵌入式 Ruby）语言编写，经由 Rails 解析后，再发送给用户。
+
+可以用控制器生成器来创建控制器。下面的命令告诉控制器生成器创建一个包含“index”动作的“Welcome”控制器：
+
+----
+$ bin/rails generate controller Welcome index
+----
+
+上述命令让 Rails 生成了多个文件和一个路由：
+
+----
+create  app/controllers/welcome_controller.rb
+ route  get 'welcome/index'
+invoke  erb
+create    app/views/welcome
+create    app/views/welcome/index.html.erb
+invoke  test_unit
+create    test/controllers/welcome_controller_test.rb
+invoke  helper
+create    app/helpers/welcome_helper.rb
+invoke  assets
+invoke    coffee
+create      app/assets/javascripts/welcome.coffee
+invoke    scss
+create      app/assets/stylesheets/welcome.scss
+----
+
+其中最重要的文件是控制器和视图，控制器位于 `app/controllers/welcome_controller.rb` ，视图位于 `app/views/welcome/index.html.erb` 。
+
+在文本编辑器中打开 `app/views/welcome/index.html.erb` 文件，删除所有代码，然后添加下面的代码：
+
+----
+<h1>Hello, Rails!</h1>
+----
+
+[[setting-the-application-home-page]]
+==== 设置程序主页
+
+现在我们已经创建了控制器和视图，还需要告诉 Rails 何时显示“Hello, Rails!”，我们希望在访问根地址  link:$$http://localhost:3000$$[] 时显示。目前根地址显示的还是默认的 Rails 欢迎页面。
+
+接下来需要告诉 Rails 真正的主页在哪里。
+
+在编辑器中打开 `config/routes.rb` 文件。
+
+[source,ruby]
+----
+Rails.application.routes.draw do
+  get 'welcome/index'
+
+  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+end
+----
+
+这是程序的路由文件，使用特殊的 DSL（domain-specific language，领域专属语言）编写，告诉 Rails 把访问请求发往哪个控制器和动作。编辑这个文件，添加一行代码 `root 'welcome#index'`，此时文件内容应该变成下面这样：
+
+[source,ruby]
+----
+Rails.application.routes.draw do
+  get 'welcome/index'
+
+  root 'welcome#index'
+end
+----
+
+`root 'welcome#index'` 告诉 Rails 对根路径的访问请求应该发往 welcome 控制器的 index 动作，`get 'welcome/index'` 告诉 Rails 对 link:$$http://localhost:3000/welcome/index$$[] 的访问请求应该发往 welcome 控制器的 index 动作。后者是之前用控制器生成器创建控制器（`bin/rails generate controller Welcome index`）时自动生成的。
+
+如果在生成控制器时停止了服务器，请再次启动服务器（`bin/rails server`），然后在浏览器中访问  link:$$http://localhost:3000$$[]。我们会看到之前添加到 `app/views/welcome/index.html.erb` 的“Hello, Rails!”信息，这说明新定义的路由确实把访问请求发往了 `WelcomeController` 的 `index` 动作，并正确渲染了视图。
+
+TIP: 关于路由的详细介绍，请参阅“link:http://guides.rubyonrails.org/routing.html[Rails 路由全解]”一文。
+
+[[getting-up-and-running]]
+=== 启动并运行起来
+
+前文已经介绍了如何创建控制器、动作和视图，接下来我们要创建一些更具实用价值的东西。
+
+在 Blog 程序中创建一个资源。资源是一个术语，表示一系列类似对象的集合，如文章、人或动物。资源中的项目可以被创建、读取、更新和删除，这些操作简称 CRUD 操作（Create, Read, Update, Delete）。
+
+Rails 提供了 `resources` 方法，用于声明标准 REST 架构的资源。把 article 资源添加到 `config/routes.rb`，此时文件内容应该变成下面这样：
+
+[source,ruby]
+----
+Rails.application.routes.draw do
+
+  resources :articles
+
+  root 'welcome#index'
+end
+----
+
+执行 `bin/rails routes` 命令，可以看到所有标准 REST 动作都具有对应路由。输出结果中各列的意义稍后会作说明，现在只需注意  Rails 从 article 的单数形式推导出了它的复数形式，并进行了合理使用。
+
+----
+$ bin/rails routes
+      Prefix Verb   URI Pattern                  Controller#Action
+    articles GET    /articles(.:format)          articles#index
+             POST   /articles(.:format)          articles#create
+ new_article GET    /articles/new(.:format)      articles#new
+edit_article GET    /articles/:id/edit(.:format) articles#edit
+     article GET    /articles/:id(.:format)      articles#show
+             PATCH  /articles/:id(.:format)      articles#update
+             PUT    /articles/:id(.:format)      articles#update
+             DELETE /articles/:id(.:format)      articles#destroy
+        root GET    /                            welcome#index
+----
+
+下一节，我们要为程序添加新建文章和查看文章的功能。这两个操作分别对应于 CRUD 的“C”和“R”：创建和读取。下面是用于新建文章的表单：
+
+.用于新建文章的表单
+image::http://guides.rubyonrails.org/images/getting_started/new_article.png[用于新建文章的表单]
+
+表单看起来很简陋，不过没关系，之后我们再来美化。
+
+[[laying down the ground work]]
+==== 打地基
