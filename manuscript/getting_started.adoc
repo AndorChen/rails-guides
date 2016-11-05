@@ -346,8 +346,8 @@ end
 
 在 `ArticlesController` 中定义 `new` 方法后，再次刷新 link:$$http://localhost:3000/articles/new$$[]，会看到另一个错误：
 
-.找不到模板
-image::http://guides.rubyonrails.org/images/getting_started/template_is_missing_articles_new.png[找不到模板]
+.未知格式，缺少对应模板
+image::http://guides.rubyonrails.org/images/getting_started/template_is_missing_articles_new.png[未知格式，缺少对应模板]
 
 产生错误的原因是，Rails 要求这样的常规动作有用于显示数据的对应视图。如果没有视图可用，Rails就会引发异常。
 
@@ -359,10 +359,10 @@ ____
 
 内容还真不少！让我们快速浏览一下，看看各部分是什么意思。
 
-第一部分说明缺少哪个模板，在这里缺少的是 `articles/new` 模板。Rails 首先查找这个模板，如果找不到再查找 `application/new` 模板。之所以会查找后面这个模板，是因为 `ArticlesController` 继承自 `ApplicationController`。
+第一部分说明缺少哪个模板，这里缺少的是 `articles/new` 模板。Rails 首先查找这个模板，如果找不到再查找 `application/new` 模板。之所以会查找后面这个模板，是因为 `ArticlesController` 继承自 `ApplicationController`。
 
 信息的下一部分包含一个 Hash。Hash 的 `:locale` 键说明模板应该以哪国语言解析，默认是英语（“en”）。Hash 的 `:formats` 键说明响应使用的模板格式，默认是 `:html`，因此 Rails 会查找 HTML 模板。Hash 的 `:handlers` 键说明渲染模板使用的模板处理器，对于 HTML 模板通常使用 `:erb`，XML 模板使用 `:builder`，JavaScript 模板使用 `:coffee`。
-(**图文好像对不上？？这一段是否是多余的？**)
+（译者注：这一段和上面的图文好像对不上，可能是版本更新过程中忘记删除的旧文。）
 
 信息还包含了 `request.formats`，说明响应使用的模板格式。当我们在浏览器中请求页面时，`request.formats` 被设置为 `text/html`，因此 Rails 会查找 HTML 模板。
 
@@ -381,3 +381,67 @@ ____
 
 [[the-first-form]]
 ==== 第一个表单
+
+在模板中创建表单，可以使用__表单生成器__。Rails 中最常用的表单生成器是 `form_for` 帮助方法。让我们使用这个方法，在 `app/views/articles/new.html.erb` 文件中添加下面的代码：
+
+[source,html]
+----
+<%= form_for :article do |f| %>
+  <p>
+    <%= f.label :title %><br>
+    <%= f.text_field :title %>
+  </p>
+
+  <p>
+    <%= f.label :text %><br>
+    <%= f.text_area :text %>
+  </p>
+
+  <p>
+    <%= f.submit %>
+  </p>
+<% end %>
+----
+
+现在刷新页面，会看到和前文截图一样的表单。在 Rails 中创建表单就是这么简单！
+
+调用 `form_for` 帮助方法时，需要为表单传递一个标识对象作为参数，这里是 `:article` 符号。这个符号告诉 `form_for` 帮助方法表单用于处理哪个对象。在 `form_for` 帮助方法的块中，`f` 表示 `FormBuilder` 对象，用于创建两个标签和两个文本字段，分别用于添加文章的标题和正文。最后在 `f` 对象上调用 `submit` 方法来为表单创建提交按钮。
+
+不过这个表单还有一个问题，查看 HTML 源代码会看到表单 `action` 属性的值是 `/articles/new`，指向的是当前页面，而当前页面只是用于显示新建文章的表单。
+
+应该把表单指向其他 URL，为此可以使用 `form_for` 帮助方法的 `:url` 选项。在 Rails 中习惯用 `create` 动作来处理提交的表单，因此应该把表单指向这个动作。
+
+修改 `app/views/articles/new.html.erb` 文件的 `form_for` 这一行，改为：
+
+[source,html]
+----
+<%= form_for :article, url: articles_path do |f| %>
+----
+
+这里我们把 `articles_path` 帮助方法传递给 `:url` 选项。要想知道这个方法有什么用，我们可以回过头看一下 `bin/rails routes` 的输出：
+
+----
+$ bin/rails routes
+      Prefix Verb   URI Pattern                  Controller#Action
+    articles GET    /articles(.:format)          articles#index
+             POST   /articles(.:format)          articles#create
+ new_article GET    /articles/new(.:format)      articles#new
+edit_article GET    /articles/:id/edit(.:format) articles#edit
+     article GET    /articles/:id(.:format)      articles#show
+             PATCH  /articles/:id(.:format)      articles#update
+             PUT    /articles/:id(.:format)      articles#update
+             DELETE /articles/:id(.:format)      articles#destroy
+        root GET    /                            welcome#index
+----
+
+`articles_path` 帮助方法告诉 Rails 把表单指向和 `articles` 前缀相关联的 URI 模式。默认情况下，表单会向这个路由发起 `POST` 请求。这个路由和当前控制器 `ArticlesController` 的 `create` 动作相关联。
+
+有了表单和与之相关联的路由，我们现在可以填写表单，然后点击提交按钮来新建文章了，请实际操作一下。提交表单后，会看到一个熟悉的错误：
+
+.未知动作，在 `ArticlesController` 中找不到 `create` 动作
+image::http://guides.rubyonrails.org/images/getting_started/unknown_action_create_for_articles.png[未知动作，在 `ArticlesController` 中找不到 `create` 动作]
+
+解决问题的方法是在 `ArticlesController` 中创建 `create` 动作。
+
+[[creating-articles]]
+==== 创建文章
