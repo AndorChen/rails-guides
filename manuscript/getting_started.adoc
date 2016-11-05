@@ -99,7 +99,7 @@ $ rails new blog
 
 这个命令会在文件夹 `blog` 中创建名为 Blog 的 Rails 程序，然后执行 `bundle install` 命令安装 Gemfile 中列出的 gem 及其依赖关系。
 
-TIP: 执行 `rails new -h` 可以查看新程序生成器的所有命令行选项。
+TIP: 执行 `rails new -h` 命令可以查看新程序生成器的所有命令行选项。
 
 创建 blog 程序后，进入该文件夹：
 
@@ -185,11 +185,11 @@ TIP: 要停止 Web 服务器，请在终端中按 Ctrl+C 键。服务器停止�
 [[say-hello-rails]]
 ==== 显示“Hello, Rails!”
 
-要让 Rails 显示“Hello, Rails!”，需要创建控制器和视图。
+要让 Rails 显示“Hello, Rails!”，需要创建__控制器__和__视图__。
 
-控制器接受向应用程序发起的特定访问请求。路由决定哪些访问请求被哪些控制器接受。一般情况下，一个控制器会对应多个路由，不同路由对应不同动作。动作搜集数据并把数据提供给视图。
+控制器接受向应用程序发起的特定访问请求。__路由__决定哪些访问请求被哪些控制器接受。一般情况下，一个控制器会对应多个路由，不同路由对应不同__动作__。动作搜集数据并把数据提供给视图。
 
-视图以人类能看懂的格式显示数据。有一点要特别注意，数据是在控制器而不是视图中获取的，视图只是显示数据。默认情况下，视图模板使用 eRuby（嵌入式 Ruby）语言编写，经由 Rails 解析后，再发送给用户。
+视图以人类能看懂的格式显示数据。有一点要特别注意，数据是在__控制器__而不是视图中获取的，视图只是显示数据。默认情况下，视图模板使用 eRuby（嵌入式 Ruby）语言编写，经由 Rails 解析后，再发送给用户。
 
 可以用控制器生成器来创建控制器。下面的命令告诉控制器生成器创建一个包含“index”动作的“Welcome”控制器：
 
@@ -216,7 +216,7 @@ invoke    scss
 create      app/assets/stylesheets/welcome.scss
 ----
 
-其中最重要的文件是控制器和视图，控制器位于 `app/controllers/welcome_controller.rb` ，视图位于 `app/views/welcome/index.html.erb` 。
+其中最重要的文件是控制器和视图，控制器位于 `app/controllers/welcome_controller.rb` 文件 ，视图位于 `app/views/welcome/index.html.erb` 文件 。
 
 在文本编辑器中打开 `app/views/welcome/index.html.erb` 文件，删除所有代码，然后添加下面的代码：
 
@@ -255,7 +255,7 @@ end
 
 `root 'welcome#index'` 告诉 Rails 对根路径的访问请求应该发往 welcome 控制器的 index 动作，`get 'welcome/index'` 告诉 Rails 对 link:$$http://localhost:3000/welcome/index$$[] 的访问请求应该发往 welcome 控制器的 index 动作。后者是之前用控制器生成器创建控制器（`bin/rails generate controller Welcome index`）时自动生成的。
 
-如果在生成控制器时停止了服务器，请再次启动服务器（`bin/rails server`），然后在浏览器中访问  link:$$http://localhost:3000$$[]。我们会看到之前添加到 `app/views/welcome/index.html.erb` 的“Hello, Rails!”信息，这说明新定义的路由确实把访问请求发往了 `WelcomeController` 的 `index` 动作，并正确渲染了视图。
+如果在生成控制器时停止了服务器，请再次启动服务器（`bin/rails server`），然后在浏览器中访问  link:$$http://localhost:3000$$[]。我们会看到之前添加到 `app/views/welcome/index.html.erb` 文件 的“Hello, Rails!”信息，这说明新定义的路由确实把访问请求发往了 `WelcomeController` 的 `index` 动作，并正确渲染了视图。
 
 TIP: 关于路由的详细介绍，请参阅“link:http://guides.rubyonrails.org/routing.html[Rails 路由全解]”一文。
 
@@ -264,9 +264,9 @@ TIP: 关于路由的详细介绍，请参阅“link:http://guides.rubyonrails.or
 
 前文已经介绍了如何创建控制器、动作和视图，接下来我们要创建一些更具实用价值的东西。
 
-在 Blog 程序中创建一个资源。资源是一个术语，表示一系列类似对象的集合，如文章、人或动物。资源中的项目可以被创建、读取、更新和删除，这些操作简称 CRUD 操作（Create, Read, Update, Delete）。
+在 Blog 程序中创建一个__资源__。资源是一个术语，表示一系列类似对象的集合，如文章、人或动物。资源中的项目可以被创建、读取、更新和删除，这些操作简称 __CRUD__ 操作（Create, Read, Update, Delete）。
 
-Rails 提供了 `resources` 方法，用于声明标准 REST 架构的资源。把 article 资源添加到 `config/routes.rb`，此时文件内容应该变成下面这样：
+Rails 提供了 `resources` 方法，用于声明标准 REST 架构的资源。把 article 资源添加到 `config/routes.rb` 文件，此时文件内容应该变成下面这样：
 
 [source,ruby]
 ----
@@ -301,5 +301,83 @@ image::http://guides.rubyonrails.org/images/getting_started/new_article.png[用�
 
 表单看起来很简陋，不过没关系，之后我们再来美化。
 
-[[laying down the ground work]]
+[[laying-down-the-ground-work]]
 ==== 打地基
+
+首先，程序需要一个页面用于新建文章，`/articles/new` 是个不错的选择。相关路由之前已经定义过了，可以直接访问。打开  link:$$http://localhost:3000/articles/new$$[]，会看到下面的路由错误：
+
+.路由错误，常量 ArticlesController 未初始化
+image::http://guides.rubyonrails.org/images/getting_started/routing_error_no_controller.png[路由错误，常量 ArticlesController 未初始化]
+
+产生错误的原因是，用于处理该访问请求的控制器还没有定义。解决问题的方法很简单：创建 `ArticlesController` 控制器。执行下面的命令：
+
+----
+$ bin/rails generate controller Articles
+----
+
+打开刚刚生成的 `app/controllers/articles_controller.rb` 文件，会看到一个空的控制器：
+
+[source,ruby]
+----
+class ArticlesController < ApplicationController
+end
+----
+
+控制器实际上只是一个继承自 `ApplicationController` 的类。接在来要在这个类中定义的方法也就是控制器的动作。这些动作针对文章执行 CRUD 操作。
+
+TIP: 在 Ruby 中，有 `public`、`private` 和 `protected` 三种方法，其中只有 `public` 方法才能作为控制器的动作。详情请参阅 link:http://www.ruby-doc.org/docs/ProgrammingRuby/[Programming Ruby] 一书。
+
+现在刷新 link:$$http://localhost:3000/articles/new$$[]，会看到一个新错误：
+
+.未知动作，在 ArticlesController 中找不到 new 动作
+image::http://guides.rubyonrails.org/images/getting_started/unknown_action_new_for_articles.png[未知动作，在 ArticlesController 中找不到 new 动作]
+
+这个错误的意思是，Rails 在刚刚生成的 `ArticlesController` 中找不到 new 动作。这是因为在 Rails 中生成控制器时，如果不指定想要的动作，生成的控制器就会是空的。
+
+在控制器中手动定义动作，只需要定义一个新方法。打开 `app/controllers/articles_controller.rb` 文件，在 `ArticlesController` 类中定义 `new` 方法，此时控制器应该变成下面这样：
+
+[source,ruby]
+----
+class ArticlesController < ApplicationController
+  def new
+  end
+end
+----
+
+在 `ArticlesController` 中定义 `new` 方法后，再次刷新 link:$$http://localhost:3000/articles/new$$[]，会看到另一个错误：
+
+.找不到模板
+image::http://guides.rubyonrails.org/images/getting_started/template_is_missing_articles_new.png[找不到模板]
+
+产生错误的原因是，Rails 要求这样的常规动作有用于显示数据的对应视图。如果没有视图可用，Rails就会引发异常。
+
+上图中下面的几行都被截断了，下面是完整信息：
+
+____
+ArticlesController#new is missing a template for this request format and variant. request.formats: ["text/html"] request.variant: [] NOTE! For XHR/Ajax or API requests, this action would normally respond with 204 No Content: an empty white screen. Since you're loading it in a web browser, we assume that you expected to actually render a template, not… nothing, so we're showing an error to be extra-clear. If you expect 204 No Content, carry on. That's what you'll get from an XHR or API request. Give it a shot.
+____
+
+内容还真不少！让我们快速浏览一下，看看各部分是什么意思。
+
+第一部分说明缺少哪个模板，在这里缺少的是 `articles/new` 模板。Rails 首先查找这个模板，如果找不到再查找 `application/new` 模板。之所以会查找后面这个模板，是因为 `ArticlesController` 继承自 `ApplicationController`。
+
+信息的下一部分包含一个 Hash。Hash 的 `:locale` 键说明模板应该以哪国语言解析，默认是英语（“en”）。Hash 的 `:formats` 键说明响应使用的模板格式，默认是 `:html`，因此 Rails 会查找 HTML 模板。Hash 的 `:handlers` 键说明渲染模板使用的模板处理器，对于 HTML 模板通常使用 `:erb`，XML 模板使用 `:builder`，JavaScript 模板使用 `:coffee`。
+(**图文好像对不上？？这一段是否是多余的？**)
+
+信息还包含了 `request.formats`，说明响应使用的模板格式。当我们在浏览器中请求页面时，`request.formats` 被设置为 `text/html`，因此 Rails 会查找 HTML 模板。
+
+在本例中，能够工作的最简单的模板位于 `app/views/articles/new.html.erb` 文件中。文件的扩展名很重要：第一个扩展名是模板格式，第二个扩展名是模板处理器。Rails 会尝试在 `app/views` 文件夹中查找 `articles/new` 模板。这个模板的格式只能是 `html`，模板处理器只能是 `erb`、`builder` 和 `coffee` 中的一个。`:erb` 是最常用的 HTML 模板处理器，`:builder` 是 XML 模板处理器，`:coffee` 模板处理器用 CoffeeScript 创建 JavaScript 模板。因为我们要创建 HTML 表单，所以应该使用能够在 HTML 中嵌入 Ruby 的 `ERB` 语言。
+
+所以我们需要创建 `articles/new.html.erb` 文件，并把它放在程序的 `app/views` 文件夹中。
+
+现在让我们继续前进。新建 `app/views/articles/new.html.erb` 文件，添加下面的代码：
+
+[source,html]
+----
+<h1>New Article</h1>
+----
+
+刷新 link:$$http://localhost:3000/articles/new$$[]，会看到页面有了标题。现在路由、控制器、动作和视图都可以协调地工作了！是时候创建用于新建文章的表单了。
+
+[[the-first-form]]
+==== 第一个表单
