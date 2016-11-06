@@ -1,5 +1,6 @@
 [[getting-started-with-rails]]
 == Rails 入门
+:imagesdir: ../images
 
 [.chapter-abstract]
 --
@@ -175,8 +176,9 @@ TIP: 编译 CoffeeScript 和 压缩 JavaScript 静态资源文件需要 JavaScri
 
 上述命令会启动 Puma，这是 Ruby 内置的 Web 服务器。要查看运行中的程序，请打开浏览器窗口，访问 link:$$http://localhost:3000$$[]。这时应该看到默认的 Rails 欢迎页面：
 
+[[rails-welcome]]
 .默认的 Rails 欢迎页面
-image::http://guides.rubyonrails.org/images/getting_started/rails_welcome.png[默认的 Rails 欢迎页面]
+image::rails_welcome.png[默认的 Rails 欢迎页面]
 
 TIP: 要停止 Web 服务器，请在终端中按 Ctrl+C 键。服务器停止后命令行提示符会重新出现。在大多数类 Unix 系统中，包括 Mac OS X，命令行提示符是 $ 符号。在开发模式中，一般情况下无需重启服务器，服务器会自动加载修改后的文件。
 
@@ -296,8 +298,9 @@ edit_article GET    /articles/:id/edit(.:format) articles#edit
 
 下一节，我们要为程序添加新建文章和查看文章的功能。这两个操作分别对应于 CRUD 的“C”和“R”：创建和读取。下面是用于新建文章的表单：
 
+[[new-article]]
 .用于新建文章的表单
-image::http://guides.rubyonrails.org/images/getting_started/new_article.png[用于新建文章的表单]
+image::new_article.png[用于新建文章的表单]
 
 表单看起来很简陋，不过没关系，之后我们再来美化。
 
@@ -306,8 +309,9 @@ image::http://guides.rubyonrails.org/images/getting_started/new_article.png[用�
 
 首先，程序需要一个页面用于新建文章，`/articles/new` 是个不错的选择。相关路由之前已经定义过了，可以直接访问。打开  link:$$http://localhost:3000/articles/new$$[]，会看到下面的路由错误：
 
+[[routing-error-no-controller]]
 .路由错误，常量 ArticlesController 未初始化
-image::http://guides.rubyonrails.org/images/getting_started/routing_error_no_controller.png[路由错误，常量 ArticlesController 未初始化]
+image::routing_error_no_controller.png[路由错误，常量 ArticlesController 未初始化]
 
 产生错误的原因是，用于处理该访问请求的控制器还没有定义。解决问题的方法很简单：创建 `ArticlesController` 控制器。执行下面的命令：
 
@@ -329,8 +333,9 @@ TIP: 在 Ruby 中，有 `public`、`private` 和 `protected` 三种方法，其�
 
 现在刷新 link:$$http://localhost:3000/articles/new$$[]，会看到一个新错误：
 
+[[unknown-action-new-for-articles]]
 .未知动作，在 ArticlesController 中找不到 new 动作
-image::http://guides.rubyonrails.org/images/getting_started/unknown_action_new_for_articles.png[未知动作，在 ArticlesController 中找不到 new 动作]
+image::unknown_action_new_for_articles.png[未知动作，在 ArticlesController 中找不到 new 动作]
 
 这个错误的意思是，Rails 在刚刚生成的 `ArticlesController` 中找不到 new 动作。这是因为在 Rails 中生成控制器时，如果不指定想要的动作，生成的控制器就会是空的。
 
@@ -346,8 +351,9 @@ end
 
 在 `ArticlesController` 中定义 `new` 方法后，再次刷新 link:$$http://localhost:3000/articles/new$$[]，会看到另一个错误：
 
+[[template-is-missing-articles-new]]
 .未知格式，缺少对应模板
-image::http://guides.rubyonrails.org/images/getting_started/template_is_missing_articles_new.png[未知格式，缺少对应模板]
+image::template_is_missing_articles_new.png[未知格式，缺少对应模板]
 
 产生错误的原因是，Rails 要求这样的常规动作有用于显示数据的对应视图。如果没有视图可用，Rails就会引发异常。
 
@@ -438,8 +444,9 @@ edit_article GET    /articles/:id/edit(.:format) articles#edit
 
 有了表单和与之相关联的路由，我们现在可以填写表单，然后点击提交按钮来新建文章了，请实际操作一下。提交表单后，会看到一个熟悉的错误：
 
+[[unknown-action-new-for-articles]]
 .未知动作，在 `ArticlesController` 中找不到 `create` 动作
-image::http://guides.rubyonrails.org/images/getting_started/unknown_action_create_for_articles.png[未知动作，在 `ArticlesController` 中找不到 `create` 动作]
+image::unknown_action_create_for_articles.png[未知动作，在 `ArticlesController` 中找不到 `create` 动作]
 
 解决问题的方法是在 `ArticlesController` 中创建 `create` 动作。
 
