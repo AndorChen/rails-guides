@@ -477,4 +477,32 @@ def create
 end
 ----
 
-这里 `render` 方法接受了一个简单的 Hash 作为参数，Hash 的 `:plain` 键的值是 `params[:article].inspect`。`params` 方法是代表表单提交的参数（或字段）的对象。`params` 方法返回 `ActionController::Parameters` 对象，这个对象允许用字符串或符号访问 Hash 的键。
+这里 `render` 方法接受了一个简单的 Hash 作为参数，Hash 的 `:plain` 键的值是 `params[:article].inspect`。`params` 方法是代表表单提交的参数（或字段）的对象。`params` 方法返回 `ActionController::Parameters` 对象，这个对象允许用字符串或符号访问 Hash 的键。这里我们只关注通过表单提交的参数。
+
+TIP: 请确保牢固掌握 `params` 方法，这个方法很常用。让我们看一个示例 URL：link:$$http://www.example.com/?username=dhh&email=dhh@email.com$$[]。在这个 URL 中，`params[:username]` 等于“dhh”，`params[:email]` 等于“dhh@email.com”。
+
+如果再次提交表单，就不会再看到缺少模板错误，而是会看到下面这些内容：
+
+----
+<ActionController::Parameters {"title"=>"First Article!", "text"=>"This is my first article."} permitted: false>
+----
+
+`create` 动作把表单提交的参数都显示出来了，但这并没有什么用，只是看到了参数实际上却什么也没做。
+
+[[creating-the-article-model]]
+==== 创建 Article 模型
+
+在 Rails 中，模型使用单数名称，对应的数据库表使用复数名称。Rails 提供了用于创建模型的生成器，大多数 Rails 开发者在新建模型时倾向于使用这个生成器。要想新建模型，请执行下面的命令：
+
+----
+$ bin/rails generate model Article title:string text:text
+----
+
+上面的命令告诉 Rails 创建 `Article` 模型，并使模型具有字符串类型的__title__属性和文本类型的__text__属性。这两个属性会自动添加到数据库的 `articles` 表，并映射到 `Article` 模型。
+
+为此 Rails 会创建一堆文件。这里我们只关注 `app/models/article.rb` 和 `db/migrate/20140120191729_create_articles.rb` 这两个文件 （后面这个文件名和你看到的可能会有点不一样）。后面这个文件负责创建数据库结构，下一节会详细说明。
+
+TIP: Active Record 很智能，能自动把数据表的字段名映射到模型属性上，因此无需在 Rails 模型中声明属性，让 Active Record 自动完成即可。
+
+[[running-a-migration]]
+==== 运行移移
