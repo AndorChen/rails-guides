@@ -130,7 +130,7 @@ $ cd blog
 | 包含当前数据库的模式，以及数据库迁移文件。
 
 | `Gemfile`, `Gemfile.lock`
-| 这两个文件用于指定 Rails 程序所需的 gem 的依赖关系。Bundler gem 需要用到这两个文件。关于 Bundler 的详细介绍，请访问 link:http://bundler.io/[Bundler 官网]。
+| 这两个文件用于指定 Rails 程序所需的 gem 的依赖关系。Bundler gem 需要用到这两个文件。关于 Bundler 的更多介绍，请访问 link:http://bundler.io/[Bundler 官网]。
 
 | `lib/`
 | 程序的扩展模块。
@@ -260,7 +260,7 @@ end
 
 如果在生成控制器时停止了服务器，请再次启动服务器（`bin/rails server`），然后在浏览器中访问  link:$$http://localhost:3000$$[]。我们会看到之前添加到 `app/views/welcome/index.html.erb` 文件 的“Hello, Rails!”信息，这说明新定义的路由确实把访问请求发往了 `WelcomeController` 的 `index` 动作，并正确渲染了视图。
 
-TIP: 关于路由的详细介绍，请参阅“link:http://guides.rubyonrails.org/routing.html[Rails 路由全解]”一文。
+TIP: 关于路由的更多介绍，请参阅“link:http://guides.rubyonrails.org/routing.html[Rails 路由全解]”一文。
 
 [[getting-up-and-running]]
 === 启动并运行起来
@@ -528,7 +528,7 @@ end
 
 上面的迁移创建了 `change` 方法，在运行迁移时会调用这个方法。在 `change` 方法中定义的操作都是可逆的，在需要时 Rails 知道如何撤销这些操作。运行迁移后会创建 `articles` 表，这个表包括一个字符串字段和一个文本字段，以及两个用于跟踪文章创建和更新时间的时间戳字段。
 
-TIP: 关于迁移的详细介绍，请参阅 link:$$http://guides.rubyonrails.org/migrations.html$$[Rails 数据库迁移] 一文。
+TIP: 关于迁移的更多介绍，请参阅 link:$$http://guides.rubyonrails.org/migrations.html$$[Rails 数据库迁移] 一文。
 
 现在可以用 `bin/rails` 命令运行迁移了：
 
@@ -549,3 +549,60 @@ NOTE: 因为默认情况下我们是在开发环境中工作，所以上述命�
 
 [[saving-data-in-the-controller]]
 ==== 在控制器中保存数据
+
+回到 `ArticlesController`，修改 `create` 动作，用新建的 `Article` 模型把数据保存到数据库。打开 `app/controllers/articles_controller.rb` 文件，像下面这样修改 `create` 动作：
+
+[source,ruby]
+----
+def create
+  @article = Article.new(params[:article])
+
+  @article.save
+  redirect_to @article
+end
+----
+
+让我们看一下上面的代码都做了什么：Rails 模型可以用相应的属性初始化，它们会自动映射到对应的数据库字段。`create` 动作中的第一行代码完成的就是这个操作（记住，`params[:article]` 包含了我们想要的属性）。接下来 `@article.save` 负责把模型保存到数据库。最后把页面跳转到 `show` 动作，这个 `show` 动作我们稍后再定义。
+
+TIP: 你可能想知道，为什么在上面的代码中 `Article.new` 的 `A` 是大写的，而在本文的其他地方引用 articles 时大都是小写的。因为这里我们引用的是在 `app/models/article.rb` 文件中定义的 `Article` 类，而在 Ruby 中类名必须以大写字母开头。
+
+TIP: 之后我们会看到，`@article.save` 返回布尔值，以表明文章是否保存成功。
+
+现在访问 link:$$http://localhost:3000/articles/new$$[]，我们__就快要__能够创建文章了，但我们还会看到下面的错误：
+
+[[forbidden-attributes-for-new-article]]
+.禁用属性错误
+image::forbidden_attributes_for_new_article.png[禁用属性错误]
+
+Rails 提供了多种安全特性来帮助我们编写安全的程序，上面看到的就是一种安全特性。这个安全特性叫做健壮参数（请参阅 <<action_controller_overview#strong-parameters>>），要求我们明确地告诉 Rails 哪些参数允许在控制器动作中使用。
+
+为什么我们要这样自找麻烦呢？一次性获取所有控制器参数并自动赋值给模型显然更简单，但这样做会造成恶意使用的风险。设想一下，如果有人对服务器发起了一个精心设计的请求，看起来就像提交了一篇新文章，但同时包含了能够破坏程序完整性的额外字段和值，会怎么样？这些恶意数据会多重赋值给模型，然后和正常数据一起进入数据库，这样就有可能破坏我们的程序或者造成更大损失。
+
+所以我们只能为控制器参数设置白名单，以避免错误地多重赋值。这里，我们想在 `create` 动作中合法使用 `title` 和 `text` 参数，为此需要使用 `require` 和 `permit` 语法。像下面这样修改 `create` 动作中的一行代码：
+
+[source,ruby]
+----
+@article = Article.new(params.require(:article).permit(:title, :text))
+----
+
+上述代码通常被抽象为控制器类的一个方法，以便在控制器的多个动作中重用，例如在 `create` 和 `update` 动作中都会用到这个方法。除了多重赋值问题，为了禁止从外部调用这个方法，通常还要把它设置为 `private`。最后的代码像下面这样：
+
+[source,ruby]
+----
+def create
+  @article = Article.new(article_params)
+
+  @article.save
+  redirect_to @article
+end
+
+private
+  def article_params
+    params.require(:article).permit(:title, :text)
+  end
+----
+
+TIP: 关于键壮参数的更多介绍，请参阅 <<action_controller_overview#strong-parameters>> 和 link:$$http://weblog.rubyonrails.org/2012/3/21/strong-parameters/$$[这篇博客]。
+
+[[showing-articles]]
+==== 显示文章
