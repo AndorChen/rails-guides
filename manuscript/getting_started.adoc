@@ -372,7 +372,7 @@ ____
 
 现在让我们继续前进。新建 `app/views/articles/new.html.erb` 文件，添加下面的代码：
 
-[source,html]
+[source,erb]
 ----
 <h1>New Article</h1>
 ----
@@ -384,7 +384,7 @@ ____
 
 在模板中创建表单，可以使用__表单生成器__。Rails 中最常用的表单生成器是 `form_for` 帮助方法。让我们使用这个方法，在 `app/views/articles/new.html.erb` 文件中添加下面的代码：
 
-[source,html]
+[source,erb]
 ----
 <%= form_for :article do |f| %>
   <p>
@@ -413,7 +413,7 @@ ____
 
 修改 `app/views/articles/new.html.erb` 文件的 `form_for` 这一行，改为：
 
-[source,html]
+[source,erb]
 ----
 <%= form_for :article, url: articles_path do |f| %>
 ----
@@ -445,3 +445,29 @@ image::http://guides.rubyonrails.org/images/getting_started/unknown_action_creat
 
 [[creating-articles]]
 ==== 创建文章
+
+要消除“未知动作”错误，我们需要修改 `app/controllers/articles_controller.rb` 文件，在 `ArticlesController` 类的 `new` 动作之后添加 `create` 动作，就像下面这样：
+
+[source,ruby]
+----
+class ArticlesController < ApplicationController
+  def new
+  end
+
+  def create
+  end
+end
+----
+
+现在重新提交表单，会看到什么都没有改变。别着急！这是因为当我们没有说明动作的响应是什么时，Rails 默认返回 `204 No Content response`。我们刚刚添加了 `create` 动作，但没有说明响应是什么。这里，`create` 动作应该把新建文章保存到数据库中。
+
+表单提交后，其字段以__参数__形式传递给 Rails，然后就可以在控制器动作中引用这些参数，以执行特定任务。要想查看这些参数的内容，可以把 `create` 动作的代码修改成下面这样：
+
+[source,ruby]
+----
+def create
+  render plain: params[:article].inspect
+end
+----
+
+这里 `render` 方法接受了一个简单的 Hash 作为参数，Hash 的 `:plain` 键的值是 `params[:article].inspect`。`params` 方法是代表表单提交的参数（或字段）的对象。`params` 方法返回 `ActionController::Parameters` 对象，这个对象允许用字符串或符号访问 Hash 的键。
