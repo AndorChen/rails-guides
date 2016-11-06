@@ -661,3 +661,55 @@ image::show_action_for_articles.png[显示文章]
 
 [[listing-all-articles]]
 ==== 列出所有文章
+
+我们还需要列出所有文章，下面就来完成这个功能。在 `bin/rails routes` 命令的输出结果中，和列出文章对应的路由是：
+
+----
+articles GET    /articles(.:format)          articles#index
+----
+
+在 `app/controllers/articles_controller.rb` 文件的 `ArticlesController` 中为上述路由添加对应的 `index` 动作。在编写 `index` 动作时，常见的做法是把它作为控制器的第一个方法，就像下面这样：
+
+[source,ruby]
+----
+class ArticlesController < ApplicationController
+  def index
+    @articles = Article.all
+  end
+
+  def show
+    @article = Article.find(params[:id])
+  end
+
+  def new
+  end
+
+  # snippet for brevity
+----
+
+最后，在 `app/views/articles/index.html.erb` 文件中为 `index` 动作添加视图：
+
+[source,erb]
+----
+<h1>Listing articles</h1>
+
+<table>
+  <tr>
+    <th>Title</th>
+    <th>Text</th>
+  </tr>
+
+  <% @articles.each do |article| %>
+    <tr>
+      <td><%= article.title %></td>
+      <td><%= article.text %></td>
+      <td><%= link_to 'Show', article_path(article) %></td>
+    </tr>
+  <% end %>
+</table>
+----
+
+现在访问 link:$$http://localhost:3000/articles$$[]，会看到已创建的所有文章的列表。
+
+[[adding-links]]
+==== 添加链接
