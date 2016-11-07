@@ -713,3 +713,59 @@ class ArticlesController < ApplicationController
 
 [[adding-links]]
 ==== 添加链接
+
+至此，我们可以创建、显示、列出文章了。下面我们添加一些指向这些页面的链接。
+
+打开 `app/views/welcome/index.html.erb` 文件，修改成下面这样：
+
+[source,erb]
+----
+<h1>Hello, Rails!</h1>
+<%= link_to 'My Blog', controller: 'articles' %>
+----
+
+`link_to` 方法是 Rails 内置的视图帮助方法之一，用于创建基于链接文本和地址的超链接。在这里地址指的是文章列表页面的路径。
+
+接下来添加指向其他视图的链接。首先在 `app/views/articles/index.html.erb` 文件中添加“New Article”链接，把这个链接放在 `<table>` 标签之前：
+
+[source,erb]
+----
+<%= link_to 'New article', new_article_path %>
+----
+
+点击这个链接会打开用于新建文章的表单。
+
+接下来在 `app/views/articles/new.html.erb` 文件中添加返回 `index` 动作的链接，把这个链接放在表单之后：
+
+[source,erb]
+----
+<%= form_for :article, url: articles_path do |f| %>
+  ...
+<% end %>
+
+<%= link_to 'Back', articles_path %>
+----
+
+最后，在 `app/views/articles/show.html.erb` 文件中添加返回 `index` 动作的链接，这样用户看完一篇文章后就可以返回文章列表页面了：
+
+[source,erb]
+----
+<p>
+  <strong>Title:</strong>
+  <%= @article.title %>
+</p>
+
+<p>
+  <strong>Text:</strong>
+  <%= @article.text %>
+</p>
+
+<%= link_to 'Back', articles_path %>
+----
+
+TIP: 要想链接到当前控制器中的动作，不需要指定 `:controller` 选项，因为 Rails 默认使用当前控制器。
+
+TIP: 在开发环境中（默认情况下我们是在开发环境中工作），Rails 针对每个浏览器请求都会重新加载程序，因此对程序进行修改后不需要重启服务器。
+
+[[adding-some-validation]]
+==== 添加验证
