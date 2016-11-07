@@ -769,3 +769,109 @@ TIP: 在开发环境中（默认情况下我们是在开发环境中工作），
 
 [[adding-some-validation]]
 ==== 添加验证
+
+`app/models/article.rb` 模型文件简单到只有两行代码：
+
+[source,rub]
+----
+class Article < ApplicationRecord
+end
+----
+
+虽然这个文件中代码很少，但请注意 `Article` 类继承至 `ApplicationRecord` 类，而 `ApplicationRecord` 类继承至 `ActiveRecord::Base` 类。正是 `ActiveRecord::Base` 类为 Rails 模型提供了大量功能，包括基本的数据库 CRUD 操作（创建、读取、更新、删除）、数据验证，以及对复杂搜索的支持和关联多个模型的能力。
+
+Rails 提供了许多方法用于验证传入模型的数据。打开 `app/models/article.rb` 文件，像下面这样修改：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  validates :title, presence: true,
+                    length: { minimum: 5 }
+end
+----
+
+添加的代码用于确保每篇文章都有标题，并且标题长度不少于 5 个字符。在 Rails 模型中可以验证多种条件，包括字段是否存在、字段是否唯一、字段的格式、关联对象是否存在等。关于验证的更多介绍，请参阅“Active Record 验证”（<<active_record_validations>>）。
+
+现在验证已经添加完毕，如果我们在调用 `@article.save` 时传递了无效的文章数据，验证就会返回 `false`。再次打开 `app/controllers/articles_controller.rb` 文件，会看到我们并没有在 `create` 动作中检查 `@article.save` 的调用结果。在这里如果 `@article.save` 失败了，就需要把表单再次显示给用户。为此需要像下面这样修改 `app/controllers/articles_controller.rb` 文件中的 `new` 和 `create` 动作：
+
+[source,ruby]
+----
+def new
+  @article = Article.new
+end
+
+def create
+  @article = Article.new(article_params)
+
+  if @article.save
+    redirect_to @article
+  else
+    render 'new'
+  end
+end
+
+private
+  def article_params
+    params.require(:article).permit(:title, :text)
+  end
+----
+
+在上面的代码中，我们在 `new` 动作中创建了新的实例变量 `@article`，稍后你就会知道为什么要这样做。
+
+注意在 `create` 动作中，当 `save` 返回 `false` 时，我们用 `render` 代替了 `redirect_to`。使用 `render` 方法是为了把 `@article` 对象回传给 `new` 模板。这里渲染操作是在提交表单的这个请求中完成的，而 `redirect_to` 会告诉浏览器发起另一个请求。
+
+刷新 link:$$http://localhost:3000/articles/new$$[]，试着提交一篇没有标题的文章，Rails 会返回这个表单，但这种处理方式没有多大用处，更好的做法是告诉用户哪里出错了。为此需要修改 `app/views/articles/new.html.erb` 文件，添加检查出错信息的代码：
+
+[source,erb]
+----
+<%= form_for :article, url: articles_path do |f| %>
+
+  <% if @article.errors.any? %>
+    <div id="error_explanation">
+      <h2>
+        <%= pluralize(@article.errors.count, "error") %> prohibited
+        this article from being saved:
+      </h2>
+      <ul>
+        <% @article.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <p>
+    <%= f.label :title %><br>
+    <%= f.text_field :title %>
+  </p>
+
+  <p>
+    <%= f.label :text %><br>
+    <%= f.text_area :text %>
+  </p>
+
+  <p>
+    <%= f.submit %>
+  </p>
+
+<% end %>
+
+<%= link_to 'Back', articles_path %>
+----
+
+上面我们添加了一些代码。我们使用 `@article.errors.any?` 检查是否有错误，如果有错误就使用 `@article.errors.full_messages` 显示所有出错信息的列表。
+
+`pluralize` 是 Rails 提供的帮助方法，接受一个数字和一个字符串作为参数。如果这个数字比 1 大，这个字符串就会被自动转换为复数形式。
+
+在 `ArticlesController` 中添加 `@article = Article.new` 是因为如果不这样做，在视图中 `@article` 的值就会是 `nil`，这样在调用 `@article.errors.any?`时就会抛出错误。
+
+TIP: Rails 会自动用 div 包装含有出错信息的字段，并为这些 div 添加 `field_with_errors` 类。我们可以定义 CSS 规则来突出显示这些出错信息。
+
+当我们再次访问 link:$$http://localhost:3000/articles/new$$[]，试着提交一篇没有标题的文章，就会看到友好的出错信息。
+
+[[form-with-errors]]
+.出错的表单
+image::form_with_errors.png[出错的表单]
+
+[[updating-articles]]
+==== 更新文章
