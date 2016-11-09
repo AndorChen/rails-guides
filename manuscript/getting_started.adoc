@@ -1025,3 +1025,71 @@ image::index_action_with_edit_link.png[列出文章]
 
 [[using-partials-to-clean-up-duplication-in-views]]
 ==== 使用局部视图去掉视图中的重复代码
+
+编辑文章页面和新建文章页面看起来很相似，实际上这两个页面用于显示表单的代码是相同的。现在我们要用局部视图来去掉这些重复代码。按照约定，局部视图的文件名以下划线开头。
+
+TIP: 关于局部视图的更多介绍，请参阅“Rails中的布局和渲染”（<<layouts_and_rendering>>）一文。
+
+新建 `app/views/articles/_form.html.erb` 文件，添加下面的代码：
+
+[source,erb]
+----
+<%= form_for @article do |f| %>
+
+  <% if @article.errors.any? %>
+    <div id="error_explanation">
+      <h2>
+        <%= pluralize(@article.errors.count, "error") %> prohibited
+        this article from being saved:
+      </h2>
+      <ul>
+        <% @article.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <p>
+    <%= f.label :title %><br>
+    <%= f.text_field :title %>
+  </p>
+
+  <p>
+    <%= f.label :text %><br>
+    <%= f.text_area :text %>
+  </p>
+
+  <p>
+    <%= f.submit %>
+  </p>
+
+<% end %>
+----
+
+除了第一行 `form_for` 的用法变了之外，其他代码都和之前一样。之所以能用这个更短、更简单的 `form_for` 声明来代替新建文章页面和编辑文章页面的两个表单，是因为 `@article` 是一个资源，对应于一套 REST 架构的路由，Rails 能够推断出应该使用哪个地址和方法。关于 `form_for` 用法的更多介绍，请参阅 link:$$http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for-label-Resource-oriented+style$$[面向资源的风格]。
+
+现在更新 `app/views/articles/new.html.erb` 视图，以使用新建的局部视图。把文件内容替换为下面的代码：
+
+[source,erb]
+----
+<h1>New article</h1>
+
+<%= render 'form' %>
+
+<%= link_to 'Back', articles_path %>
+----
+
+然后按照同样的方法修改 `app/views/articles/edit.html.erb` 视图：
+
+[source,erb]
+----
+<h1>Edit article</h1>
+
+<%= render 'form' %>
+
+<%= link_to 'Back', articles_path %>
+----
+
+[[deleting-articles]]
+==== 删除文章
