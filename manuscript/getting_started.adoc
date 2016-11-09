@@ -574,7 +574,7 @@ TIP: 之后我们会看到，`@article.save` 返回布尔值，以表明文章�
 .禁用属性错误
 image::forbidden_attributes_for_new_article.png[禁用属性错误]
 
-Rails 提供了多种安全特性来帮助我们编写安全的程序，上面看到的就是一种安全特性。这个安全特性叫做健壮参数（请参阅 <<action_controller_overview#strong-parameters>>），要求我们明确地告诉 Rails 哪些参数允许在控制器动作中使用。
+Rails 提供了多种安全特性来帮助我们编写安全的程序，上面看到的就是一种安全特性。这个安全特性叫做 <<action_controller_overview#strong-parameters,健壮参数>>，要求我们明确地告诉 Rails 哪些参数允许在控制器动作中使用。
 
 为什么我们要这样自找麻烦呢？一次性获取所有控制器参数并自动赋值给模型显然更简单，但这样做会造成恶意使用的风险。设想一下，如果有人对服务器发起了一个精心设计的请求，看起来就像提交了一篇新文章，但同时包含了能够破坏程序完整性的额外字段和值，会怎么样？这些恶意数据会多重赋值给模型，然后和正常数据一起进入数据库，这样就有可能破坏我们的程序或者造成更大损失。
 
@@ -602,7 +602,7 @@ private
   end
 ----
 
-TIP: 关于键壮参数的更多介绍，请参阅 <<action_controller_overview#strong-parameters>> 和 link:$$http://weblog.rubyonrails.org/2012/3/21/strong-parameters/$$[这篇博客]。
+TIP: 关于键壮参数的更多介绍，请参阅上面提供的参考资料和 link:$$http://weblog.rubyonrails.org/2012/3/21/strong-parameters/$$[这篇博客]。
 
 [[showing-articles]]
 ==== 显示文章
@@ -790,7 +790,7 @@ class Article < ApplicationRecord
 end
 ----
 
-添加的代码用于确保每篇文章都有标题，并且标题长度不少于 5 个字符。在 Rails 模型中可以验证多种条件，包括字段是否存在、字段是否唯一、字段的格式、关联对象是否存在等。关于验证的更多介绍，请参阅“Active Record 验证”（<<active_record_validations>>）。
+添加的代码用于确保每篇文章都有标题，并且标题长度不少于 5 个字符。在 Rails 模型中可以验证多种条件，包括字段是否存在、字段是否唯一、字段的格式、关联对象是否存在等。关于验证的更多介绍，请参阅 <<active_record_validations,Active Record 验证>>。
 
 现在验证已经添加完毕，如果我们在调用 `@article.save` 时传递了无效的文章数据，验证就会返回 `false`。再次打开 `app/controllers/articles_controller.rb` 文件，会看到我们并没有在 `create` 动作中检查 `@article.save` 的调用结果。在这里如果 `@article.save` 失败了，就需要把表单再次显示给用户。为此需要像下面这样修改 `app/controllers/articles_controller.rb` 文件中的 `new` 和 `create` 动作：
 
@@ -1028,7 +1028,7 @@ image::index_action_with_edit_link.png[列出文章]
 
 编辑文章页面和新建文章页面看起来很相似，实际上这两个页面用于显示表单的代码是相同的。现在我们要用局部视图来去掉这些重复代码。按照约定，局部视图的文件名以下划线开头。
 
-TIP: 关于局部视图的更多介绍，请参阅“Rails中的布局和渲染”（<<layouts_and_rendering>>）一文。
+TIP: 关于局部视图的更多介绍，请参阅 <<layouts_and_rendering,Rails 中的布局和渲染>>。
 
 新建 `app/views/articles/_form.html.erb` 文件，添加下面的代码：
 
@@ -1093,3 +1093,127 @@ TIP: 关于局部视图的更多介绍，请参阅“Rails中的布局和渲染�
 
 [[deleting-articles]]
 ==== 删除文章
+
+现在该介绍 CRUD 操作中的“D”操作了，也就是从数据库删除文章。按照 REST 架构的约定，在 `bin/rails routes` 命令的输出结果中删除文章的路由是：
+
+----
+DELETE /articles/:id(.:format)      articles#destroy
+----
+
+对于删除资源的路由应该使用`delete` 路由方法。如果在删除资源时仍然使用 `get` 路由，就可能给那些设计恶意地址的人造成可乘之机：
+
+[source,html]
+----
+<a href='http://example.com/articles/1/destroy'>look at this cat!</a>
+----
+
+我们用 `delete` 方法来删除资源，对应路由会映射到 `app/controllers/articles_controller.rb` 文件中的 `destroy` 动作，稍后我们要创建这个动作。`destroy` 动作是控制器中的最后一个 CRUD 动作，和其他公共 CRUD 动作一样，这个动作应该放在 `private` 或 `protected` 方法之前。打开 `app/controllers/articles_controller.rb` 文件，添加下面的代码：
+
+[source,ruby]
+----
+def destroy
+  @article = Article.find(params[:id])
+  @article.destroy
+
+  redirect_to articles_path
+end
+----
+
+在 `app/controllers/articles_controller.rb` 文件中，`ArticlesController` 的完整代码应该像下面这样：
+
+[source,ruby]
+----
+class ArticlesController < ApplicationController
+  def index
+    @articles = Article.all
+  end
+
+  def show
+    @article = Article.find(params[:id])
+  end
+
+  def new
+    @article = Article.new
+  end
+
+  def edit
+    @article = Article.find(params[:id])
+  end
+
+  def create
+    @article = Article.new(article_params)
+
+    if @article.save
+      redirect_to @article
+    else
+      render 'new'
+    end
+  end
+
+  def update
+    @article = Article.find(params[:id])
+
+    if @article.update(article_params)
+      redirect_to @article
+    else
+      render 'edit'
+    end
+  end
+
+  def destroy
+    @article = Article.find(params[:id])
+    @article.destroy
+
+    redirect_to articles_path
+  end
+
+  private
+    def article_params
+      params.require(:article).permit(:title, :text)
+    end
+end
+----
+
+在 Active Record 对象上调用 `destroy` 方法，就可从数据库删除它们。注意，我们不需要为 `destroy` 动作添加视图，因为完成操作后它会转向 `index` 动作。
+
+最后，在 `index` 动作的模板（`app/views/articles/index.html.erb`）中加上“Destroy”链接就大功告成了：
+
+[source,erb]
+----
+<h1>Listing Articles</h1>
+<%= link_to 'New article', new_article_path %>
+<table>
+  <tr>
+    <th>Title</th>
+    <th>Text</th>
+    <th colspan="3"></th>
+  </tr>
+
+  <% @articles.each do |article| %>
+    <tr>
+      <td><%= article.title %></td>
+      <td><%= article.text %></td>
+      <td><%= link_to 'Show', article_path(article) %></td>
+      <td><%= link_to 'Edit', edit_article_path(article) %></td>
+      <td><%= link_to 'Destroy', article_path(article),
+              method: :delete,
+              data: { confirm: 'Are you sure?' } %></td>
+    </tr>
+  <% end %>
+</table>
+----
+
+在上面的代码中，`link_to` 帮助方法生成“Destroy”链接的用法有点不同，其中第二个参数是具名路由，还有一些选项作为其他参数。`method: :delete` 和 `data: { confirm: 'Are you sure?' }` 选项用于设置链接的 HTML5 属性，这样点击链接后 Rails 会先向用户显示一个确认对话框，然后用 `delete` 方法发起请求。这些操作是通过 JavaScript 脚本 `jquery_ujs` 实现的，这个脚本在生成程序骨架时已经被自动包含在了程序的布局中（`app/views/layouts/application.html.erb`）。如果没有这个脚本，确认对话框就无法显示。
+
+[[confirm-dialog]]
+.确认对话框
+image::confirm_dialog.png[确认对话框]
+
+TIP: 关于 jQuery 非侵入式适配器（jQuery UJS）的更多介绍，请参阅 <<working_with_javascript_in_rails,在 Rails 中使用 JavaScript>>。
+
+恭喜你！现在你已经可以创建、显示、列出、更新和删除文章了！
+
+TIP: 通常 Rails 鼓励用资源对象来代替手动声明路由。关于路由的更多介绍，请参阅 <<routing,Rails 路由全解>>。
+
+[[adding-a-second-model]]
+=== 添加第二个模型
