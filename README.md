@@ -45,6 +45,11 @@
 - 安道
 - chinakr
 
+## 赞助商
+
+- [云梯](https://www.ytruby.com)
+- [Ruby China](https://ruby-china.org)
+
 ## 许可证
 
 简体中文版与英文原版一样，基于 [CC BY-SA 4.0 协议](https://creativecommons.org/licenses/by-sa/4.0/deed.zh)。
