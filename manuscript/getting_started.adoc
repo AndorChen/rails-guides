@@ -1019,8 +1019,8 @@ TIP: 不用把所有属性都传递给 `update` 方法。例如，调用 `@artic
 下面是文章列表现在的样子：
 
 [[listing-articles]]
-.列出文章
-image::index_action_with_edit_link.png[列出文章]
+.文章列表
+image::index_action_with_edit_link.png[文章列表]
 
 
 [[using-partials-to-clean-up-duplication-in-views]]
@@ -1217,3 +1217,80 @@ TIP: 通常 Rails 鼓励用资源对象来代替手动声明路由。关于路�
 
 [[adding-a-second-model]]
 === 添加第二个模型
+
+现在是为程序添加第二个模型的时候了。这个模型用于处理文章评论。
+
+[[generating-a-model]]
+==== 生成模型
+
+接下来将要使用的生成器，和之前用于创建 `Article` 模型的一样。这次我们要创建 `Comment` 模型，用于保存文章评论。在终端中执行下面的命令：
+
+----
+$ bin/rails generate model Comment commenter:string body:text article:references
+----
+
+上面的命令会生成 4 个文件：
+
+|===
+| 文件
+| 用途
+
+| `db/migrate/20140120201010_create_comments.rb`
+| 用于在数据库中创建 comments 表的迁移文件（你的文件名将包含不同的时间戳）
+
+| `app/models/comment.rb`
+| Comment 模型文件
+
+| `test/models/comment_test.rb`
+| Comment 模型的测试文件
+
+| `test/fixtures/comments.yml`
+| 用于测试的样例评论
+
+首先看一下 `app/models/comment.rb` 文件：
+
+[source,ruby]
+----
+class Comment < ApplicationRecord
+  belongs_to :article
+end
+----
+
+可以看到 `Comment` 模型文件的内容和之前的 `Article` 模型差不多，仅仅多了一行 `belongs_to :article`，这行代码用于建立 Active Record 关联。下一节会简单介绍关联。
+
+在上面的 Bash 命令中使用的 `:references` 关键字是一种特殊的模型数据类型，用于在数据表中新建字段。这个字段以提供的模型名加上 `_id` 后缀作为字段名，保存整数值。通过分析下面的 `db/schema.rb` 可以更好地理解这些内容。
+
+除了模型文件，Rails 还生成了迁移文件，用于创建对应数据表：
+
+[source,ruby]
+----
+class CreateComments < ActiveRecord::Migration[5.0]
+  def change
+    create_table :comments do |t|
+      t.string :commenter
+      t.text :body
+      t.references :article, foreign_key: true
+
+      t.timestamps
+    end
+  end
+end
+----
+
+`t.references` 这行代码创建 `article_id` 整数字段，为这个字段建立索引，并建立指向 `articles` 表的 `id` 字段的外键约束。下面运行这个迁移：
+
+----
+$ bin/rails db:migrate
+----
+
+Rails 相当智能，只会运行针对当前数据库还没有运行过的迁移，运行结果像下面这样：
+
+----
+==  CreateComments: migrating =================================================
+-- create_table(:comments)
+   -> 0.0115s
+==  CreateComments: migrated (0.0119s) ========================================
+----
+
+[[associating-models]]
+==== 模型关联
