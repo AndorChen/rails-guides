@@ -1,2 +1,2 @@
 [part]
-= 扩展 Rails
+= 第六部分 扩展 Rails
