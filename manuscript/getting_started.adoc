@@ -188,11 +188,11 @@ TIP: 要停止 Web 服务器，请在终端中按 Ctrl+C 键。服务器停止�
 [[say-hello-rails]]
 ==== 显示“Hello, Rails!”
 
-要让 Rails 显示“Hello, Rails!”，需要创建__控制器__和__视图__。
+要让 Rails 显示“Hello, Rails!”，需要创建控制器和视图。
 
-控制器接受向应用程序发起的特定访问请求。__路由__决定哪些访问请求被哪些控制器接受。一般情况下，一个控制器会对应多个路由，不同路由对应不同__动作__。动作搜集数据并把数据提供给视图。
+控制器接受向应用程序发起的特定访问请求。路由决定哪些访问请求被哪些控制器接受。一般情况下，一个控制器会对应多个路由，不同路由对应不同动作。动作搜集数据并把数据提供给视图。
 
-视图以人类能看懂的格式显示数据。有一点要特别注意，数据是在__控制器__而不是视图中获取的，视图只是显示数据。默认情况下，视图模板使用 eRuby（嵌入式 Ruby）语言编写，经由 Rails 解析后，再发送给用户。
+视图以人类能看懂的格式显示数据。有一点要特别注意，数据是在控制器而不是视图中获取的，视图只是显示数据。默认情况下，视图模板使用 eRuby（嵌入式 Ruby）语言编写，经由 Rails 解析后，再发送给用户。
 
 可以用控制器生成器来创建控制器。下面的命令告诉控制器生成器创建一个包含“index”动作的“Welcome”控制器：
 
@@ -267,7 +267,7 @@ TIP: 关于路由的更多介绍，请参阅“link:http://guides.rubyonrails.or
 
 前文已经介绍了如何创建控制器、动作和视图，接下来我们要创建一些更具实用价值的东西。
 
-在 Blog 程序中创建一个__资源__。资源是一个术语，表示一系列类似对象的集合，如文章、人或动物。资源中的项目可以被创建、读取、更新和删除，这些操作简称 __CRUD__ 操作（Create, Read, Update, Delete）。
+在 Blog 程序中创建一个资源。资源是一个术语，表示一系列类似对象的集合，如文章、人或动物。资源中的项目可以被创建、读取、更新和删除，这些操作简称 __CRUD__ 操作（Create, Read, Update, Delete）。
 
 Rails 提供了 `resources` 方法，用于声明标准 REST 架构的资源。把 article 资源添加到 `config/routes.rb` 文件，此时文件内容应该变成下面这样：
 
@@ -389,7 +389,7 @@ ____
 [[the-first-form]]
 ==== 第一个表单
 
-在模板中创建表单，可以使用__表单生成器__。Rails 中最常用的表单生成器是 `form_for` 帮助方法。让我们使用这个方法，在 `app/views/articles/new.html.erb` 文件中添加下面的代码：
+在模板中创建表单，可以使用表单生成器。Rails 中最常用的表单生成器是 `form_for` 帮助方法。让我们使用这个方法，在 `app/views/articles/new.html.erb` 文件中添加下面的代码：
 
 [source,erb]
 ----
@@ -469,7 +469,7 @@ end
 
 现在重新提交表单，会看到什么都没有改变。别着急！这是因为当我们没有说明动作的响应是什么时，Rails 默认返回 `204 No Content response`。我们刚刚添加了 `create` 动作，但没有说明响应是什么。这里，`create` 动作应该把新建文章保存到数据库中。
 
-表单提交后，其字段以__参数__形式传递给 Rails，然后就可以在控制器动作中引用这些参数，以执行特定任务。要想查看这些参数的内容，可以把 `create` 动作的代码修改成下面这样：
+表单提交后，其字段以参数形式传递给 Rails，然后就可以在控制器动作中引用这些参数，以执行特定任务。要想查看这些参数的内容，可以把 `create` 动作的代码修改成下面这样：
 
 [source,ruby]
 ----
@@ -508,7 +508,7 @@ TIP: Active Record 很智能，能自动把数据表的字段名映射到模型�
 [[running-a-migration]]
 ==== 运行移移
 
-如前文所述，`bin/rails generate model` 命令会在 `db/migrate` 文件夹中生成__数据库迁移__文件。迁移是用于简化创建和修改数据库表操作的 Ruby 类。Rails 使用 rake 命令运行迁移，并且在迁移作用于数据库之后还可以撤销迁移操作。迁移的文件名包含了时间戳，以确保迁移按照创建时间顺序运行。
+如前文所述，`bin/rails generate model` 命令会在 `db/migrate` 文件夹中生成数据库迁移文件。迁移是用于简化创建和修改数据库表操作的 Ruby 类。Rails 使用 rake 命令运行迁移，并且在迁移作用于数据库之后还可以撤销迁移操作。迁移的文件名包含了时间戳，以确保迁移按照创建时间顺序运行。
 
 让我们看一下 `db/migrate/YYYYMMDDHHMMSS_create_articles.rb` 文件（记住，你的文件名可能会有点不一样），会看到下面的内容：
 
@@ -528,7 +528,7 @@ end
 
 上面的迁移创建了 `change` 方法，在运行迁移时会调用这个方法。在 `change` 方法中定义的操作都是可逆的，在需要时 Rails 知道如何撤销这些操作。运行迁移后会创建 `articles` 表，这个表包括一个字符串字段和一个文本字段，以及两个用于跟踪文章创建和更新时间的时间戳字段。
 
-TIP: 关于迁移的更多介绍，请参阅 link:$$http://guides.rubyonrails.org/migrations.html$$[Rails 数据库迁移] 一文。
+TIP: 关于迁移的更多介绍，请参阅 link:http://guides.rubyonrails.org/migrations.html[Rails 数据库迁移] 一文。
 
 现在可以使用 `bin/rails` 命令运行迁移了：
 
@@ -568,13 +568,13 @@ TIP: 你可能想知道，为什么在上面的代码中 `Article.new` 的 `A` �
 
 TIP: 之后我们会看到，`@article.save` 返回布尔值，以表明文章是否保存成功。
 
-现在访问 link:$$http://localhost:3000/articles/new$$[]，我们__就快要__能够创建文章了，但我们还会看到下面的错误：
+现在访问 link:$$http://localhost:3000/articles/new$$[]，我们就快要能够创建文章了，但我们还会看到下面的错误：
 
 [[forbidden-attributes-for-new-article]]
 .禁用属性错误
 image::forbidden_attributes_for_new_article.png[禁用属性错误]
 
-Rails 提供了多种安全特性来帮助我们编写安全的程序，上面看到的就是一种安全特性。这个安全特性叫做 <<action_controller_overview#strong-parameters,健壮参数>>，要求我们明确地告诉 Rails 哪些参数允许在控制器动作中使用。
+Rails 提供了多种安全特性来帮助我们编写安全的程序，上面看到的就是一种安全特性。这个安全特性叫做 <<action_controller_overview#strong-parameters>>，要求我们明确地告诉 Rails 哪些参数允许在控制器动作中使用。
 
 为什么我们要这样自找麻烦呢？一次性获取所有控制器参数并自动赋值给模型显然更简单，但这样做会造成恶意使用的风险。设想一下，如果有人对服务器发起了一个精心设计的请求，看起来就像提交了一篇新文章，但同时包含了能够破坏程序完整性的额外字段和值，会怎么样？这些恶意数据会多重赋值给模型，然后和正常数据一起进入数据库，这样就有可能破坏我们的程序或者造成更大损失。
 
@@ -602,7 +602,7 @@ private
   end
 ----
 
-TIP: 关于键壮参数的更多介绍，请参阅上面提供的参考资料和 link:$$http://weblog.rubyonrails.org/2012/3/21/strong-parameters/$$[这篇博客]。
+TIP: 关于键壮参数的更多介绍，请参阅上面提供的参考资料和 link:http://weblog.rubyonrails.org/2012/3/21/strong-parameters/[这篇博客]。
 
 [[showing-articles]]
 ==== 显示文章
@@ -790,7 +790,7 @@ class Article < ApplicationRecord
 end
 ----
 
-添加的代码用于确保每篇文章都有标题，并且标题长度不少于 5 个字符。在 Rails 模型中可以验证多种条件，包括字段是否存在、字段是否唯一、字段的格式、关联对象是否存在等。关于验证的更多介绍，请参阅 <<active_record_validations,Active Record 验证>>。
+添加的代码用于确保每篇文章都有标题，并且标题长度不少于 5 个字符。在 Rails 模型中可以验证多种条件，包括字段是否存在、字段是否唯一、字段的格式、关联对象是否存在等。关于验证的更多介绍，请参阅 <<active_record_validations>>。
 
 现在验证已经添加完毕，如果我们在调用 `@article.save` 时传递了无效的文章数据，验证就会返回 `false`。再次打开 `app/controllers/articles_controller.rb` 文件，会看到我们并没有在 `create` 动作中检查 `@article.save` 的调用结果。在这里如果 `@article.save` 失败了，就需要把表单再次显示给用户。为此需要像下面这样修改 `app/controllers/articles_controller.rb` 文件中的 `new` 和 `create` 动作：
 
@@ -946,7 +946,7 @@ end
 
 `method: :patch` 选项告诉 Rails 使用 `PATCH` 方法提交表单。根据 REST 协议，`PATCH` 方法是**更新**资源时使用的 HTTP 方法。
 
-`form_for` 帮助方法的第一个参数可以是对象，例如 `@article`，`form_for` 帮助方法会用这个对象的字段来填充表单。如果传入和实例变量（`@article`）同名的符号（`:article`），也会自动产生相同效果，上面的代码使用的就是符号。关于 `form_for` 帮助方法参数的更多介绍，请参阅 link:$$http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for$$[form_for 文档]。
+`form_for` 帮助方法的第一个参数可以是对象，例如 `@article`，`form_for` 帮助方法会用这个对象的字段来填充表单。如果传入和实例变量（`@article`）同名的符号（`:article`），也会自动产生相同效果，上面的代码使用的就是符号。关于 `form_for` 帮助方法参数的更多介绍，请参阅 link:http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for[form_for 文档]。
 
 接下来在 `app/controllers/articles_controller.rb` 文件中创建 `update` 动作，把这个动作放在 `create` 动作和 `private` 方法之间：
 
@@ -1019,8 +1019,8 @@ TIP: 不用把所有属性都传递给 `update` 方法。例如，调用 `@artic
 下面是文章列表现在的样子：
 
 [[listing-articles]]
-.列出文章
-image::index_action_with_edit_link.png[列出文章]
+.文章列表
+image::index_action_with_edit_link.png[文章列表]
 
 
 [[using-partials-to-clean-up-duplication-in-views]]
@@ -1028,7 +1028,7 @@ image::index_action_with_edit_link.png[列出文章]
 
 编辑文章页面和新建文章页面看起来很相似，实际上这两个页面用于显示表单的代码是相同的。现在我们要用局部视图来去掉这些重复代码。按照约定，局部视图的文件名以下划线开头。
 
-TIP: 关于局部视图的更多介绍，请参阅 <<layouts_and_rendering,Rails 中的布局和渲染>>。
+TIP: 关于局部视图的更多介绍，请参阅 <<layouts_and_rendering>>。
 
 新建 `app/views/articles/_form.html.erb` 文件，添加下面的代码：
 
@@ -1067,7 +1067,7 @@ TIP: 关于局部视图的更多介绍，请参阅 <<layouts_and_rendering,Rails
 <% end %>
 ----
 
-除了第一行 `form_for` 的用法变了之外，其他代码都和之前一样。之所以能用这个更短、更简单的 `form_for` 声明来代替新建文章页面和编辑文章页面的两个表单，是因为 `@article` 是一个资源，对应于一套 REST 架构的路由，Rails 能够推断出应该使用哪个地址和方法。关于 `form_for` 用法的更多介绍，请参阅 link:$$http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for-label-Resource-oriented+style$$[面向资源的风格]。
+除了第一行 `form_for` 的用法变了之外，其他代码都和之前一样。之所以能用这个更短、更简单的 `form_for` 声明来代替新建文章页面和编辑文章页面的两个表单，是因为 `@article` 是一个资源，对应于一套 REST 架构的路由，Rails 能够推断出应该使用哪个地址和方法。关于 `form_for` 用法的更多介绍，请参阅 link:http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for-label-Resource-oriented+style[面向资源的风格]。
 
 现在更新 `app/views/articles/new.html.erb` 视图，以使用新建的局部视图。把文件内容替换为下面的代码：
 
@@ -1209,11 +1209,136 @@ end
 .确认对话框
 image::confirm_dialog.png[确认对话框]
 
-TIP: 关于 jQuery 非侵入式适配器（jQuery UJS）的更多介绍，请参阅 <<working_with_javascript_in_rails,在 Rails 中使用 JavaScript>>。
+TIP: 关于 jQuery 非侵入式适配器（jQuery UJS）的更多介绍，请参阅 <<working_with_javascript_in_rails>>。
 
 恭喜你！现在你已经可以创建、显示、列出、更新和删除文章了！
 
-TIP: 通常 Rails 鼓励用资源对象来代替手动声明路由。关于路由的更多介绍，请参阅 <<routing,Rails 路由全解>>。
+TIP: 通常 Rails 鼓励用资源对象来代替手动声明路由。关于路由的更多介绍，请参阅 <<routing>>。
 
 [[adding-a-second-model]]
 === 添加第二个模型
+
+现在是为程序添加第二个模型的时候了。这个模型用于处理文章评论。
+
+[[generating-a-model]]
+==== 生成模型
+
+接下来将要使用的生成器，和之前用于创建 `Article` 模型的一样。这次我们要创建 `Comment` 模型，用于保存文章评论。在终端中执行下面的命令：
+
+----
+$ bin/rails generate model Comment commenter:string body:text article:references
+----
+
+上面的命令会生成 4 个文件：
+
+|===
+| 文件 | 用途
+
+| `db/migrate/20140120201010_create_comments.rb`
+| 用于在数据库中创建 comments 表的迁移文件（你的文件名会包含不同的时间戳）
+
+| `app/models/comment.rb`
+| Comment 模型文件
+
+| `test/models/comment_test.rb`
+| Comment 模型的测试文件
+
+| `test/fixtures/comments.yml`
+| 用于测试的样例评论
+|===
+
+首先看一下 `app/models/comment.rb` 文件：
+
+[source,ruby]
+----
+class Comment < ApplicationRecord
+  belongs_to :article
+end
+----
+
+可以看到 `Comment` 模型文件的内容和之前的 `Article` 模型差不多，仅仅多了一行 `belongs_to :article`，这行代码用于建立 Active Record 关联。下一节会简单介绍关联。
+
+在上面的 Bash 命令中使用的 `:references` 关键字是一种特殊的模型数据类型，用于在数据表中新建字段。这个字段以提供的模型名加上 `_id` 后缀作为字段名，保存整数值。之后通过分析 `db/schema.rb` 文件可以更好地理解这些内容。
+
+除了模型文件，Rails 还生成了迁移文件，用于创建对应数据表：
+
+[source,ruby]
+----
+class CreateComments < ActiveRecord::Migration[5.0]
+  def change
+    create_table :comments do |t|
+      t.string :commenter
+      t.text :body
+      t.references :article, foreign_key: true
+
+      t.timestamps
+    end
+  end
+end
+----
+
+`t.references` 这行代码创建 `article_id` 整数字段，为这个字段建立索引，并建立指向 `articles` 表的 `id` 字段的外键约束。下面运行这个迁移：
+
+----
+$ bin/rails db:migrate
+----
+
+Rails 相当智能，只会运行针对当前数据库还没有运行过的迁移，运行结果像下面这样：
+
+----
+==  CreateComments: migrating =================================================
+-- create_table(:comments)
+   -> 0.0115s
+==  CreateComments: migrated (0.0119s) ========================================
+----
+
+[[associating-models]]
+==== 模型关联
+
+Active Record 关联让我们可以轻易地声明两个模型之间的关系。对于评论和文章，我们可以像下面这样声明：
+
+* 每一条评论都属于某一篇文章
+* 一篇文章可以有多条评论
+
+实际上，这种表达方式和 Rails 用于声明模型关联的语法非常接近。前文我们已经看过 `Comment` 模型中用于声明模型关联的代码，这行代码用于声明每一条评论都属于某一篇文章：
+
+[source,ruby]
+----
+class Comment < ApplicationRecord
+  belongs_to :article
+end
+----
+
+现在修改 `app/models/article.rb` 文件来添加模型关联的另一端：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  has_many :comments
+  validates :title, presence: true,
+                    length: { minimum: 5 }
+end
+----
+
+这两行声明能够启用一些自动行为。例如，如果 `@article` 实例变量包含一篇文章，就可以使用 `@article.comments` 以数组形式取回这篇文章的所有评论。
+
+TIP: 关于模型关联的更多介绍，请参阅 <<association_basics>>。
+
+[[adding-a-route-for-comments]]
+==== 为评论添加路由
+
+和 `welcome` 控制器一样，在添加路由之后 Rails 才知道在哪个地址上查看评论。再次打开 `config/routes.rb` 文件，像下面这样进行修改：
+
+[source,ruby]
+----
+resources :articles do
+  resources :comments
+end
+----
+
+上面的代码在 `articles` 资源中创建 `comments` 资源，这种方式被称为嵌套资源。这是表明文章和评论之间层级关系的另一种方式。
+
+TIP: 关于路由的更多介绍，请参阅 <<routing>>。
+
+[[generating-a-controller]]
+==== 生成控制器
