@@ -5,9 +5,9 @@
 ## 进度
 
 - [ ] Getting Started with Rails
-- [ ] Active Record Basics
+- [x] Active Record Basics
 - [ ] Active Record Migrations
-- [ ] Active Record Validations
+- [x] Active Record Validations
 - [ ] Active Record Callbacks
 - [ ] Active Record Associations
 - [ ] Active Record Query Interface
