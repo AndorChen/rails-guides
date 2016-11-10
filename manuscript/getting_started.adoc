@@ -1232,11 +1232,10 @@ $ bin/rails generate model Comment commenter:string body:text article:references
 上面的命令会生成 4 个文件：
 
 |===
-| 文件
-| 用途
+| 文件 | 用途
 
 | `db/migrate/20140120201010_create_comments.rb`
-| 用于在数据库中创建 comments 表的迁移文件（你的文件名将包含不同的时间戳）
+| 用于在数据库中创建 comments 表的迁移文件（你的文件名会包含不同的时间戳）
 
 | `app/models/comment.rb`
 | Comment 模型文件
@@ -1246,6 +1245,7 @@ $ bin/rails generate model Comment commenter:string body:text article:references
 
 | `test/fixtures/comments.yml`
 | 用于测试的样例评论
+|===
 
 首先看一下 `app/models/comment.rb` 文件：
 
@@ -1258,7 +1258,7 @@ end
 
 可以看到 `Comment` 模型文件的内容和之前的 `Article` 模型差不多，仅仅多了一行 `belongs_to :article`，这行代码用于建立 Active Record 关联。下一节会简单介绍关联。
 
-在上面的 Bash 命令中使用的 `:references` 关键字是一种特殊的模型数据类型，用于在数据表中新建字段。这个字段以提供的模型名加上 `_id` 后缀作为字段名，保存整数值。通过分析下面的 `db/schema.rb` 可以更好地理解这些内容。
+在上面的 Bash 命令中使用的 `:references` 关键字是一种特殊的模型数据类型，用于在数据表中新建字段。这个字段以提供的模型名加上 `_id` 后缀作为字段名，保存整数值。之后通过分析 `db/schema.rb` 文件可以更好地理解这些内容。
 
 除了模型文件，Rails 还生成了迁移文件，用于创建对应数据表：
 
@@ -1294,3 +1294,35 @@ Rails 相当智能，只会运行针对当前数据库还没有运行过的迁�
 
 [[associating-models]]
 ==== 模型关联
+
+Active Record 关联让我们可以轻易地声明两个模型之间的关系。对于评论和文章，我们可以像下面这样声明：
+
+* 每一条评论都属于某一篇文章
+* 一篇文章可以有多条评论
+
+实际上，这种表达方式和 Rails 用于声明模型关联的语法非常接近。前文我们已经看过 `Comment` 模型中用于声明模型关联的代码，这行代码用于声明每一条评论都属于某一篇文章：
+
+[source,ruby]
+----
+class Comment < ApplicationRecord
+  belongs_to :article
+end
+----
+
+现在修改 `app/models/article.rb` 文件来添加模型关联的另一端：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  has_many :comments
+  validates :title, presence: true,
+                    length: { minimum: 5 }
+end
+----
+
+这两行声明能够启用一些自动行为。例如，如果 `@article` 实例变量包含一篇文章，就可以使用 `@article.comments` 以数组形式取回这篇文章的所有评论。
+
+TIP: 关于模型关联的更多介绍，请参阅 <<association_basics>>。
+
+[[adding-a-route-for-comments]]
+==== 为评论添加路由
