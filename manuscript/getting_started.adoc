@@ -1326,3 +1326,19 @@ TIP: 关于模型关联的更多介绍，请参阅 <<association_basics>>。
 
 [[adding-a-route-for-comments]]
 ==== 为评论添加路由
+
+和 `welcome` 控制器一样，在添加路由之后 Rails 才知道在哪个地址上查看评论。再次打开 `config/routes.rb` 文件，像下面这样进行修改：
+
+[source,ruby]
+----
+resources :articles do
+  resources :comments
+end
+----
+
+上面的代码在 `articles` 资源中创建 `comments` 资源，这种方式被称为嵌套资源。这是表明文章和评论之间层级关系的另一种方式。
+
+TIP: 关于路由的更多介绍，请参阅 <<routing>>。
+
+[[generating-a-controller]]
+==== 生成控制器
