@@ -13,6 +13,12 @@
 :version-label: rev
 :toc:
 :toc-title: 目录
+:admonition-use-caption:
+:caution-caption: 警告
+:important-caption: 重要
+:note-caption: 注意
+:tip-caption: 提示
+:warning-caption: 提醒
 :listing-caption: 代码清单 %NUM%-%SUBNUM%
 :image-caption: 图 %NUM%-%SUBNUM%
 :table-caption: 表 %NUM%-%SUBNUM%
