@@ -1342,3 +1342,147 @@ TIP: 关于路由的更多介绍，请参阅 <<routing>>。
 
 [[generating-a-controller]]
 ==== 生成控制器
+
+有了模型，下面应该创建对应的控制器了。还是使用前面用过的生成器：
+
+----
+$ bin/rails generate controller Comments
+----
+
+上面的命令会创建 5 个文件和一个空文件夹：
+
+|===
+|文件/文件夹 |用途
+
+|`app/controllers/comments_controller.rb`
+|Comments 控制器文件
+
+|`app/views/comments/`
+|控制器的视图保存在这里
+
+|`test/controllers/comments_controller_test.rb`
+|控制器测试文件
+
+|`app/helpers/comments_helper.rb`
+|视图帮助方法文件
+
+|`app/assets/javascripts/comment.coffee`
+|控制器的 CoffeeScript 文件
+
+|`app/assets/stylesheets/comment.scss`
+|控制器的样式表文件
+|===
+
+在博客中，读者看完文章后可以直接发表评论，并且马上可以看到这些评论是否在页面上显示出来了。我们的博客采取同样的设计。这里 `CommentsController` 需要提供创建评论和删除垃圾评论的方法。
+
+首先修改显示文章的模板（`app/views/articles/show.html.erb`），添加发表评论的功能：
+
+[source,erb]
+----
+<p>
+  <strong>Title:</strong>
+  <%= @article.title %>
+</p>
+
+<p>
+  <strong>Text:</strong>
+  <%= @article.text %>
+</p>
+
+<h2>Add a comment:</h2>
+<%= form_for([@article, @article.comments.build]) do |f| %>
+  <p>
+    <%= f.label :commenter %><br>
+    <%= f.text_field :commenter %>
+  </p>
+  <p>
+    <%= f.label :body %><br>
+    <%= f.text_area :body %>
+  </p>
+  <p>
+    <%= f.submit %>
+  </p>
+<% end %>
+
+<%= link_to 'Edit', edit_article_path(@article) %> |
+<%= link_to 'Back', articles_path %>
+----
+
+上面的代码在显示文章的页面中添加了用于新建评论的表单，通过调用 `CommentsController` 的 `create` 动作来发表评论。这里 `form_for` 帮助方法以数组为参数，会创建嵌套路由，例如 `/articles/1/comments`。
+
+接下来在 `app/controllers/comments_controller.rb` 文件中添加 `create` 动作：
+
+[source,ruby]
+----
+class CommentsController < ApplicationController
+  def create
+    @article = Article.find(params[:article_id])
+    @comment = @article.comments.create(comment_params)
+    redirect_to article_path(@article)
+  end
+
+  private
+    def comment_params
+      params.require(:comment).permit(:commenter, :body)
+    end
+end
+----
+
+上面的代码要比文章控制器的代码复杂得多，这是嵌套带来的副作用。对于每一个发表评论的请求，都必须记录这个评论属于哪篇文章，因此需要在 `Article` 模型上调用 `find` 方法来获取文章对象。
+
+此外，上面的代码还利用了关联特有的方法，在 `@article.comments` 上调用 `create` 方法来创建和保存评论，同时自动把评论和对应的文章关联起来。
+
+添加评论后，我们使用 `article_path(@article)` 帮助方法把用户带回原来的文章页面。如前文所述，这里调用了 `ArticlesController` 的 `show` 动作来渲染 `show.html.erb` 模板，因此需要修改 `app/views/articles/show.html.erb` 文件来显示评论：
+
+[source,erb]
+----
+<p>
+  <strong>Title:</strong>
+  <%= @article.title %>
+</p>
+
+<p>
+  <strong>Text:</strong>
+  <%= @article.text %>
+</p>
+
+<h2>Comments</h2>
+<% @article.comments.each do |comment| %>
+  <p>
+    <strong>Commenter:</strong>
+    <%= comment.commenter %>
+  </p>
+
+  <p>
+    <strong>Comment:</strong>
+    <%= comment.body %>
+  </p>
+<% end %>
+
+<h2>Add a comment:</h2>
+<%= form_for([@article, @article.comments.build]) do |f| %>
+  <p>
+    <%= f.label :commenter %><br>
+    <%= f.text_field :commenter %>
+  </p>
+  <p>
+    <%= f.label :body %><br>
+    <%= f.text_area :body %>
+  </p>
+  <p>
+    <%= f.submit %>
+  </p>
+<% end %>
+
+<%= link_to 'Edit', edit_article_path(@article) %> |
+<%= link_to 'Back', articles_path %>
+----
+
+现在可以在我们的博客中为文章添加评论了，评论添加后就会显示在正确的位置上。
+
+[[article-with-comments]]
+.带有评论的文章
+image::article_with_comments.png[带有评论的文章]
+
+[[refactoring]]
+=== 重构
