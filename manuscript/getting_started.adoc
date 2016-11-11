@@ -1428,7 +1428,7 @@ class CommentsController < ApplicationController
 end
 ----
 
-上面的代码要比文章控制器的代码复杂得多，这是嵌套带来的副作用。对于每一个发表评论的请求，都必须记录这个评论属于哪篇文章，因此需要在 `Article` 模型上调用 `find` 方法来获取文章对象。
+上面的代码要比文章控制器的代码复杂得多，这是嵌套带来的副作用。对于每一个发表评论的请求，都必须记录这条评论属于哪篇文章，因此需要在 `Article` 模型上调用 `find` 方法来获取文章对象。
 
 此外，上面的代码还利用了关联特有的方法，在 `@article.comments` 上调用 `create` 方法来创建和保存评论，同时自动把评论和对应的文章关联起来。
 
@@ -1486,3 +1486,64 @@ image::article_with_comments.png[带有评论的文章]
 
 [[refactoring]]
 === 重构
+
+现在博客的文章和评论都已经正常工作，打开 `app/views/articles/show.html.erb` 文件，会看到文件代码变得又长又不优美。因此下面我们要用局部视图来重构代码。
+
+[[rendering-partial-collections]]
+==== 渲染局部视图集合
+
+首先创建评论的局部视图，把显示文章评论的代码抽出来。创建 `app/views/comments/_comment.html.erb` 文件，添加下面的代码：
+
+[source,erb]
+----
+<p>
+  <strong>Commenter:</strong>
+  <%= comment.commenter %>
+</p>
+
+<p>
+  <strong>Comment:</strong>
+  <%= comment.body %>
+</p>
+----
+
+然后像下面这样修改 `app/views/articles/show.html.erb` 文件：
+
+[source,erb]
+----
+<p>
+  <strong>Title:</strong>
+  <%= @article.title %>
+</p>
+
+<p>
+  <strong>Text:</strong>
+  <%= @article.text %>
+</p>
+
+<h2>Comments</h2>
+<%= render @article.comments %>
+
+<h2>Add a comment:</h2>
+<%= form_for([@article, @article.comments.build]) do |f| %>
+  <p>
+    <%= f.label :commenter %><br>
+    <%= f.text_field :commenter %>
+  </p>
+  <p>
+    <%= f.label :body %><br>
+    <%= f.text_area :body %>
+  </p>
+  <p>
+    <%= f.submit %>
+  </p>
+<% end %>
+
+<%= link_to 'Edit', edit_article_path(@article) %> |
+<%= link_to 'Back', articles_path %>
+----
+
+这样对于 `@article.comments` 集合中的每条评论，都会渲染 `app/views/comments/_comment.html.erb` 文件中的局部视图。`render` 方法会遍历 `@article.comments` 集合，把每条评论赋值给局部视图中的同名局部变量，也就是这里的 `comment` 变量。
+
+[[rendering-a-partial-form]]
+==== 渲染局部视图表单
