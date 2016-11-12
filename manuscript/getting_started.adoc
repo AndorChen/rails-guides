@@ -1729,3 +1729,15 @@ image::challenge.png[基本 HTTP 认证对话框]
 * link:http://railstutorial.org/book[Ruby on Rails 教程]
 * link:http://groups.google.com/group/rubyonrails-talk[Ruby on Rails 邮件列表]
 * irc.freenode.net 上的 link:irc://irc.freenode.net/#rubyonrails[#rubyonrails] 频道
+
+[[configuration-gotchas]]
+=== 配置问题
+
+在 Rails 中，储存外部数据最好都使用 UTF-8 编码。虽然 Ruby 库和 Rails 通常都能将使用其他编码的外部数据转换为 UTF-8 编码，但并非总是能可靠地工作，所以最好还是确保所有的外部数据都使用 UTF-8 编码。
+
+编码出错的最常见症状是在浏览器中出现带有问号的黑色钻石，另一个常见症状是本该出现“ü”字符的地方出现了“Ã¼”字符。Rails 内部采取了许多步骤来解决常见的可以自动检测和纠正的编码问题。尽管如此，如果不使用 UTF-8 编码来储存外部数据，偶尔还是会出现无法自动检测和纠正的编码问题。
+
+下面是非 UTF-8 编码数据的两种常见来源：
+
+* 文本编辑器：大多数文本编辑器（例如 TextMate）默认使用 UTF-8 编码保存文件。如果你的文本编辑器未使用 UTF-8 编码，就可能导致在模板中输入的特殊字符（例如 é）在浏览器中显示为带有问号的黑色钻石。这个问题也会出现在 i18n 翻译文件中。大多数未默认使用 UTF-8 编码的文本编辑器（例如 Dreamweaver 的某些版本）提供了将默认编码修改为 UTF-8 的方法，别忘了进行修改。
+* 数据库：默认情况下，Rails 会把从数据库中取出的数据转换成 UTF-8 格式。尽管如此，如果数据库内部不使用 UTF-8 编码，就有可能无法保存用户输入的所有字符。例如，如果数据库内部使用 Latin-1 编码，而用户输入了俄语、希伯来语或日语字符，那么在把数据保存到数据库时就会造成数据永久丢失。因此，只要有可能，就请在数据库内部使用 UTF-8 编码。
