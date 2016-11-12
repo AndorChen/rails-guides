@@ -1711,9 +1711,21 @@ class CommentsController < ApplicationController
 .基本 HTTP 认证对话框
 image::challenge.png[基本 HTTP 认证对话框]
 
-还可以在 Rails 中使用其他认证方法。在众多选择中，link::https://github.com/plataformatec/devise[Devise] 和 link::https://github.com/binarylogic/authlogic[Authlogic] 是两个流行的 Rails 认证扩展。
+还可以在 Rails 中使用其他认证方法。在众多选择中，link:https://github.com/plataformatec/devise[Devise] 和 link:https://github.com/binarylogic/authlogic[Authlogic] 是两个流行的 Rails 认证扩展。
 
 [[other-security-considerations]]
 ==== 其他安全注意事项
 
 安全，尤其是 Web 应用程序的安全，是一个广泛和值得深入研究的领域。关于 Rails 程序安全的更多介绍，请参阅 <<security>>。
+
+[[whats-next]]
+=== 接下来做什么？
+
+至此，我们已经完成了第一个 Rails 程序，请在此基础上尽情修改、试验。
+
+记住你不需要独自完成一切，在安装和运行 Rails 时如果需要帮助，请随时使用下面的资源：
+
+* link:http://guides.rubyonrails.org/index.html[Ruby on Rails 指南]
+* link:http://railstutorial.org/book[Ruby on Rails 教程]
+* link:http://groups.google.com/group/rubyonrails-talk[Ruby on Rails 邮件列表]
+* irc.freenode.net 上的 link:irc://irc.freenode.net/#rubyonrails[#rubyonrails] 频道
