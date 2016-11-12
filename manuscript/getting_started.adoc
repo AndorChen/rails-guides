@@ -1283,7 +1283,7 @@ end
 $ bin/rails db:migrate
 ----
 
-Rails 相当智能，只会运行针对当前数据库还没有运行过的迁移，运行结果像下面这样：
+Rails 很智能，只会运行针对当前数据库还没有运行过的迁移，运行结果像下面这样：
 
 ----
 ==  CreateComments: migrating =================================================
@@ -1547,3 +1547,53 @@ image::article_with_comments.png[带有评论的文章]
 
 [[rendering-a-partial-form]]
 ==== 渲染局部视图表单
+
+我们把添加评论的代码也移到局部视图中。创建 `app/views/comments/_form.html.erb` 文件，添加下面的代码：
+
+[source,erb]
+----
+<%= form_for([@article, @article.comments.build]) do |f| %>
+  <p>
+    <%= f.label :commenter %><br>
+    <%= f.text_field :commenter %>
+  </p>
+  <p>
+    <%= f.label :body %><br>
+    <%= f.text_area :body %>
+  </p>
+  <p>
+    <%= f.submit %>
+  </p>
+<% end %>
+----
+
+然后像下面这样修改 `app/views/articles/show.html.erb` 文件：
+
+[source,erb]
+----
+<p>
+  <strong>Title:</strong>
+  <%= @article.title %>
+</p>
+
+<p>
+  <strong>Text:</strong>
+  <%= @article.text %>
+</p>
+
+<h2>Comments</h2>
+<%= render @article.comments %>
+
+<h2>Add a comment:</h2>
+<%= render 'comments/form' %>
+
+<%= link_to 'Edit', edit_article_path(@article) %> |
+<%= link_to 'Back', articles_path %>
+----
+
+上面的代码中第二个 `render` 方法的参数就是我们刚刚定义的 `comments/form` 局部视图。Rails 很智能，能够发现字符串中的斜线，并意识到我们想渲染 `app/views/comments` 文件夹中的 `_form.html.erb` 文件。
+
+`@article` 是实例变量，因此在所有局部视图中都可以使用。
+
+[[deleting-comments]]
+=== 删除评论
