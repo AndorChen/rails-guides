@@ -1597,3 +1597,70 @@ image::article_with_comments.png[带有评论的文章]
 
 [[deleting-comments]]
 === 删除评论
+
+博客还有一个重要功能是删除垃圾评论。为了实现这个功能，我们需要在视图中添加一个链接，并在 `CommentsController` 中添加 `destroy` 动作。
+
+首先在 `app/views/comments/_comment.html.erb` 局部视图中添加删除评论的链接：
+
+[source,erb]
+----
+<p>
+  <strong>Commenter:</strong>
+  <%= comment.commenter %>
+</p>
+
+<p>
+  <strong>Comment:</strong>
+  <%= comment.body %>
+</p>
+
+<p>
+  <%= link_to 'Destroy Comment', [comment.article, comment],
+               method: :delete,
+               data: { confirm: 'Are you sure?' } %>
+</p>
+----
+
+点击“Destroy Comment”链接后，会向 `CommentsController` 发起 `DELETE /articles/:article_id/comments/:id` 请求，这个请求将用于删除指定评论。下面在控制器（`app/controllers/comments_controller.rb`）中添加 `destroy` 动作：
+
+[source,ruby]
+----
+class CommentsController < ApplicationController
+  def create
+    @article = Article.find(params[:article_id])
+    @comment = @article.comments.create(comment_params)
+    redirect_to article_path(@article)
+  end
+
+  def destroy
+    @article = Article.find(params[:article_id])
+    @comment = @article.comments.find(params[:id])
+    @comment.destroy
+    redirect_to article_path(@article)
+  end
+
+  private
+    def comment_params
+      params.require(:comment).permit(:commenter, :body)
+    end
+end
+----
+
+`destroy` 动作首先找到指定文章，然后在 `@article.comments` 集合中找到指定评论，接着从数据库删除这条评论，最后转向显示文章的页面。
+
+[[deleting-associated-objects]]
+==== 删除关联对象
+
+如果要删除一篇文章，文章的相关评论也需要删除，否则这些评论还会占用数据库空间。在 Rails 中可以使用关联的 `dependent` 选项来完成这一工作。像下面这样修改 `app/models/article.rb` 文件中的 `Article` 模型：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  has_many :comments, dependent: :destroy
+  validates :title, presence: true,
+                    length: { minimum: 5 }
+end
+----
+
+[[security]]
+=== 安全
