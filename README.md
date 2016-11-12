@@ -4,7 +4,7 @@
 
 ## 进度
 
-- [ ] Getting Started with Rails
+- [x] Getting Started with Rails
 - [x] Active Record Basics
 - [ ] Active Record Migrations
 - [x] Active Record Validations
