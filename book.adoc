@@ -12,6 +12,8 @@
 :translator-label: {translator} 译
 :version-label: rev
 :toc:
+:toclevels: 2
+:sectnumlevels: 5
 :toc-title: 目录
 :admonition-use-caption:
 :caution-caption: 警告
