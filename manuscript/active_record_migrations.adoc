@@ -20,7 +20,7 @@
 
 迁移是以一致和轻松的方式按时间顺序修改数据库模式的实用方法。它使用 Ruby DSL，因此不必手动编写 SQL，从而实现了数据库无关的数据库模式的创建和修改。
 
-我们可以把迁移看做数据库的新“版本”。数据库模式一开始并不包含任何内容，之后通过一个个迁移来添加删除数据表、字段或记录。
+我们可以把迁移看做数据库的新“版本”。数据库模式一开始并不包含任何内容，之后通过一个个迁移来添加删除数据表、字段和记录。
 Active Record 知道如何沿着时间线更新数据库模式，使其从任何历史版本更新为最新版本。Active Record 还会更新 `db/schema.rb` 文件，以匹配最新的数据库结构。
 
 下面是一个迁移的示例：
@@ -84,3 +84,158 @@ end
 
 [[creating-a-migration]]
 === 创建迁移
+
+[[creating-a-standalone-migration]]
+==== 创建独立的迁移
+
+迁移文件储存在 `db/migrate` 文件夹中，一个迁移文件包含一个迁移类。文件名采用 `YYYYMMDDHHMMSS_create_products.rb` 形式，即 UTC 时间戳加上下划线再加上迁移的名称。迁移类的名称（驼峰风格）应该匹配文件名中迁移的名称。例如，在 `20080906120000_create_products.rb` 文件中应该定义 `CreateProducts` 类，在 `20080906120001_add_details_to_products.rb` 文件中应该定义 `AddDetailsToProducts` 类。Rails 根据文件名的时间戳部分确定要运行的迁移和迁移运行的顺序，因此当需要把迁移文件复制到其他 Rails 程序，或者自己生成迁移文件时，一定要注意迁移运行的顺序。
+
+当然，计算时间戳不是什么有趣的事，因此 Active Record 提供了生成器：
+
+----
+$ bin/rails generate migration AddPartNumberToProducts
+----
+
+上面的命令会创建空的迁移，并进行了适当命名：
+
+[source,ruby]
+----
+class AddPartNumberToProducts < ActiveRecord::Migration[5.0]
+  def change
+  end
+end
+----
+
+如果迁移名称是 `AddXXXToYYY` 或 `RemoveXXXFromYYY` 的形式，并且后面跟着字段名和类型列表，那么会生成包含合适的 `add_column` 或 `remove_column` 语句的迁移。
+
+----
+$ bin/rails generate migration AddPartNumberToProducts part_number:string
+----
+
+上面的命令会生成：
+
+[source,ruby]
+----
+class AddPartNumberToProducts < ActiveRecord::Migration[5.0]
+  def change
+    add_column :products, :part_number, :string
+  end
+end
+----
+
+还可以像下面这样在新建字段上添加索引：
+
+----
+$ bin/rails generate migration AddPartNumberToProducts part_number:string:index
+----
+
+上面的命令会生成：
+
+[source,ruby]
+----
+class AddPartNumberToProducts < ActiveRecord::Migration[5.0]
+  def change
+    add_column :products, :part_number, :string
+    add_index :products, :part_number
+  end
+end
+----
+
+类似地，还可以生成用于删除字段的迁移：
+
+----
+$ bin/rails generate migration RemovePartNumberFromProducts part_number:string
+----
+
+上面的命令会生成：
+
+[source,ruby]
+----
+class RemovePartNumberFromProducts < ActiveRecord::Migration[5.0]
+  def change
+    remove_column :products, :part_number, :string
+  end
+end
+----
+
+还可以生成用于添加多个字段的迁移，例如：
+
+----
+$ bin/rails generate migration AddDetailsToProducts part_number:string price:decimal
+----
+
+上面的命令会生成：
+
+[source,ruby]
+----
+class AddDetailsToProducts < ActiveRecord::Migration[5.0]
+  def change
+    add_column :products, :part_number, :string
+    add_column :products, :price, :decimal
+  end
+end
+----
+
+如果迁移名称是 `CreateXXX` 的形式，并且后面跟着字段名和类型列表，那么会生成用于创建包含指定字段的 `XXX` 数据表的迁移。例如：
+
+----
+$ bin/rails generate migration CreateProducts name:string part_number:string
+----
+
+上面的命令会生成：
+
+[source,ruby]
+----
+class CreateProducts < ActiveRecord::Migration[5.0]
+  def change
+    create_table :products do |t|
+      t.string :name
+      t.string :part_number
+    end
+  end
+end
+----
+
+和往常一样，上面的命令生成的代码只是一个起点，我们可以修改 `db/migrate/YYYYMMDDHHMMSS_add_details_to_products.rb` 文件，根据需要增删代码。
+
+生成器也接受 `references` 字段类型（还可使用 `belongs_to`），例如：
+
+----
+$ bin/rails generate migration AddUserRefToProducts user:references
+----
+
+上面的命令会生成：
+
+[source,ruby]
+----
+class AddUserRefToProducts < ActiveRecord::Migration[5.0]
+  def change
+    add_reference :products, :user, index: true, foreign_key: true
+  end
+end
+----
+
+这个迁移会创建 `user_id` 字段并添加索引。关于 `add_reference` 选项的更多介绍，请参阅 link:http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_reference[API 文档]。
+
+如果迁移名称中包含 `JoinTable`，生成器会创建联合数据表：
+
+----
+$ bin/rails g migration CreateJoinTableCustomerProduct customer product
+----
+
+上面的命令会生成：
+
+[source,ruby]
+----
+class CreateJoinTableCustomerProduct < ActiveRecord::Migration[5.0]
+  def change
+    create_join_table :customers, :products do |t|
+      # t.index [:customer_id, :product_id]
+      # t.index [:product_id, :customer_id]
+    end
+  end
+end
+----
+
+[[model-generators]]
+==== 模型生成器
