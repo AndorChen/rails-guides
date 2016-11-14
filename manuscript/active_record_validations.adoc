@@ -322,7 +322,8 @@ end
 
 默认的错误消息是“is reserved”。
 
-### `format` {#format}
+[[format]]
+==== `format`
 
 这个辅助方法检查属性的值是否匹配 `:with` 选项指定的正则表达式。
 
