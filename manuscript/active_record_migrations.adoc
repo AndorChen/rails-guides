@@ -358,3 +358,20 @@ end
 
 [[changing-tables]]
 ==== 修改数据表
+
+`change_table` 方法和 `create_table` 非常类似，用于修改现有的数据表。它的用法和 `create_table` 方法风格类似，但传入块的对象有更多用法。例如：
+
+[source,ruby]
+----
+change_table :products do |t|
+  t.remove :description, :name
+  t.string :part_number
+  t.index :part_number
+  t.rename :upccode, :upc_code
+end
+----
+
+上面的代码删除 `description` 和 `name` 字段，创建 `part_number` 字符串字段并添加索引，最后重命名 `upccode` 字段。
+
+[[changing-columns]]
+==== 修改字段
