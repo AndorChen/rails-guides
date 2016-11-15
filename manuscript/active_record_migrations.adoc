@@ -198,7 +198,7 @@ end
 
 和往常一样，上面的命令生成的代码只是一个起点，我们可以修改 `db/migrate/YYYYMMDDHHMMSS_add_details_to_products.rb` 文件，根据需要增删代码。
 
-生成器也接受 `references` 字段类型（还可使用 `belongs_to`），例如：
+生成器也接受 `references` 字段类型作为参数（还可使用 `belongs_to`），例如：
 
 ----
 $ bin/rails generate migration AddUserRefToProducts user:references
@@ -246,7 +246,7 @@ end
 $ bin/rails generate model Product name:string description:text
 ----
 
-会创建下面的迁移：
+上面的命令会创建下面的迁移：
 
 [source,ruby]
 ----
@@ -274,7 +274,7 @@ end
 $ bin/rails generate migration AddDetailsToProducts 'price:decimal{5,2}' supplier:references{polymorphic}
 ----
 
-会生成下面的迁移：
+上面的命令会创建下面的迁移：
 
 [source,ruby]
 ----
@@ -290,3 +290,71 @@ TIP: 关于传递修饰符的更多介绍，请参阅生成器的命令行帮助
 
 [[writing-a-migration]]
 === 编写迁移
+
+使用生成器创建迁移后，就可以开始写代码了。
+
+[[creating-a-table]]
+==== 创建数据表
+
+`create_table` 方法是最基础、最常用的方法，其代码通常是由模型或脚手架生成器生成的。典型的用法像下面这样：
+
+[source,ruby]
+----
+create_table :products do |t|
+  t.string :name
+end
+----
+
+上面的命令会创建包含 `name` 字段的 `products` 数据表（后面会介绍，数据表还包含自动创建的 `id` 字段）。
+
+默认情况下，`create_table` 方法会创建 `id` 主键。可以用 `:primary_key` 选项来修改主键名称，还可以传入 `id: false` 选项以禁用主键。如果需要传递数据库特有的选项，可以在 `:options` 选项中使用 SQL 代码片段。例如：
+
+[source,ruby]
+----
+create_table :products, options: "ENGINE=BLACKHOLE" do |t|
+  t.string :name, null: false
+end
+----
+
+上面的代码会在用于创建数据表的 SQL 语句末尾加上 `ENGINE=BLACKHOLE`（如果使用 MySQL 或 MarialDB，默认选项是 `ENGINE=InnoDB`）。
+
+还可以传递带有数据表描述信息的 `:comment` 选项，这些注释会被储存在数据库中，可以使用 MySQL Workbench、PgAdmin III 等数据库管理工具查看。对于大型数据库，强列推荐在程序迁移中添加注释。目前只有 MySQL 和 PostgreSQL 适配器支持注释功能。
+
+[[creating-a-join-table]]
+==== 创建联合数据表
+
+`create_join_table` 方法用于创建 HABTM（has and belongs to many）联合数据表。典型的用法像下面这样：
+
+[source,ruby]
+----
+create_join_table :products, :categories
+----
+
+上面的代码会创建包含 `category_id` 和 `product_id` 字段的 `categories_products` 数据表。这两个字段的 `:null` 选项默认设置为 `false`，可以通过 `:column_options` 选项重载这一设置：
+
+[source,ruby]
+----
+create_join_table :products, :categories, column_options: { null: true }
+----
+
+联合数据表的名称默认由 `create_join_table` 方法的前两个参数按字母顺序组合而来。可以传入 `:table_name` 选项来自定义联合数据表的名称：
+
+[source,ruby]
+----
+create_join_table :products, :categories, table_name: :categorization
+----
+
+上面的代码会创建 `categorization` 数据表。
+
+`create_join_table` 方法也接受块作为参数，用于添加索引（默认未创建的索引）或附加字段：
+
+[source,ruby]
+----
+create_join_table :products, :categories do |t|
+  t.index :product_id
+  t.index :category_id
+end
+----
+
+[[changing-tables]]
+==== 修改数据表
