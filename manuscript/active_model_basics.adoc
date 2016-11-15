@@ -1,1 +1,2 @@
-== active_model_basics
+[[active-model-basics]]
+== Active Model 基础
