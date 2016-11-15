@@ -239,3 +239,54 @@ end
 
 [[model-generators]]
 ==== 模型生成器
+
+模型和脚手架生成器会生成适用于添加新模型的迁移。这些迁移中已经包含用于创建有关数据表的指令。如果我们告诉 Rails 想要哪些字段，那么添加这些字段所需的语句也会被创建。例如，运行下面的命令：
+
+----
+$ bin/rails generate model Product name:string description:text
+----
+
+会创建下面的迁移：
+
+[source,ruby]
+----
+class CreateProducts < ActiveRecord::Migration[5.0]
+  def change
+    create_table :products do |t|
+      t.string :name
+      t.text :description
+
+      t.timestamps
+    end
+  end
+end
+----
+
+我们可以根据需要添加字段名称/类型对，没有数量限制。
+
+
+[[passing-modifiers]]
+==== 传递修饰符
+
+可以直接在命令行中传递常用的 <<active_record_migrations#column-modifiers>>。这些类型修饰符用大括号括起来，放在字段类型之后。例如，运行下面的命令：
+
+----
+$ bin/rails generate migration AddDetailsToProducts 'price:decimal{5,2}' supplier:references{polymorphic}
+----
+
+会生成下面的迁移：
+
+[source,ruby]
+----
+class AddDetailsToProducts < ActiveRecord::Migration[5.0]
+  def change
+    add_column :products, :price, :decimal, precision: 5, scale: 2
+    add_reference :products, :supplier, polymorphic: true, index: true
+  end
+end
+----
+
+TIP: 关于传递修饰符的更多介绍，请参阅生成器的命令行帮助信息。
+
+[[writing-a-migration]]
+=== 编写迁移
