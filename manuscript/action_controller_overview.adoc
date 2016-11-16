@@ -878,7 +878,7 @@ Rails 内置了两种 HTTP 身份验证机制：
 class AdminsController < ApplicationController
   http_basic_authenticate_with name: "humbaba", password: "5baa61e4"
 end
----
+----
 
 添加 `http_basic_authenticate_with` 方法后，可以创建具有命名空间的控制器，继承自 `AdminsController`，`http_basic_authenticate_with` 方法会在这些控制器的所有动作运行之前执行，启用 HTTP 基本身份验证。
 
