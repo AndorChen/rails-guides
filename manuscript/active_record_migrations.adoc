@@ -375,3 +375,27 @@ end
 
 [[changing-columns]]
 ==== 修改字段
+
+Rails 提供了与 `remove_column` 和 `add_column` 类似的 `change_column` 迁移方法。
+
+[source,ruby]
+----
+change_column :products, :part_number, :text
+----
+
+上面的代码把 `products` 数据表的 `part_number` 字段修改为 `:text` 字段。请注意 `change_column` 命令是不可逆的。
+
+除 `change_column` 方法之外，还有 `change_column_null` 和 `change_column_default` 方法，前者专门用于设置字段可以为空或不可以为空，后者专门用于修改字段的默认值。
+
+[source,ruby]
+----
+change_column_null :products, :name, false
+change_column_default :products, :approved, from: true, to: false
+----
+
+上面的代码把 `products` 数据表的 `:name` 字段设置为 `NOT NULL` 字段，把 `:approved` 字段的默认值由 `true` 修改为 `false`。
+
+注意：也可以把上面的 `change_column_default` 迁移写成 `change_column_default :products, :approved, false`，但这种写法是不可逆的。
+
+[[column-modifiers]]
+==== 字段修饰符
