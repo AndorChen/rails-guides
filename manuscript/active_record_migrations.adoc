@@ -383,7 +383,7 @@ Rails 提供了与 `remove_column` 和 `add_column` 类似的 `change_column` �
 change_column :products, :part_number, :text
 ----
 
-上面的代码把 `products` 数据表的 `part_number` 字段修改为 `:text` 字段。请注意 `change_column` 命令是不可逆的。
+上面的代码把 `products` 数据表的 `part_number` 字段修改为 `:text` 字段。请注意 `change_column` 命令是不可撤销的。
 
 除 `change_column` 方法之外，还有 `change_column_null` 和 `change_column_default` 方法，前者专门用于设置字段可以为空或不可以为空，后者专门用于修改字段的默认值。
 
@@ -395,7 +395,7 @@ change_column_default :products, :approved, from: true, to: false
 
 上面的代码把 `products` 数据表的 `:name` 字段设置为 `NOT NULL` 字段，把 `:approved` 字段的默认值由 `true` 修改为 `false`。
 
-注意：也可以把上面的 `change_column_default` 迁移写成 `change_column_default :products, :approved, false`，但这种写法是不可逆的。
+注意：也可以把上面的 `change_column_default` 迁移写成 `change_column_default :products, :approved, false`，但这种写法是不可撤销的。
 
 [[column-modifiers]]
 ==== 字段修饰符
@@ -457,3 +457,41 @@ Product.connection.execute("UPDATE products SET price = 'free' WHERE 1=1")
 
 [[using-the-change-method]]
 ==== 使用 `change` 方法
+
+`change` 方法是编写迁移时最常用的方法。在大多数情况下，Active Record 知道如何自动撤销用 `change` 方法编写的迁移。目前，在 `change` 方法中只能使用下面这些方法：
+
+* `add_column`
+* `add_foreign_key`
+* `add_index`
+* `add_reference`
+* `add_timestamps`
+* `change_column_default`（必须提供 `:from` 和 `:to` 选项）
+* `change_column_null`
+* `create_join_table`
+* `create_table`
+* `disable_extension`
+* `drop_join_table`
+* `drop_table`（必须提供块参数）
+* `enable_extension`
+* `remove_column`（必须提供字段类型）
+* `remove_foreign_key`（必须提供第二个数据表）
+* `remove_index`
+* `remove_reference`
+* `remove_timestamps`
+* `rename_column`
+* `rename_index`
+* `rename_table`
+
+如果在块参数中不使用 `change`、`change_default` 和 `remove` 方法，那么 `change_table` 方法也是可撤销的。
+
+如果提供了字段类型作为第三个参数，那么 `remove_column` 是可撤销的。别忘了提供原来字段的选项，否则 Rails 在回滚时就无法准确地重建字段了：
+
+[source,ruby]
+----
+remove_column :posts, :slug, :string, null: false, default: '', index: true
+----
+
+如果需要使用其他方法，可以用 `reversible` 方法或者 `up` 和 `down` 方法来代替 `change` 方法。
+
+[[using-reversible]]
+==== 使用 `reversible` 方法
