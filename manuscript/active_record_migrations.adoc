@@ -427,7 +427,7 @@ add_foreign_key :articles, :authors
 
 Rails 会为每一个外键生成以 `fk_rails_` 开头并且后面紧跟着 10 个字符的外键名，外键名是根据 `from_table` 和 `column` 推导出来的。需要时可以使用 `:name` 来指定外键名。
 
-NOTE: Active Record 只支持单字段外键，要使用复合外键需要 `execute` 和 `structure.sql`。更多介绍请参阅 <<active_record_migrationsl#schema-dumping-and-you>>。
+NOTE: Active Record 只支持单字段外键，要想使用复合外键就需要 `execute` 方法和 `structure.sql`。更多介绍请参阅 <<active_record_migrationsl#schema-dumping-and-you>>。
 
 删除外键也很容易：
 
@@ -445,3 +445,15 @@ remove_foreign_key :accounts, name: :special_fk_name
 
 [[when-helpers-arent-enough]]
 ==== 如果帮助方法不够用
+
+如果 Active Record 提供的帮助方法不够用，可以使用 `excute` 方法执行任意 SQL 语句：
+
+[source,ruby]
+----
+Product.connection.execute("UPDATE products SET price = 'free' WHERE 1=1")
+----
+
+关于各个方法的更多介绍和例子，请参阅 API 文档。尤其是 link:http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html[ActiveRecord::ConnectionAdapters::SchemaStatements] 文档（在 `change`、`up` 和 `down` 方法中可以使用的方法）、link:http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html[ActiveRecord::ConnectionAdapters::TableDefinition] 文档（在 `create_table` 方法的块参数中可以使用的方法）和 link:http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/Table.html[ActiveRecord::ConnectionAdapters::Table] 文档（在 `change_table` 方法的块参数中可以使用的方法）。
+
+[[using-the-change-method]]
+==== 使用 `change` 方法
