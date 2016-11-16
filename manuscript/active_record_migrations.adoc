@@ -415,3 +415,33 @@ change_column_default :products, :approved, from: true, to: false
 
 [[foreign-key]]
 ==== 外键
+
+尽管不是必需的，但有时我们需要使用外键约束以保证引用完整性。
+
+[source,ruby]
+----
+add_foreign_key :articles, :authors
+----
+
+上面的代码为 `articles` 数据表的 `author_id` 字段添加外键，这个外键会引用 `authors` 数据表的 `id` 字段。如果字段名不能从表名称推导出来，我们可以使用 `:column` 和 `:primary_key` 选项。
+
+Rails 会为每一个外键生成以 `fk_rails_` 开头并且后面紧跟着 10 个字符的外键名，外键名是根据 `from_table` 和 `column` 推导出来的。需要时可以使用 `:name` 来指定外键名。
+
+NOTE: Active Record 只支持单字段外键，要使用复合外键需要 `execute` 和 `structure.sql`。更多介绍请参阅 <<active_record_migrationsl#schema-dumping-and-you>>。
+
+删除外键也很容易：
+
+[source,ruby]
+----
+# let Active Record figure out the column name
+remove_foreign_key :accounts, :branches
+
+# remove foreign key for a specific column
+remove_foreign_key :accounts, column: :owner_id
+
+# remove foreign key by name
+remove_foreign_key :accounts, name: :special_fk_name
+----
+
+[[when-helpers-arent-enough]]
+==== 如果帮助方法不够用
