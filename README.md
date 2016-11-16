@@ -9,13 +9,13 @@
 - [ ] Active Record Migrations
 - [x] Active Record Validations
 - [ ] Active Record Callbacks
-- [ ] Active Record Associations
+- [x] Active Record Associations
 - [ ] Active Record Query Interface
 - [ ] Active Model Basics
 - [ ] Action View Overview
-- [ ] Layouts and Rendering in Rails
+- [x] Layouts and Rendering in Rails
 - [ ] Action View Form Helpers
-- [ ] Action Controller Overview
+- [x] Action Controller Overview
 - [ ] Rails Routing from the Outside In
 - [ ] Active Support Core Extensions
 - [ ] Rails Internationalization API
