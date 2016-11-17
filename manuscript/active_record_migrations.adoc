@@ -383,7 +383,7 @@ Rails 提供了与 `remove_column` 和 `add_column` 类似的 `change_column` �
 change_column :products, :part_number, :text
 ----
 
-上面的代码把 `products` 数据表的 `part_number` 字段修改为 `:text` 字段。请注意 `change_column` 命令是不可撤销的。
+上面的代码把 `products` 数据表的 `part_number` 字段修改为 `:text` 字段。请注意 `change_column` 命令是无法撤销的。
 
 除 `change_column` 方法之外，还有 `change_column_null` 和 `change_column_default` 方法，前者专门用于设置字段可以为空或不可以为空，后者专门用于修改字段的默认值。
 
@@ -395,7 +395,7 @@ change_column_default :products, :approved, from: true, to: false
 
 上面的代码把 `products` 数据表的 `:name` 字段设置为 `NOT NULL` 字段，把 `:approved` 字段的默认值由 `true` 修改为 `false`。
 
-注意：也可以把上面的 `change_column_default` 迁移写成 `change_column_default :products, :approved, false`，但这种写法是不可撤销的。
+注意：也可以把上面的 `change_column_default` 迁移写成 `change_column_default :products, :approved, false`，但这种写法是无法撤销的。
 
 [[column-modifiers]]
 ==== 字段修饰符
@@ -495,3 +495,83 @@ remove_column :posts, :slug, :string, null: false, default: '', index: true
 
 [[using-reversible]]
 ==== 使用 `reversible` 方法
+
+撤销复杂迁移所需的操作有一些是 Rails 无法自动完成的，这时可以使用 `reversible` 方法指定运行和撤销迁移所需的操作。例如：
+
+[source,ruby]
+----
+class ExampleMigration < ActiveRecord::Migration[5.0]
+  def change
+    create_table :distributors do |t|
+      t.string :zipcode
+    end
+
+    reversible do |dir|
+      dir.up do
+        # add a CHECK constraint
+        execute <<-SQL
+          ALTER TABLE distributors
+            ADD CONSTRAINT zipchk
+              CHECK (char_length(zipcode) = 5) NO INHERIT;
+        SQL
+      end
+      dir.down do
+        execute <<-SQL
+          ALTER TABLE distributors
+            DROP CONSTRAINT zipchk
+        SQL
+      end
+    end
+
+    add_column :users, :home_page_url, :string
+    rename_column :users, :email, :email_address
+  end
+end
+----
+
+使用 `reversible` 方法可以确保指令按正确顺序执行。在上面的代码中，撤销迁移时，`down` 块会在删除 `home_page_url` 字段之后、删除 `distributors` 数据表之前运行。
+
+有时，迁移执行的操作是无法撤销的，例如删除数据。在这种情况下，我们可以在 `down` 块中抛出 `ActiveRecord::IrreversibleMigration` 异常。这样一旦尝试撤销迁移，就会显示无法撤销迁移的出错信息。
+
+[[using-the-up-down-methods]]
+==== 使用 `up` 和 `down` 方法
+
+可以使用 `up` 和 `down` 方法以传统风格编写迁移而不使用 `change` 方法。`up` 方法用于描述对数据库模式所做的改变，`down` 方法用于撤销 `up` 方法所做的改变。换句话说，如果调用 `up` 方法之后紧接着调用 `down` 方法，数据库模式不会发生任何改变。例如用 `up` 方法创建数据表，就应该用 `down` 方法删除这个数据表。在 `down` 方法中撤销迁移时，明智的做法是按照和 `up` 方法中操作相反的顺序执行操作。下面的例子和上一节“使用 `reversible` 方法”中的例子的功能完全相同：
+
+[source,ruby]
+----
+class ExampleMigration < ActiveRecord::Migration[5.0]
+  def up
+    create_table :distributors do |t|
+      t.string :zipcode
+    end
+
+    # add a CHECK constraint
+    execute <<-SQL
+      ALTER TABLE distributors
+        ADD CONSTRAINT zipchk
+        CHECK (char_length(zipcode) = 5);
+    SQL
+
+    add_column :users, :home_page_url, :string
+    rename_column :users, :email, :email_address
+  end
+
+  def down
+    rename_column :users, :email_address, :email
+    remove_column :users, :home_page_url
+
+    execute <<-SQL
+      ALTER TABLE distributors
+        DROP CONSTRAINT zipchk
+    SQL
+
+    drop_table :distributors
+  end
+end
+----
+
+对于无法撤销的迁移，应该在 `down` 方法中抛出 `ActiveRecord::IrreversibleMigration` 异常。这样一旦尝试撤销迁移，就会显示无法撤销迁移的出错信息。
+
+[[reverting-previous-igrations]]
+==== 撤销之前的迁移
