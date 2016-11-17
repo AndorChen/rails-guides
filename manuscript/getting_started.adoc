@@ -1705,7 +1705,7 @@ class CommentsController < ApplicationController
   # snippet for brevity
 ----
 
-现在如果我们试着新建文章，就会看到HTTP 基本认证的对话框：
+现在如果我们试着新建文章，就会看到 HTTP 基本认证的对话框：
 
 [[challenge]]
 .HTTP 基本认证对话框
