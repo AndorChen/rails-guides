@@ -1705,10 +1705,10 @@ class CommentsController < ApplicationController
   # snippet for brevity
 ----
 
-现在如果我们试着新建文章，就会看到基本 HTTP 认证的对话框：
+现在如果我们试着新建文章，就会看到HTTP 基本认证的对话框：
 
 [[challenge]]
-.基本 HTTP 认证对话框
+.HTTP 基本认证对话框
 image::challenge.png[基本 HTTP 认证对话框]
 
 还可以在 Rails 中使用其他认证方法。在众多选择中，link:https://github.com/plataformatec/devise[Devise] 和 link:https://github.com/binarylogic/authlogic[Authlogic] 是两个流行的 Rails 认证扩展。
