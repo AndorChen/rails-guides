@@ -575,3 +575,58 @@ end
 
 [[reverting-previous-igrations]]
 ==== 撤销之前的迁移
+
+Active Record 提供了 `revert` 方法用于回滚迁移：
+
+[source,ruby]
+----
+require_relative '20121212123456_example_migration'
+
+class FixupExampleMigration < ActiveRecord::Migration[5.0]
+  def change
+    revert ExampleMigration
+
+    create_table(:apples) do |t|
+      t.string :variety
+    end
+  end
+end
+----
+
+`revert` 方法也接受块参数，在块中可以定义用于撤销迁移的指令。如果只是想要撤销之前迁移的部分操作，就可以使用块参数。例如，假设有一个 `ExampleMigration` 迁移已经执行，但后来发现应该用 ActiveRecord 验证代替 `CHECK` 约束来验证邮编，那么可以像下面这样编写迁移：
+
+[source,ruby]
+----
+class DontUseConstraintForZipcodeValidationMigration < ActiveRecord::Migration[5.0]
+  def change
+    revert do
+      # copy-pasted code from ExampleMigration
+      reversible do |dir|
+        dir.up do
+          # add a CHECK constraint
+          execute <<-SQL
+            ALTER TABLE distributors
+              ADD CONSTRAINT zipchk
+                CHECK (char_length(zipcode) = 5);
+          SQL
+        end
+        dir.down do
+          execute <<-SQL
+            ALTER TABLE distributors
+              DROP CONSTRAINT zipchk
+          SQL
+        end
+      end
+
+      # The rest of the migration was ok
+    end
+  end
+end
+----
+
+不使用 `revert` 方法也可以编写出和上面的迁移功能相同的迁移，但需要更多步骤：调换 `create_table` 方法和 `reversible` 方法的顺序，用 `drop_table` 方法代替 `create_table` 方法，最后对调 `up` 和 `down` 方法。换句话说，这么多步骤用一个 `revert` 方法就可以代替。
+
+NOTE: 要想像上面的例子一样添加 `CHECK` 约束，必须使用 `structure.sql` 作为转储方法。请参阅 <<active_record_migrations#schema-dumping-and-you>>。
+
+[[running-migrations]]
+=== 运行迁移
