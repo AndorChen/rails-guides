@@ -835,3 +835,12 @@ end
 
 [[active-record-and-referential-integrity]]
 === Active Record 和引用完整性
+
+Active Record 在模型而不是数据库中声明关联。因此，像触发器、约束这些依赖数据库的特性没有被大量使用。
+
+验证，如 `validates :foreign_key, uniqueness: true`，是模型强制数据完整性的一种方式。在关联中设置 `:dependent` 选项，可以保证父对象删除后，子对象也会被删除。和其他程序层的操作一样，这些操作无法保证引用完整性，因此有些人会在数据库中使用 <<active_record_migrations#foreign-keys>> 以加强数据完整性。
+
+尽管 Active Record 并未提供用于直接处理这些特性的工具，但 `execute` 方法可以用于执行任意 SQL。
+
+[[migrations-and-seed-data]]
+=== 迁移和种子数据
