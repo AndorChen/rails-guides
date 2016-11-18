@@ -780,3 +780,17 @@ end
 
 [[schema-dumping-and-you]]
 === 数据库模式转储
+
+[[what-are-schema-files-for]]
+==== 数据库模式文件有什么用？
+
+迁移尽管很强大，但并非数据库模式的可信来源。`db/schema.rb` 文件或 Active Record 通过检查数据库生成的 SQL 文件才是数据库模式的可信来源。这两个可信来源不应该被修改，它们仅用于表示数据库的当前状态。
+
+当需要部署 Rails 程序的新实例时，不必把所有迁移重新运行一遍，直接加载当前数据库的模式文件要简单和快速得多。
+
+例如，我们可以这样创建测试数据库：把当前的开发数据库转储为 `db/schema.rb` 或 `db/structure.sql` 文件，然后加载到测试数据库。
+
+数据库模式文件还可以用于快速查看 Active Record 对象具有的属性。这些属性信息不仅在模型代码中找不到，而且经常分散在几个迁移文件中，还好在数据库模式文件中可以很容易地查看这些信息。link:https://github.com/ctran/annotate_models[annotate_models] gem 会在每个模型文件的顶部自动添加和更新注释，这些注释是对当前数据库模式的概述，如果需要可以使用这个 gem。
+
+[[types-of-schema-dumps]]
+==== 数据库模式转储的类型
