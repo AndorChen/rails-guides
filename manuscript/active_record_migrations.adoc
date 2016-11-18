@@ -701,4 +701,72 @@ $ bin/rails db:migrate RAILS_ENV=test
 ----
 
 [[changing-the-output-of-running-migrations]]
-==== 修改运行迁移时的输出
+==== 修改迁移运行时的输出
+
+运行迁移时，默认会输出正在进行的操作，以及操作所花费的时间。例如，创建数据表并添加索引的迁移在运行时会生成下面的输出：
+
+----
+==  CreateProducts: migrating =================================================
+-- create_table(:products)
+   -> 0.0028s
+==  CreateProducts: migrated (0.0028s) ========================================
+----
+
+在迁移中提供了几种方法，允许我们修改迁移运行时的输出：
+
+|===
+|方法 |用途
+
+|`suppress_messages`
+|接受块参数并禁止块生成任何输出。
+
+|`say`
+|接受信息文体作为参数并将其输出。方法的第二个参数是布尔值，用于说明输出结果是否缩进。
+
+|`say_with_time`
+|输出信息文本以及执行块所花费的时间。如果块返回整数，这个整数会被当作受块操作影响的记录的条数。
+|===
+
+例如，下面的迁移：
+
+[source,ruby]
+----
+class CreateProducts < ActiveRecord::Migration[5.0]
+  def change
+    suppress_messages do
+      create_table :products do |t|
+        t.string :name
+        t.text :description
+        t.timestamps
+      end
+    end
+
+    say "Created a table"
+
+    suppress_messages {add_index :products, :name}
+    say "and an index!", true
+
+    say_with_time 'Waiting for a while' do
+      sleep 10
+      250
+    end
+  end
+end
+----
+
+会生成下面的输出：
+
+----
+==  CreateProducts: migrating =================================================
+-- Created a table
+   -> and an index!
+-- Waiting for a while
+   -> 10.0013s
+   -> 250 rows
+==  CreateProducts: migrated (10.0054s) =======================================
+----
+
+要是不想让 Active Record 生成任何输出，可以使用 `rails db:migrate VERBOSE=false`。
+
+[[changing-existing-migrations]]
+=== 修改现有迁移
