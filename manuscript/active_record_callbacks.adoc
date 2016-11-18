@@ -1,1 +1,18 @@
-== Active Record Callbacks
+[[active-record-callbacks]]
+== Active Record 回调
+:imagesdir: ../images
+:numbered:
+
+[.chapter-abstract]
+--
+本文介绍如何介入 Active Record 对象的生命周期。
+
+读完后，你将学会：
+
+* Active Record 对象的生命周期。
+* 如何创建用于响应对象生命周期内事件的回调方法。
+* 如何把常用的回调封装到特殊类中。
+--
+
+[[the-object-life-cycle]]
+=== 对象的生命周期
