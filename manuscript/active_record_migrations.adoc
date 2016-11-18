@@ -682,3 +682,14 @@ NOTE: 重置数据库和运行所有迁移是不一样的。重置数据库只�
 
 [[running-specific-migrations]]
 ==== 运行指定迁移
+
+要想运行或撤销指定迁移，可以使用 `db:migrate:up` 和 `db:migrate:down` 任务。只需指定版本，对应迁移就会调用它的 `change` 、`up` 或 `down` 方法，例如：
+
+----
+$ bin/rails db:migrate:up VERSION=20080906120000
+----
+
+上面的命令会运行 `20080906120000` 这个迁移，调用它的 `change` 或 `up` 方法。`db:migrate:up` 任务会检查指定迁移是否已经运行过，如果已经运行过就不会执行任何操作。
+
+[[running-migrations-in-different-environments]]
+==== 在不同环境中运行迁移
