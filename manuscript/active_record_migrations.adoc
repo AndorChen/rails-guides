@@ -828,3 +828,10 @@ end
 
 [[schema-dumps-and-source-control]]
 ==== 数据库模式转储和源代码版本控制
+
+数据库模式转储是数据库模式的可信来源，因此强烈建议将其纳入源代码版本控制。
+
+`db/schema.rb` 文件包含数据库的当前版本号，这样可以确保在合并两个包含数据库模式文件的分支时会发生冲突。一旦出现这种情况，就需要手动解决冲突，保留版本较高的那个数据库模式文件。
+
+[[active-record-and-referential-integrity]]
+=== Active Record 和引用完整性
