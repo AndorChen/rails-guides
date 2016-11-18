@@ -630,3 +630,55 @@ NOTE: 要想像上面的例子一样添加 `CHECK` 约束，必须使用 `struct
 
 [[running-migrations]]
 === 运行迁移
+
+Rails 提供了一套用于运行迁移的 `bin/rails` 任务。其中最常用的是 `rails db:migrate` 任务，用于调用所有未运行的迁移中的 `chagne` 或 `up` 方法。如果没有未运行的迁移，任务会直接退出。调用顺序是根据迁移文件名的时间戳确定的。
+
+请注意，执行 `db:migrate` 任务时会自动执行 `db:schema:dump` 任务，这个任务用于更新 `db/schema.rb` 文件，以匹配数据库结构。
+
+如果指定了目标版本，Active Record 会运行该版本之前的所有迁移（调用其中的 `change`、`up` 和 `down` 方法），其中版本指的是迁移文件名的数字前缀。例如，下面的命令会运行 `20080906120000` 版本之前的所有迁移：
+
+----
+$ bin/rails db:migrate VERSION=20080906120000
+----
+
+如果版本 `20080906120000` 高于当前版本（换句话说，是向上迁移），上面的命令会按顺序运行迁移直到运行完 `20080906120000` 版本，之后的版本都不会运行。如果是向下迁移（即版本 `20080906120000` 低于当前版本），上面的命令会按顺序运行 `20080906120000` 版本之前的所有迁移，不包括 `20080906120000` 版本。
+
+[[rolling-back]]
+==== 回滚
+
+另一个常用任务是回滚最后一个迁移。例如，当发现最后一个迁移中有错误需要修正时，就可以执行回滚任务。回滚最后一个迁移不需要指定这个迁移的版本，直接执行下面的命令即可：
+
+----
+$ bin/rails db:rollback
+----
+
+上面的命令通过撤销 `change` 方法或调用 `down` 方法来回滚最后一个迁移。要想取消多个迁移，可以使用 `STEP` 参数：
+
+----
+$ bin/rails db:rollback STEP=3
+----
+
+上面的命令会撤销最后三个迁移。
+
+`db:migrate:redo` 任务用于回滚最后一个迁移并再次运行这个迁移。和 `db:rollback` 任务一样，如果需要重做多个迁移，可以使用 `STEP` 参数，例如：
+
+----
+$ bin/rails db:migrate:redo STEP=3
+----
+
+这些 `bin/rails` 任务可以完成的操作，通过 `db:migrate` 也都能完成，区别在于这些任务使用起来更方便，无需显式指定迁移的版本。
+
+[[setup-the-database]]
+==== 安装数据库
+
+`rails db:setup` 任务用于创建数据库，加载数据库模式，并使用种子数据初始化数据库。
+
+[[resetting-the-database]]
+==== 重置数据库
+
+`rails db:reset` 任务用于删除并重新建立数据库，其功能相当于 `rails db:drop db:setup`。
+
+NOTE: 重置数据库和运行所有迁移是不一样的。重置数据库只使用当前的 `db/schema.rb` 或 `db/structure.sql` 文件的内容。如果迁移无法回滚，使用 `rails db:reset` 任务可能也没用。关于转储数据库模式的更多介绍，请参阅 <<active_record_migrations#schema-dumping-and-you>> 一节。
+
+[[running-specific-migrations]]
+==== 运行指定迁移
