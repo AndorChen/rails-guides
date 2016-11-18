@@ -694,7 +694,7 @@ $ bin/rails db:migrate:up VERSION=20080906120000
 [[running-migrations-in-different-environments]]
 ==== 在不同环境中运行迁移
 
-`bin/rails db:migrate` 任务默认在 `development` 环境中运行迁移。要想在其他环境中运行迁移，可以在执行任务时使用 `RAILS_ENV` 环境变量说明所需环境。例如，要想在 `test` 环境中运行迁移，可以执行下面的命令：
+`bin/rails db:migrate` 任务默认在开发环境中运行迁移。要想在其他环境中运行迁移，可以在执行任务时使用 `RAILS_ENV` 环境变量说明所需环境。例如，要想在测试环境中运行迁移，可以执行下面的命令：
 
 ----
 $ bin/rails db:migrate RAILS_ENV=test
@@ -844,3 +844,31 @@ Active Record 在模型而不是数据库中声明关联。因此，像触发器
 
 [[migrations-and-seed-data]]
 === 迁移和种子数据
+
+Rails 迁移特性的主要用途是使用一致的进程调用修改数据库模式的命令。迁移还可以用于添加或修改数据。对于不能删除和重建的数据库，如生产数据库，这些功能非常有用。
+
+[source,ruby]
+----
+class AddInitialProducts < ActiveRecord::Migration[5.0]
+  def up
+    5.times do |i|
+      Product.create(name: "Product ##{i}", description: "A product.")
+    end
+  end
+
+  def down
+    Product.delete_all
+  end
+end
+----
+
+使用 Rails 内置的“种子”特性可以快速简便地完成创建数据库后添加初始数据的任务。在开发和测试环境中，经常需要重新加载数据库，这时“种子”特性就更有用了。使用“种子”特性很容易，只要用 Ruby 代码填充 `db/seeds.rb` 文件，然后执行 `rails db:seed` 命令即可：
+
+[source,ruby]
+----
+5.times do |i|
+  Product.create(name: "Product ##{i}", description: "A product.")
+end
+----
+
+相比之下，这种设置新建程序数据库的方法更加干净利落。
