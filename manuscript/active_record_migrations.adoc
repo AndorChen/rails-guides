@@ -773,7 +773,7 @@ end
 
 在编写迁移时我们偶尔也会犯错误。如果已经运行过存在错误的迁移，那么直接修正迁移中的错误并重新运行这个迁移并不能解决问题：Rails 知道这个迁移已经运行过，因此执行 `rails db:migrate` 任务时不会执行任何操作。必须先回滚这个迁移（例如通过执行 `bin/rails db:rollback` 任务），再修正迁移中的错误，然后执行 `rails db:migrate` 任务来运行这个迁移的正确版本。
 
-通常，直接修改现有的迁移不是个好主意。这样做会给我们和同事带来额外的工作量，如果这个迁移已经在生产服务器上运行过，还可能带来大麻烦。作为替代，可以编写一个新的迁移来执行我们想要的操作。修改还未提交到源代码控制（或者更一般地，还未传播到开发电脑之外）的新生成的迁移是相对无害的。
+通常，直接修改现有的迁移不是个好主意。这样做会给我们和同事带来额外的工作量，如果这个迁移已经在生产服务器上运行过，还可能带来大麻烦。作为替代，可以编写一个新的迁移来执行我们想要的操作。修改还未提交到源代版本码控制系统（或者更一般地，还未传播到开发电脑之外）的新生成的迁移是相对无害的。
 
 
 在编写新的迁移来完全或部分撤销之前的迁移时，可以使用 `revert` 方法（请参阅前面 <<active_record_migrations#reverting-previous-migrations>> 一节）。
@@ -784,7 +784,7 @@ end
 [[what-are-schema-files-for]]
 ==== 数据库模式文件有什么用？
 
-迁移尽管很强大，但并非数据库模式的可信来源。`db/schema.rb` 文件或 Active Record 通过检查数据库生成的 SQL 文件才是数据库模式的可信来源。这两个可信来源不应该被修改，它们仅用于表示数据库的当前状态。
+迁移尽管很强大，但并非数据库模式的可信来源。Active Record 通过检查数据库生成的 `db/schema.rb` 文件或 SQL 文件才是数据库模式的可信来源。这两个可信来源不应该被修改，它们仅用于表示数据库的当前状态。
 
 当需要部署 Rails 程序的新实例时，不必把所有迁移重新运行一遍，直接加载当前数据库的模式文件要简单和快速得多。
 
@@ -794,3 +794,37 @@ end
 
 [[types-of-schema-dumps]]
 ==== 数据库模式转储的类型
+
+数据库模式转储有两种方式，可以通过 `config/application.rb` 文件的 `config.active_record.schema_format` 选项来设置想要采用的方式，即 `:sql` 或 `:ruby`。
+
+如果选择了 `:ruby`，那么数据库模式会储存在 `db/schema.rb` 文件中。打开这个文件，会看到内容很多，就像一个巨大的迁移：
+
+[source,ruby]
+----
+ActiveRecord::Schema.define(version: 20080906171750) do
+  create_table "authors", force: true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "products", force: true do |t|
+    t.string   "name"
+    t.text "description"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string "part_number"
+  end
+end
+----
+
+在很多情况下，我们看到的数据库模式文件就是上面这个样子。这个文件是通过检查数据库生成的，使用 `create_table`、`add_index` 等方法来表达数据库结构。这个文件是数据库无关的，因此可以加载到 Active Record 支持的任何一种数据库。如果想要分发运行多数据库的 Rails 程序，数据库无关这一特性就非常有用了。
+
+尽管如此，`db/schema.rb` 在设计上也有所取舍：它不能表达数据库的特定项目，如触发器、存储过程或检查约束。尽管我们可以在迁移中执行定制的 SQL 语句，但是数据库模式转储工具无法从数据库中复原这些语句。如果我们使用了这类特性，就应该把数据库模式的格式设置为 `:sql`。
+
+在把数据库模式转储到 `db/structure.sql` 文件时，我们不使用数据库模式转储工具，而是使用数据库特有的工具（通过执行 `db:structure:dump` 任务）。例如，对于 PostgreSQL，使用的是 `pg_dump` 实用程序。对于 MySQL 和 MariaDB，`db/structure.sql` 文件将包含各种数据表的 `SHOW CREATE TABLE` 语句的输出。
+
+加载数据库模式实际上就是执行其中包含的 SQL 语句。根据定义，加载数据库模式会创建数据库结构的完美拷贝。`:sql` 格式的数据库模式，只能加载到和原有数据库类型相同的数据库，而不能加载到其他类型的数据库。
+
+[[schema-dumps-and-source-control]]
+==== 数据库模式转储和源代码版本控制
