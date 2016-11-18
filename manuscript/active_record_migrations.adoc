@@ -769,4 +769,14 @@ end
 要是不想让 Active Record 生成任何输出，可以使用 `rails db:migrate VERBOSE=false`。
 
 [[changing-existing-migrations]]
-=== 修改现有迁移
+=== 修改现有的迁移
+
+在编写迁移时我们偶尔也会犯错误。如果已经运行过存在错误的迁移，那么直接修正迁移中的错误并重新运行这个迁移并不能解决问题：Rails 知道这个迁移已经运行过，因此执行 `rails db:migrate` 任务时不会执行任何操作。必须先回滚这个迁移（例如通过执行 `bin/rails db:rollback` 任务），再修正迁移中的错误，然后执行 `rails db:migrate` 任务来运行这个迁移的正确版本。
+
+通常，直接修改现有的迁移不是个好主意。这样做会给我们和同事带来额外的工作量，如果这个迁移已经在生产服务器上运行过，还可能带来大麻烦。作为替代，可以编写一个新的迁移来执行我们想要的操作。修改还未提交到源代码控制（或者更一般地，还未传播到开发电脑之外）的新生成的迁移是相对无害的。
+
+
+在编写新的迁移来完全或部分撤销之前的迁移时，可以使用 `revert` 方法（请参阅前面 <<active_record_migrations#reverting-previous-migrations>> 一节）。
+
+[[schema-dumping-and-you]]
+=== 数据库模式转储
