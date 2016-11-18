@@ -6,7 +6,7 @@
 
 - [x] Getting Started with Rails
 - [x] Active Record Basics
-- [ ] Active Record Migrations
+- [x] Active Record Migrations
 - [x] Active Record Validations
 - [ ] Active Record Callbacks
 - [x] Active Record Associations
@@ -43,7 +43,7 @@
 ## 译者
 
 - 安道
-- chinakr
+- [chinakr](https://github.com/chinakr)
 
 ## 赞助商
 
