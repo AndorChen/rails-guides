@@ -693,3 +693,12 @@ $ bin/rails db:migrate:up VERSION=20080906120000
 
 [[running-migrations-in-different-environments]]
 ==== 在不同环境中运行迁移
+
+`bin/rails db:migrate` 任务默认在 `development` 环境中运行迁移。要想在其他环境中运行迁移，可以在执行任务时使用 `RAILS_ENV` 环境变量说明所需环境。例如，要想在 `test` 环境中运行迁移，可以执行下面的命令：
+
+----
+$ bin/rails db:migrate RAILS_ENV=test
+----
+
+[[changing-the-output-of-running-migrations]]
+==== 修改运行迁移时的输出
