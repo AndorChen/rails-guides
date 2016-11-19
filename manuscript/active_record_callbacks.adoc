@@ -17,9 +17,71 @@
 [[the-object-life-cycle]]
 === 对象的生命周期
 
-在 Rails 程序正常操作期间，对象可以被创建、更新或销毁。 Active Record 为对象的生命周期提供了钩子，使我们可以控制程序及其数据。
+在 Rails 程序正常操作期间，对象可以被创建、更新或删除。 Active Record 为对象的生命周期提供了钩子，使我们可以控制程序及其数据。
 
 回调使我们可以在对象状态更改之前或之后触发逻辑。
 
 [[callbacks-overview]]
 === 回调概述
+
+回调是在对象生命周期的某些时刻被调用的方法。通过回调，我们可以编写在创建、保存、更新、删除、验证或从数据库加载 Active Record 对象时执行的代码。
+
+[[callback-registration]]
+==== 注册回调
+
+回调在使用之前需要注册。我们可以先把回调定义为普通方法，然后使用宏样式类方法把这些普通方法注册为回调：
+
+[[source,ruby]]
+----
+class User < ApplicationRecord
+  validates :login, :email, presence: true
+
+  before_validation :ensure_login_has_a_value
+
+  protected
+    def ensure_login_has_a_value
+      if login.nil?
+        self.login = email unless email.blank?
+      end
+    end
+end
+----
+
+宏样式类方法也接受块参数。如果块中的代码短到可以放在一行里，就可以考虑使用块参数这种编程风格：
+
+[source,ruby]
+----
+class User < ApplicationRecord
+  validates :login, :email, presence: true
+
+  before_create do
+    self.name = login.capitalize if name.blank?
+  end
+end
+----
+
+回调也可以注册为仅被某些生命周期事件触发：
+
+[source,ruby]
+----
+class User < ApplicationRecord
+  before_validation :normalize_name, on: :create
+
+  # :on takes an array as well
+  after_validation :set_location, on: [ :create, :update ]
+
+  protected
+    def normalize_name
+      self.name = name.downcase.titleize
+    end
+
+    def set_location
+      self.location = LocationService.query(self)
+    end
+end
+----
+
+通常应该把回调定义为受保护的方法或私有方法。如果把回调定义为公共方法，就可以从模型外部调用回调，这样做违反了对象封装原则。
+
+[[available-callbacks]]
+=== 可用的回调
