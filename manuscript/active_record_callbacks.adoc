@@ -17,7 +17,7 @@
 [[the-object-life-cycle]]
 === 对象的生命周期
 
-在 Rails 程序正常操作期间，对象可以被创建、更新或删除。 Active Record 为对象的生命周期提供了钩子，使我们可以控制程序及其数据。
+在 Rails 程序正常操作期间，对象可以被创建、更新或删除。Active Record 为对象的生命周期提供了钩子，使我们可以控制程序及其数据。
 
 回调使我们可以在对象状态更改之前或之后触发逻辑。
 
@@ -129,7 +129,7 @@ WARNING: 无论按什么顺序注册回调，在创建和更新对象时，`afte
 
 当 Active Record 对象被实例化时，不管是通过直接使用 `new` 方法还是从数据库加载记录，都会调用 `after_initialize` 回调。使用这个回调可以避免直接重载 Active Record 的 `initialize` 方法。
 
-当 Active Record 从数据库加载记录时，会调用 `after_find` 回调。 如果同时定义了 `after_initialize` 和 `after_find` 回调，会先调用 `after_find` 回调。
+当 Active Record 从数据库加载记录时，会调用 `after_find` 回调。如果同时定义了 `after_initialize` 和 `after_find` 回调，会先调用 `after_find` 回调。
 
 `after_initialize` 和 `after_find` 回调没有对应的 `before_*` 回调，这两个回调的注册方法和其他 Active Record 回调一样。
 
@@ -283,3 +283,34 @@ WARNING: 当回调链停止后，Rails 会重新抛出除了 `ActiveRecord::Roll
 
 [[relational-callbacks]]
 === 关联回调
+
+回调不仅可以在模型关联中使用，还可以通过模型关联定义。假设有一个用户在博客上发表了多篇文章，现在我们要删除这个用户，那么这个用户的所有文章也应该删除，为此我们通过 `Article` 模型和 `User` 模型的关联来给 `User` 模型添加一个 `after_destroy` 回调：
+
+[source,ruby]
+----
+class User < ApplicationRecord
+  has_many :articles, dependent: :destroy
+end
+
+class Article < ApplicationRecord
+  after_destroy :log_destroy_action
+
+  def log_destroy_action
+    puts 'Article destroyed'
+  end
+end
+----
+
+[source,irb]
+----
+>> user = User.first
+=> #<User id: 1>
+>> user.articles.create!
+=> #<Article id: 1, user_id: 1>
+>> user.destroy
+Article destroyed
+=> #<User id: 1>
+----
+
+[[conditional-callbacks]]
+=== 条件回调
