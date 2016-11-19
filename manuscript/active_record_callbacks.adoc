@@ -343,3 +343,29 @@ end
 
 [[using-if-and-unless-with-a-proc]]
 ==== 使用 Proc 作为 `:if` 和 `:unless` 选项的值
+
+最后，可以使用 Proc 作为 `:if` 和 `:unless` 选项的值。在验证方法非常短时最适合使用这种方式，这类验证方法通常只有一行代码：
+
+[source,ruby]
+----
+class Order < ApplicationRecord
+  before_save :normalize_card_number,
+    if: Proc.new { |order| order.paid_with_card? }
+end
+----
+
+[[multiple-conditions-for-callbacks]]
+==== 在条件回调中使用多个条件
+
+在编写条件回调时，我们可以在同一个回调声明中混合使用 `:if` 和 `:unless` 选项：
+
+[source,ruby]
+----
+class Comment < ApplicationRecord
+  after_create :send_email_to_author, if: :author_wants_emails?,
+    unless: Proc.new { |comment| comment.article.ignore_comments? }
+end
+----
+
+[[callback-classes]]
+=== 回调类
