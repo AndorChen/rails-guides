@@ -254,3 +254,23 @@ NOTE: `find_by_*` 和 `find_by_*!` 方法是为每个属性自动生成的动态
 
 [[skipping-callbacks]]
 === 跳过回调
+
+和验证一样，我们可以跳过回调。使用下面这些方法可以跳过回调：
+
+* `decrement`
+* `decrement_counter`
+* `delete`
+* `delete_all`
+* `increment`
+* `increment_counter`
+* `toggle`
+* `touch`
+* `update_column`
+* `update_columns`
+* `update_all`
+* `update_counters`
+
+请慎重地使用这些方法，因为有些回调包含了重要的业务规则和程序逻辑，在不了解潜在影响的情况下就跳过回调，可能导致无效数据。
+
+[[halting-execution]]
+=== 停止执行
