@@ -314,3 +314,20 @@ Article destroyed
 
 [[conditional-callbacks]]
 === 条件回调
+
+和验证一样，我们可以在满足指定条件时再调用回调方法。为此，我们可以使用 `:if` 和 `:unless` 选项，选项的值可以是符号、字符串、`Proc` 或数组。要想指定在哪些条件下调用回调，可以使用 `:if` 选项。要想指定在哪些条件下不调用回调，可以使用 `:unless` 选项。
+
+[[using-if-and-unless-with-a-symbol]]
+==== 使用符号作为 `:if` 和 `:unless` 选项的值
+
+可以使用符号作为 `:if` 和 `:unless` 选项的值，这里的符号用于表示先于回调调用的断言方法。当使用 `:if` 选项时，如果断言方法返回 `false` 就不会调用回调；当使用 `:unless` 选项时，如果断言方法返回 `true` 就不会调用回调。使用符号作为 `:if` 和 `:unless` 选项的值是最常见的方式。在使用这种方式注册回调时，我们可以同时使用几个不同的断言，用于检查是否应该调用回调。
+
+[source,ruby]
+----
+class Order < ApplicationRecord
+  before_save :normalize_card_number, if: :paid_with_card?
+end
+----
+
+[[using-if-and-unless-with-a-string]]
+==== 使用字符串作为 `:if` 和 `:unless` 选项的值
