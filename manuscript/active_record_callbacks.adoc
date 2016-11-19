@@ -85,3 +85,136 @@ end
 
 [[available-callbacks]]
 === 可用的回调
+
+下面按照回调在 Rails 程序正常操作期间被调用的顺序，列出了所有可用的 Active Record 回调：
+
+[[creating-an-object]]
+==== 创建对象
+
+* `before_validation`
+* `after_validation`
+* `before_save`
+* `around_save`
+* `before_create`
+* `around_create`
+* `after_create`
+* `after_save`
+* `after_commit/after_rollback`
+
+[[updating-an-object]]
+==== 更新对象
+
+* `before_validation`
+* `after_validation`
+* `before_save`
+* `around_save`
+* `before_update`
+* `around_update`
+* `after_update`
+* `after_save`
+* `after_commit/after_rollback`
+
+[[destroying-an-object]]
+==== 删除对象
+
+* `before_destroy`
+* `around_destroy`
+* `after_destroy`
+* `after_commit/after_rollback`
+
+WARNING: 无论按什么顺序注册回调，在创建和更新对象时，`after_save` 回调总是在更明确的 `after_create` 和 `after_update` 回调之后被调用。
+
+[[after-initialize-and-after-find]]
+==== `after_initialize` 和 `after_find` 回调
+
+当 Active Record 对象被实例化时，不管是通过直接使用 `new` 方法还是从数据库加载记录，都会调用 `after_initialize` 回调。使用这个回调可以避免直接重载 Active Record 的 `initialize` 方法。
+
+当 Active Record 从数据库加载记录时，会调用 `after_find` 回调。 如果同时定义了 `after_initialize` 和 `after_find` 回调，会先调用 `after_find` 回调。
+
+`after_initialize` 和 `after_find` 回调没有对应的 `before_*` 回调，这两个回调的注册方法和其他 Active Record 回调一样。
+
+[source,ruby]
+----
+class User < ApplicationRecord
+  after_initialize do |user|
+    puts "You have initialized an object!"
+  end
+
+  after_find do |user|
+    puts "You have found an object!"
+  end
+end
+----
+
+[source,irb]
+----
+>> User.new
+You have initialized an object!
+=> #<User id: nil>
+
+>> User.first
+You have found an object!
+You have initialized an object!
+=> #<User id: 1>
+----
+
+[[after-touch]]
+==== `after_touch` 回调
+
+当我们在 Active Record 对象上调用 `touch` 方法时，会调用 `after_touch` 回调。
+
+[[source,ruby]]
+----
+class User < ApplicationRecord
+  after_touch do |user|
+    puts "You have touched an object"
+  end
+end
+----
+
+[source,irb]
+----
+>> u = User.create(name: 'Kuldeep')
+=> #<User id: 1, name: "Kuldeep", created_at: "2013-11-25 12:17:49", updated_at: "2013-11-25 12:17:49">
+
+>> u.touch
+You have touched an object
+=> true
+----
+
+`after_touch` 回调可以和 `belongs_to` 一起使用：
+
+[source,ruby]
+----
+class Employee < ApplicationRecord
+  belongs_to :company, touch: true
+  after_touch do
+    puts 'An Employee was touched'
+  end
+end
+
+class Company < ApplicationRecord
+  has_many :employees
+  after_touch :log_when_employees_or_company_touched
+
+  private
+  def log_when_employees_or_company_touched
+    puts 'Employee/Company was touched'
+  end
+end
+----
+
+[source,irb]
+----
+>> @employee = Employee.last
+=> #<Employee id: 1, company_id: 1, created_at: "2013-11-25 17:04:22", updated_at: "2013-11-25 17:05:05">
+
+# triggers @employee.company.touch
+>> @employee.touch
+Employee/Company was touched
+An Employee was touched
+=> true
+----
+
+[[running-callbacks]]
+=== 调用回调
