@@ -218,3 +218,39 @@ An Employee was touched
 
 [[running-callbacks]]
 === 调用回调
+
+下面这些方法会触发回调：
+
+* `create`
+* `create!`
+* `decrement!`
+* `destroy`
+* `destroy!`
+* `destroy_all`
+* `increment!`
+* `save`
+* `save!`
+* `save(validate: false)`
+* `toggle!`
+* `update_attribute`
+* `update`
+* `update!`
+* `valid?`
+
+此外，下面这些查找器方法会触发 `after_find` 回调：
+
+* `all`
+* `first`
+* `find`
+* `find_by`
+* `find_by_*`
+* `find_by_*!`
+* `find_by_sql`
+* `last`
+
+每次初始化类的新对象时都会触发 `after_initialize` 回调。
+
+NOTE: `find_by_*` 和 `find_by_*!` 方法是为每个属性自动生成的动态查找器。关于动态查找器的更多介绍，请参阅 <<active_record_querying#dynamic-finders>> 一节。
+
+[[skipping-callbacks]]
+=== 跳过回调
