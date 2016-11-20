@@ -369,3 +369,54 @@ end
 
 [[callback-classes]]
 === 回调类
+
+有时需要在其他模型中重用已有的回调方法，为了解决这个问题，Active Record 允许我们用类来封装回调方法。有了回调类，回调方法的重用就变得非常容易。
+
+在下面的例子中，我们为 `PictureFile` 模型创建了 `PictureFileCallbacks` 回调类，在这个回调类中包含了 `after_destroy` 回调方法：
+
+[source,ruby]
+----
+class PictureFileCallbacks
+  def after_destroy(picture_file)
+    if File.exist?(picture_file.filepath)
+      File.delete(picture_file.filepath)
+    end
+  end
+end
+----
+
+在上面的代码中我们可以看到，当在回调类中声明回调方法时，回调方法接受模型对象作为参数。回调类定义之后就可以在模型中使用了：
+
+[source,ruby]
+----
+class PictureFile < ApplicationRecord
+  after_destroy PictureFileCallbacks.new
+end
+----
+
+请注意，上面我们把回调声明为实例方法，因此需要实例化新的 `PictureFileCallbacks` 对象。当回调想要使用实例化的对象的状态时，这种声明方式特别有用。尽管如此，一般我们会把回调声明为类方法：
+
+[source,ruby]
+----
+class PictureFileCallbacks
+  def self.after_destroy(picture_file)
+    if File.exist?(picture_file.filepath)
+      File.delete(picture_file.filepath)
+    end
+  end
+end
+----
+
+如果把回调声明为类方法，就不需要实例化新的 `PictureFileCallbacks` 对象。
+
+[source,ruby]
+----
+class PictureFile < ApplicationRecord
+  after_destroy PictureFileCallbacks
+end
+----
+
+我们可以根据需要在回调类中声明任意多的回调。
+
+[[transaction-callbacks]]
+=== 事务回调
