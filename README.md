@@ -8,7 +8,7 @@
 - [x] Active Record Basics
 - [x] Active Record Migrations
 - [x] Active Record Validations
-- [ ] Active Record Callbacks
+- [x] Active Record Callbacks
 - [x] Active Record Associations
 - [ ] Active Record Query Interface
 - [ ] Active Model Basics
