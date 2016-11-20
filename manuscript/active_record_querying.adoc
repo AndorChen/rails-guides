@@ -18,3 +18,44 @@
 * 如何在 Active Record 模型上做各种计算。
 * 如何在关联上执行 `EXPLAIN` 命令。
 --
+
+如果你习惯直接使用 SQL 来查找数据库记录，那么你通常会发现 Rails 为执行相同操作提供了更好的方式。在大多数情况下，Active Record 使你无需使用 SQL。
+
+本文中的示例代码会用到下面的一个或多个模型：
+
+NOTE: 除非另有说明，下面所有模型都使用 `id` 作为主键。
+
+[source,ruby]
+----
+class Client < ApplicationRecord
+  has_one :address
+  has_many :orders
+  has_and_belongs_to_many :roles
+end
+----
+
+[source,ruby]
+----
+class Address < ApplicationRecord
+  belongs_to :client
+end
+----
+
+[source,ruby]
+----
+class Order < ApplicationRecord
+  belongs_to :client, counter_cache: true
+end
+----
+
+[source,ruby]
+----
+class Role < ApplicationRecord
+  has_and_belongs_to_many :clients
+end
+----
+
+Active Record 会为你执行数据库查询，它和大多数数据库系统兼容，包括 MySQL、MariaDB、PostgreSQL 和 SQLite。不管使用哪个数据库系统，Active Record 方法的用法总是相同。
+
+[[retrieving-objects-from-the-database]]
+=== 从数据库取回对象
