@@ -420,3 +420,53 @@ end
 
 [[transaction-callbacks]]
 === 事务回调
+
+`after_commit` 和 `after_rollback` 这两个回调会在数据库事务完成时触发。它们和 `after_save` 回调非常相似，区别在于它们在数据库变更已经提交或回滚后才会执行，常用于 Active Record 模型需要和数据库事务之外的系统交互的场景。
+
+例如，在前面的例子中，`PictureFile` 模型中的记录删除后，还要删除相应的文件。如果 `after_destroy` 回调执行后程序引发异常，事务就会回滚，文件会被删除，模型会保持不一致的状态。例如，假设在下面的代码中，`picture_file_2` 对象是不合法的，那么调用 `save!` 方法会引发错误：
+
+[source,ruby]
+----
+PictureFile.transaction do
+  picture_file_1.destroy
+  picture_file_2.save!
+end
+----
+
+通过使用 `after_commit` 回调，我们可以解决这个问题：
+
+[source,ruby]
+----
+class PictureFile < ApplicationRecord
+  after_commit :delete_picture_file_from_disk, on: [:destroy]
+
+  def delete_picture_file_from_disk
+    if File.exist?(filepath)
+      File.delete(filepath)
+    end
+  end
+end
+----
+
+NOTE: `:on` 选项说明什么时候触发回调。如果不提供 `:on` 选项，那么每个动作都会触发回调。
+
+由于只在执行创建、更新或删除动作时触发 `after_commit` 回调是很常见的，这些操作都拥有别名：
+
+* `after_create_commit`
+* `after_update_commit`
+* `after_destroy_commit`
+
+[source,ruby]
+----
+class PictureFile < ApplicationRecord
+  after_destroy_commit :delete_picture_file_from_disk
+
+  def delete_picture_file_from_disk
+    if File.exist?(filepath)
+      File.delete(filepath)
+    end
+  end
+end
+----
+
+WARNING: 对于在事务中创建、更新或删除的模型，`after_commit` 和 `after_rollback` 回调一定会被调用。如果其中有一个回调引发异常，这个异常会被忽略，以避免干扰其他回调。因此，如果回调代码可能引发异常，就需要在回调中救援并进行适当处理。
