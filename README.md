@@ -17,7 +17,7 @@
 - [ ] Action View Form Helpers
 - [x] Action Controller Overview
 - [ ] Rails Routing from the Outside In
-- [ ] Active Support Core Extensions
+- [x] Active Support Core Extensions
 - [ ] Rails Internationalization API
 - [ ] Action Mailer Basics
 - [ ] Active Job Basics
