@@ -59,3 +59,289 @@ Active Record 会为你执行数据库查询，它和大多数数据库系统兼
 
 [[retrieving-objects-from-the-database]]
 === 从数据库取回对象
+
+Active Record 提供了几个用于从数据库取回对象的查找器方法。查找器方法接受参数并执行指定的数据库查询，使我们无需直接使用 SQL。
+
+下面列出了这些查找器方法：
+
+* `find`
+* `create_with`
+* `distinct`
+* `eager_load`
+* `extending`
+* `from`
+* `group`
+* `having`
+* `includes`
+* `joins`
+* `left_outer_joins`
+* `limit`
+* `lock`
+* `none`
+* `offset`
+* `order`
+* `preload`
+* `readonly`
+* `references`
+* `reorder`
+* `reverse_order`
+* `select`
+* `distinct`
+* `where`
+
+上面的所有方法都会返回 `ActiveRecord::Relation` 的实例。
+
+`Model.find(options)` 执行的主要操作可以概括为：
+
+* 把提供的选项转换为等价的 SQL 查询。
+* 触发 SQL 查询并从数据库取回对应结果。
+* 为每个查询结果实例化对应的模型对象。
+* 当存在回调时，先调用 `after_find` 回调再调用 `after_initialize` 回调。
+
+[[retrieving-a-single-object]]
+==== 取回单个对象
+
+Active Record 为取回单个对象提供了几个不同的方法。
+
+[[find]]
+===== `find` 方法
+
+可以使用 `find` 方法取回指定主键对应的对象，指定主键时可以使用多个选项。例如：
+
+[source,ruby]
+----
+# Find the client with primary key (id) 10.
+client = Client.find(10)
+# => #<Client id: 10, first_name: "Ryan">
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.id = 10) LIMIT 1
+----
+
+如果没有找到匹配的记录，`find` 方法会引发 `ActiveRecord::RecordNotFound` 异常。
+
+还可以使用 `find` 方法查询多个对象，方法是调用 `find` 方法并传入主键的数组。返回值是包含所提供的主键的所有匹配记录的数组。例如：
+
+[source,ruby]
+----
+# Find the clients with primary keys 1 and 10.
+client = Client.find([1, 10]) # Or even Client.find(1, 10)
+# => [#<Client id: 1, first_name: "Lifo">, #<Client id: 10, first_name: "Ryan">]
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.id IN (1,10))
+----
+
+WARNING: 如果所提供的主键都没有匹配记录，那么 `find` 方法会引发 `ActiveRecord::RecordNotFound` 异常。
+
+[[take]]
+===== `take` 方法
+
+`take` 方法会取回一条记录而不考虑排序问题。例如：
+
+[source,ruby]
+----
+client = Client.take
+# => #<Client id: 1, first_name: "Lifo">
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients LIMIT 1
+----
+
+如果没有找到记录，`take` 方法会返回 `nil`，而不会引发异常。
+
+`take` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
+
+[source,ruby]
+----
+client = Client.take(2)
+# => [
+#   #<Client id: 1, first_name: "Lifo">,
+#   #<Client id: 220, first_name: "Sara">
+# ]
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients LIMIT 2
+----
+
+`take!` 方法的行为和 `take` 方法类似，区别在于如果没有找到匹配的记录，`take!` 方法会引发 `ActiveRecord::RecordNotFound` 异常。
+
+NOTE: 对于不同的数据库引擎，`take` 方法取回的记录可能不一样。
+
+[[first]]
+===== `first` 方法
+
+`first` 方法默认会查找按主键排序的第一条记录。例如：
+
+[source,ruby]
+----
+client = Client.first
+# => #<Client id: 1, first_name: "Lifo">
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients ORDER BY clients.id ASC LIMIT 1
+----
+
+如果没有找到匹配的记录，`first` 方法会返回 `nil`，而不会引发异常。
+
+如果默认作用域 （请参阅 <<hactive_record_querying#applying-a-default-scope>> 一节）包含排序方法，`first` 方法会返回按照这个顺序排序的第一条记录。
+
+`first` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
+
+[source,ruby]
+----
+client = Client.first(3)
+# => [
+#   #<Client id: 1, first_name: "Lifo">,
+#   #<Client id: 2, first_name: "Fifo">,
+#   #<Client id: 3, first_name: "Filo">
+# ]
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients ORDER BY clients.id ASC LIMIT 3
+----
+
+对于使用 `order` 排序的集合，`first` 方法返回按照指定属性排序的第一条记录。例如：
+
+[source,ruby]
+----
+client = Client.order(:first_name).first
+# => #<Client id: 2, first_name: "Fifo">
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients ORDER BY clients.first_name ASC LIMIT 1
+----
+
+`first!` 方法的行为和 `first` 方法类似，区别在于如果没有找到匹配的记录，`first!` 方法会引发 `ActiveRecord::RecordNotFound` 异常。
+
+[[last]]
+===== `last` 方法
+
+`last` 方法默认会查找按主键排序的最后一条记录。例如：
+
+[source,ruby]
+----
+client = Client.last
+# => #<Client id: 221, first_name: "Russel">
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients ORDER BY clients.id DESC LIMIT 1
+----
+
+如果没有找到匹配的记录，`last` 方法会返回 `nil`，而不会引发异常。
+
+如果默认作用域 （请参阅 <<hactive_record_querying#applying-a-default-scope>> 一节）包含排序方法，`last` 方法会返回按照这个顺序排序的最后一条记录。
+
+`last` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
+
+[source,ruby]
+----
+client = Client.last(3)
+# => [
+#   #<Client id: 219, first_name: "James">,
+#   #<Client id: 220, first_name: "Sara">,
+#   #<Client id: 221, first_name: "Russel">
+# ]
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients ORDER BY clients.id DESC LIMIT 3
+----
+
+对于使用 `order` 排序的集合，`last` 方法返回按照指定属性排序的最后一条记录。例如：
+
+[source,ruby]
+----
+client = Client.order(:first_name).last
+# => #<Client id: 220, first_name: "Sara">
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients ORDER BY clients.first_name DESC LIMIT 1
+----
+
+`last!` 方法的行为和 `last` 方法类似，区别在于如果没有找到匹配的记录，`last!` 方法会引发 `ActiveRecord::RecordNotFound` 异常。
+
+[[find-by]]
+===== `find_by` 方法
+
+`find_by` 方法查找匹配指定条件的第一条记录。 例如：
+
+[source,ruby]
+----
+Client.find_by first_name: 'Lifo'
+# => #<Client id: 1, first_name: "Lifo">
+
+Client.find_by first_name: 'Jon'
+# => nil
+----
+
+上面的代码等价于：
+
+[source,ruby]
+----
+Client.where(first_name: 'Lifo').take
+----
+
+和上面的代码等价的 SQL 是：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.first_name = 'Lifo') LIMIT 1
+----
+
+`find_by!` 方法的行为和 `find_by` 方法类似，区别在于如果没有找到匹配的记录，`find_by!` 方法会引发 `ActiveRecord::RecordNotFound` 异常。例如：
+
+[source,ruby]
+----
+Client.find_by! first_name: 'does not exist'
+# => ActiveRecord::RecordNotFound
+----
+
+上面的代码等价于：
+
+[source,ruby]
+----
+Client.where(first_name: 'does not exist').take!
+----
+
+[[retrieving-multiple-objects-in-batches]]
+=== 批量取回多个对象
