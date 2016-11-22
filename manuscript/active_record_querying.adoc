@@ -344,4 +344,110 @@ Client.where(first_name: 'does not exist').take!
 ----
 
 [[retrieving-multiple-objects-in-batches]]
-=== 批量取回多个对象
+==== 批量取回多个对象
+
+我们常常需要遍历大量记录，例如向大量用户发送时事通讯、导出数据等。
+
+处理这类问题的方法看起来可能很简单：
+
+[source,ruby]
+----
+# This is very inefficient when the users table has thousands of rows.
+User.all.each do |user|
+  NewsMailer.weekly(user).deliver_now
+end
+----
+
+但随着数据表越来越大，这种方法越来越行不通，因为 `User.all.each` 会使 Active Record 一次性取回整个数据表，为每条记录创建模型对象，并把整个模型对象数组保存在内存中。事实上，如果我们有大量记录，整个模型对象数组需要占用的空间可能会超过可用的内存容量。
+
+Rails 提供了两种方法来解决这个问题，两种方法都是把整个记录分成多个对内存友好的批处理。第一种方法是通过 `find_each` 方法每次取回一批记录，然后逐一把每条记录作为模型传入块。第二种方法是通过 `find_in_batches` 方法每次取回一批记录，然后把这批记录批整个作为模型数组传入块。
+
+NOTE: `find_each` 和 `find_in_batches` 方法用于大量记录的批处理，这些记录数量很大以至于不适合一次性保存在内存中。如果只需要循环 1000 条记录，那么应该首选常规的 `find` 方法。
+
+[[find-each]]
+===== `find_each` 方法
+
+`find_each` 方法取回一批记录，然后逐一把每条记录作为模型传入块。在下面的例子中，`find_each` 方法取回 1000 条记录（`find_each` 和 `find_in_batches` 方法默认一次取回 1000 条记录），然后逐一把每条记录作为模型传入块。这一过程会不断重复，直到完成所有记录的处理：
+
+[source,ruby]
+----
+User.find_each do |user|
+  NewsMailer.weekly(user).deliver_now
+end
+----
+
+要想为 `find_each` 操作添加条件，我们可以链接其他 Active Record 方法，例如 `where` 方法：
+
+[source,ruby]
+----
+User.where(weekly_subscriber: true).find_each do |user|
+  NewsMailer.weekly(user).deliver_now
+end
+----
+
+[[options-for-find-each]]
+====== `find_each` 方法的选项
+
+`find_each` 方法可以使用 `find` 方法的大多数选项，但 `:order` 和 `:limit` 选项例外，它们是 `find_each` 方法内部使用的保留选项。
+
+`find_each` 方法还可以使用 `:batch_size`、`:start` 和 `:finish` 这三个附加选项。
+
+**`:batch_size`**
+
+`:batch_size` 选项用于说明批量取回记录时一次取回多少条记录。例如，一次取回 5000 条记录：
+
+[source,ruby]
+----
+User.find_each(batch_size: 5000) do |user|
+  NewsMailer.weekly(user).deliver_now
+end
+----
+
+**`:start`**
+
+记录默认是按主键的升序方式取回的，这里的主键必须是整数。`:start` 选项用于配置想要取回的记录序列的第一个 ID，比这个 ID 小的记录都不会取回。这个选项有时候很有用，例如当需要恢复之前中断的批处理时，只需从最后一个取回的记录之后开始继续处理即可。
+
+下面的例子把时事通讯发送给主键从 2000 开始的用户，一次取回 5000 条用户记录：
+
+[source,ruby]
+----
+User.find_each(start: 2000, batch_size: 5000) do |user|
+  NewsMailer.weekly(user).deliver_now
+end
+----
+
+`:finish`
+
+和 `:start` 选项类似，`:finish` 选项用于配置想要取回的记录序列的最后一个 ID，比这个 ID 大的记录都不会取回。这个选项有时候很有用，例如可以通过配置 `:start` 和 `:finish` 选项来说明想要批处理的子记录集。
+
+下面的例子把时事通讯发送给主键从 2000 到 10000 的用户，一次取回 5000 条用户记录：
+
+[source,ruby]
+----
+User.find_each(start: 2000, finish: 10000, batch_size: 5000) do |user|
+  NewsMailer.weekly(user).deliver_now
+end
+----
+
+另一个例子是使用多个 worker 处理同一个进程队列。通过分别配置 `:start` 和 `:finish` 选项可以让每个 worker 每次都处理 10000 条记录。
+
+[[find-in-batches]]
+===== `find_in_batches` 方法
+
+`find_in_batches` 方法和 `find_each` 方法类似，两者都是批量取回记录。区别在于，`find_in_batches` 方法会把一批记录作为模型数组传入块，而不是像 `find_each` 方法那样逐一把每条记录作为模型传入块。下面的例子每次把 1000 张发票的数组一次性传入块（最后一次传入块的数组中的发票数量可能不到 1000）：
+
+[source,ruby]
+----
+# Give add_invoices an array of 1000 invoices at a time
+Invoice.find_in_batches do |invoices|
+  export.add_invoices(invoices)
+end
+----
+
+[[options-for-find-in-batches]]
+====== `find_in_batches` 方法的选项
+
+和 `find_each` 方法一样，`find_in_batches` 方法可以使用 `:batch_size`、`:start` 和 `:finish` 选项。
+
+[[conditions]]
+=== 条件查询
