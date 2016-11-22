@@ -19,7 +19,7 @@
 - [ ] Rails Routing from the Outside In
 - [x] Active Support Core Extensions
 - [ ] Rails Internationalization API
-- [ ] Action Mailer Basics
+- [x] Action Mailer Basics
 - [ ] Active Job Basics
 - [ ] Testing Rails Applications
 - [ ] Securing Rails Applications
