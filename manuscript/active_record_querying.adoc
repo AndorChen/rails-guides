@@ -451,3 +451,157 @@ end
 
 [[conditions]]
 === 条件查询
+
+`where` 方法用于说明限制返回记录所使用的条件，相当于 `SQL` 语句的 `WHERE` 部分。这里的条件可以是字符串、数组或 Hash。
+
+[[pure-string-conditions]]
+==== 纯字符串条件
+
+可以直接用纯字符串来为查找添加条件。例如，`Client.where("orders_count = '2'")` 会查找所有 `orders_count` 字段的值为 2 的客户记录。
+
+WARNING: 使用纯字符串创建条件存在容易受到 SQL 注入攻击的风险。例如，`Client.where("first_name LIKE '%#{params[:first_name]}%'")` 是不安全的。在下一节中我们会看到，使用数组创建条件是推荐的做法。
+
+[[array-conditions]]
+==== 数组条件
+
+如果 `Client.where("orders_count = '2'")` 这个例子中的数字是变化的，比如说是从别处传递过来的参数，那么可以像下面这样进行查找：
+
+[source,ruby]
+----
+Client.where("orders_count = ?", params[:orders])
+----
+
+Active Record 会把第一个参数作为条件字符串，并用之后的其他参数来替换条件字符串中的问号（`?`）。
+
+我们还可以指定多个条件：
+
+[source,ruby]
+----
+Client.where("orders_count = ? AND locked = ?", params[:orders], false)
+----
+
+在上面的例子中，第一个问号会被替换为 `params[:orders]` 的值，第二个问号会被替换为 `false` 在 SQL 中对应的值，这个值是什么取决于所使用的数据库适配器。
+
+强烈推荐使用下面这种写法：
+
+[source,ruby]
+----
+Client.where("orders_count = ?", params[:orders])
+----
+
+而不是：
+
+[source,ruby]
+----
+Client.where("orders_count = #{params[:orders]}")
+----
+
+原因是出于参数的安全性考虑。把变量直接放入条件字符串会导致变量原封不动地传递给数据库，这意味着即便是恶意用户提交的变量也不会被转义。这样一来，整个数据库就处于风险之中，因为一旦恶意用户发现自己能够滥用数据库，他就可能做任何事情。所以，永远不要把参数直接放入条件字符串。
+
+NOTE: 关于 SQL 注入的危险性的更多介绍，请参阅 <<security#sql-injection>>。
+
+[[placeholder-conditions]]
+===== 条件中的占位符
+
+和问号占位符（`?`）类似，我们还可以在条件字符串中使用符号占位符，并通过 Hash 来提供符号对应的值：
+
+[source,ruby]
+----
+Client.where("created_at >= :start_date AND created_at <= :end_date",
+  {start_date: params[:start_date], end_date: params[:end_date]})
+----
+
+如果条件中有很多变量，那么上面这种写法的可读更好。
+
+[[hash-conditions]]
+==== Hash 条件
+
+Active Record 还允许使用 Hash 条件，以提高条件语句的可读性。在使用 Hash 条件时，Hash 的键用于说明需要限制的字段，Hash 的值用于说明如何进行限制。
+
+NOTE: 在 Hash 条件中，只能进行等式、范围和子集检查。
+
+[[equality-conditions]]
+===== 等式条件
+
+[source,ruby]
+----
+Client.where(locked: true)
+----
+
+上面的代码会生成下面的 SQL：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.locked = 1)
+----
+
+其中字段名也可以是字符串：
+
+[source,ruby]
+----
+Client.where('locked' => true)
+----
+
+对于 `belongs_to` 关联的情况，如果使用 Active Record 对象作为值，就可以使用关联键来指定模型。这种方法也适用于多态关联。
+
+[source,ruby]
+----
+Article.where(author: author)
+Author.joins(:articles).where(articles: { author: author })
+----
+
+NOTE: 等式条件中的值不能是符号。例如，`Client.where(status: :active)` 这种写法是错误的。
+
+[[range-conditions]]
+===== 范围条件
+
+[source,ruby]
+----
+Client.where(created_at: (Time.now.midnight - 1.day)..Time.now.midnight)
+----
+
+上面的代码会使用 `BETWEEN` SQL 语句查找所有昨天创建的客户记录：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.created_at BETWEEN '2008-12-21 00:00:00' AND '2008-12-22 00:00:00')
+----
+
+这是 <<active_record_querying.#array-conditions>> 中示例代码的更简短的写法。
+
+[[subset-conditions]]
+===== 子集条件
+
+要想用 `IN` 表达式来查找记录，可以在 Hash 条件中使用数组：
+
+[source,ruby]
+----
+Client.where(orders_count: [1,3,5])
+----
+
+上面的代码会生成下面的 SQL：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.orders_count IN (1,3,5))
+----
+
+[[not-conditions]]
+==== NOT 条件
+
+可以用 `where.not` 创建 `NOT` SQL 查询：
+
+[source,ruby]
+----
+Client.where.not(locked: true)
+----
+
+也就是说，先调用没有参数的 `where` 方法，然后马上链式调用 `not` 方法，就可以生成这个查询。上面的代码会生成下面的 SQL：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.locked != 1)
+----
+
+[[ordering]]
+=== 排序
