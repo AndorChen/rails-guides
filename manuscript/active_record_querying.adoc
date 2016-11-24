@@ -452,7 +452,7 @@ end
 [[conditions]]
 === 条件查询
 
-`where` 方法用于说明限制返回记录所使用的条件，相当于 `SQL` 语句的 `WHERE` 部分。这里的条件可以是字符串、数组或 Hash。
+`where` 方法用于说明限制返回记录所使用的条件，相当于 SQL 语句的 `WHERE` 部分。这里的条件可以是字符串、数组或 Hash。
 
 [[pure-string-conditions]]
 ==== 纯字符串条件
@@ -528,7 +528,7 @@ NOTE: 在 Hash 条件中，只能进行等式、范围和子集检查。
 Client.where(locked: true)
 ----
 
-上面的代码会生成下面的 SQL：
+上面的代码会生成下面的 SQL 语句：
 
 [source,sql]
 ----
@@ -560,7 +560,7 @@ NOTE: 等式条件中的值不能是符号。例如，`Client.where(status: :act
 Client.where(created_at: (Time.now.midnight - 1.day)..Time.now.midnight)
 ----
 
-上面的代码会使用 `BETWEEN` SQL 语句查找所有昨天创建的客户记录：
+上面的代码会使用 `BETWEEN` SQL 表达式·查找所有昨天创建的客户记录：
 
 [source,sql]
 ----
@@ -579,7 +579,7 @@ SELECT * FROM clients WHERE (clients.created_at BETWEEN '2008-12-21 00:00:00' AN
 Client.where(orders_count: [1,3,5])
 ----
 
-上面的代码会生成下面的 SQL：
+上面的代码会生成下面的 SQL 语句：
 
 [source,sql]
 ----
@@ -596,7 +596,7 @@ SELECT * FROM clients WHERE (clients.orders_count IN (1,3,5))
 Client.where.not(locked: true)
 ----
 
-也就是说，先调用没有参数的 `where` 方法，然后马上链式调用 `not` 方法，就可以生成这个查询。上面的代码会生成下面的 SQL：
+也就是说，先调用没有参数的 `where` 方法，然后马上链式调用 `not` 方法，就可以生成这个查询。上面的代码会生成下面的 SQL 语句：
 
 [source,sql]
 ----
@@ -605,3 +605,202 @@ SELECT * FROM clients WHERE (clients.locked != 1)
 
 [[ordering]]
 === 排序
+
+要想按特定顺序从数据库取回记录，可以使用 `order` 方法。
+
+例如，如果想按 `created_at` 字段的升序方式取回记录：
+
+[source,ruby]
+----
+Client.order(:created_at)
+# OR
+Client.order("created_at")
+----
+
+还可以使用 `ASC`（升序） 或 `DESC`（降序） 指定排序方式：
+
+[source,ruby]
+----
+Client.order(created_at: :desc)
+# OR
+Client.order(created_at: :asc)
+# OR
+Client.order("created_at DESC")
+# OR
+Client.order("created_at ASC")
+----
+
+或按多个字段排序：
+
+[source,ruby]
+----
+Client.order(orders_count: :asc, created_at: :desc)
+# OR
+Client.order(:orders_count, created_at: :desc)
+# OR
+Client.order("orders_count ASC, created_at DESC")
+# OR
+Client.order("orders_count ASC", "created_at DESC")
+----
+
+如果多次调用 `order` 方法，后续排序会在第一次排序的基础上进行：
+
+[source,sql]
+----
+Client.order("orders_count ASC").order("created_at DESC")
+# SELECT * FROM clients ORDER BY orders_count ASC, created_at DESC
+----
+
+[[selecting-specific-fields]]
+=== 选择特定字段
+
+`Model.find` 方法默认使用 `select *` 从结果集中选择所有字段。
+
+可以使用 `select` 方法从结果集中选择字段的子集。
+
+例如，只选择 `viewable_by` 和 `locked` 字段：
+
+[source,ruby]
+----
+Client.select("viewable_by, locked")
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT viewable_by, locked FROM clients
+----
+
+请注意，上面的代码初始化的模型对象只包含了所选择的字段，这时如果访问这个模型对象未包含的字段就会引发异常：
+
+----
+ActiveModel::MissingAttributeError: missing attribute: <attribute>
+----
+
+其中 `<attribute>` 是我们想要访问的字段。`id` 方法不会引发 `ActiveRecord::MissingAttributeError` 异常，因此在使用关联时一定要小心，因为只有当 `id` 方法正常工作时关联才能正常工作。
+
+在查询时如果想让某个字段的同值记录只出现一次，可以使用 `distinct` 方法添加唯一性约束：
+
+[source,ruby]
+----
+Client.select(:name).distinct
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT DISTINCT name FROM clients
+----
+
+唯一性约束在添加之后还可以删除：
+
+[source,ruby]
+----
+query = Client.select(:name).distinct
+# => Returns unique names
+
+query.distinct(false)
+# => Returns all names, even if there are duplicates
+----
+
+[[limit-and-offset]]
+=== 限量和偏移量
+
+要想在 `Model.find` 方法生成的 SQL 语句中使用 `LIMIT` 子句，可以在关联上使用 `limit` 和 `offset` 方法。
+
+`limit` 方法用于说明想要取回的记录的数量，`offset` 方法用于说明取回记录时在第一条记录之前要跳过多少条记录。例如：
+
+[source,ruby]
+----
+Client.limit(5)
+----
+
+上面的代码会返回 5 条客户记录，因为没有使用 `offset` 方法，所以返回的这 5 条记录就是前 5 条记录。代码生成的 SQL 语句如下：
+
+[source,sql]
+----
+SELECT * FROM clients LIMIT 5
+----
+
+如果使用 `offset` 方法：
+
+[source,ruby]
+----
+Client.limit(5).offset(30)
+----
+
+这时会返回从第 31 条记录开始的 5 条记录。代码生成的 SQL 语句如下：
+
+[source,sql]
+----
+SELECT * FROM clients LIMIT 5 OFFSET 30
+----
+
+[[group]]
+=== 分组
+
+要想在查找器生成的 SQL 语句中使用 `GROUP BY` 子句，可以使用 `group` 方法。
+
+例如，如果我们想根据订单创建日期取回订单记录：
+
+[source,ruby]
+----
+Order.select("date(created_at) as ordered_date, sum(price) as total_price").group("date(created_at)")
+----
+
+上面的代码会为数据库中同一天创建的订单创建 `Order` 对象。代码生成的 SQL 语句如下：
+
+[source,sql]
+----
+SELECT date(created_at) as ordered_date, sum(price) as total_price
+FROM orders
+GROUP BY date(created_at)
+----
+
+[[total-of-grouped-items]]
+==== 分组项目的总数
+
+要想得到一次查询中分组项目的总数，可以在调用 `group` 方法后调用 `count` 方法。
+
+[source,ruby]
+----
+Order.group(:status).count
+# => { 'awaiting_approval' => 7, 'paid' => 12 }
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT COUNT (*) AS count_all, status AS status
+FROM "orders"
+GROUP BY status
+----
+
+[[having]]
+=== `having` 方法
+
+SQL 语句用 `HAVING` 子句来说明 `GROUP BY` 字段的约束条件。要想在 `Model.find` 方法生成的 SQL 语句中使用 `HAVING` 子句，可以使用 `having` 方法。例如：
+
+[source,ruby]
+----
+Order.select("date(created_at) as ordered_date, sum(price) as total_price").
+  group("date(created_at)").having("sum(price) > ?", 100)
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT date(created_at) as ordered_date, sum(price) as total_price
+FROM orders
+GROUP BY date(created_at)
+HAVING sum(price) > 100
+----
+
+上面的查询会返回每个 `Order` 对象的日期和总价，查询结果按日期分组并排序，并且总价必须高于 100。
+
+[[overriding-conditions]]
+=== 条件覆盖
