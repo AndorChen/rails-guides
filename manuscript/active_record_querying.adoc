@@ -804,3 +804,153 @@ HAVING sum(price) > 100
 
 [[overriding-conditions]]
 === 条件覆盖
+
+[[unscope]]
+==== `unscope` 方法
+
+可以使用 `unscope` 方法删除某些条件。 例如：
+
+[source,ruby]
+----
+Article.where('id > 10').limit(20).order('id asc').unscope(:order)
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM articles WHERE id > 10 LIMIT 20
+
+# Original query without `unscope`
+SELECT * FROM articles WHERE id > 10 ORDER BY id asc LIMIT 20
+----
+
+还可以使用 `unscope` 方法删除 `where` 方法中的某些条件。例如：
+
+[source,ruby]
+----
+Article.where(id: 10, trashed: false).unscope(where: :id)
+# SELECT "articles".* FROM "articles" WHERE trashed = 0
+----
+
+在关联中使用 `unscope` 方法，会对整个关联造成影响：
+
+[source,ruby]
+----
+Article.order('id asc').merge(Article.unscope(:order))
+# SELECT "articles".* FROM "articles"
+----
+
+[[only]]
+==== `only` 方法
+
+可以使用 `only` 方法覆盖某些条件。例如：
+
+[source,ruby]
+----
+Article.where('id > 10').limit(20).order('id desc').only(:order, :where)
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM articles WHERE id > 10 ORDER BY id DESC
+
+# Original query without `only`
+SELECT "articles".* FROM "articles" WHERE (id > 10) ORDER BY id desc LIMIT 20
+----
+
+[[reorder]]
+==== `reorder` 方法
+
+可以使用 `reorder` 方法覆盖默认作用域中的 `order` 方法。例如：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  has_many :comments, -> { order('posted_at DESC') }
+end
+
+Article.find(10).comments.reorder('name')
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM articles WHERE id = 10
+SELECT * FROM comments WHERE article_id = 10 ORDER BY name
+----
+
+如果不使用 `reorder` 方法，那么会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM articles WHERE id = 10
+SELECT * FROM comments WHERE article_id = 10 ORDER BY posted_at DESC
+----
+
+[[reverse-order]]
+==== `reverse_order` 方法
+
+可以使用 `reverse_order` 方法反转 `order` 方法的条件。
+
+[source,sql]
+----
+Client.where("orders_count > 10").order(:name).reverse_order
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE orders_count > 10 ORDER BY name DESC
+----
+
+如果查询时没有使用 `order` 方法，那么 `reverse_order` 方法会使查询结果按主键的降序方式排序。
+
+[source,ruby]
+----
+Client.where("orders_count > 10").reverse_order
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE orders_count > 10 ORDER BY clients.id DESC
+----
+
+`reverse_order` 方法不接受任何参数。
+
+[[rewhere]]
+==== `rewhere` 方法
+
+可以使用 `rewhere` 方法覆盖 `where` 方法中的具名条件。例如：
+
+[source,ruby]
+----
+Article.where(trashed: true).rewhere(trashed: false)
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM articles WHERE `trashed` = 0
+----
+
+如果不使用 `rewhere` 方法而是再次使用 `where` 方法：
+
+[source,sql]
+----
+Article.where(trashed: true).where(trashed: false)
+----
+
+会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM articles WHERE `trashed` = 1 AND `trashed` = 0
+----
