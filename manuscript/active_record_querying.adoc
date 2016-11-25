@@ -954,3 +954,30 @@ Article.where(trashed: true).where(trashed: false)
 ----
 SELECT * FROM articles WHERE `trashed` = 1 AND `trashed` = 0
 ----
+
+[[null-relation]]
+=== 空关联
+
+`none` 方法返回可以在链式调用中使用的、不包含任何记录的空关联。在这个空关联上应用后续条件链，会继续生成空关联。对于可能返回零结果、但又需要在链式调用中使用的方法或范围，可以使用 `none` 方法来提供返回值。
+
+[source,ruby]
+----
+Article.none # returns an empty Relation and fires no queries.
+----
+
+[source,ruby]
+----
+# The visible_articles method below is expected to return a Relation.
+@articles = current_user.visible_articles.where(name: params[:name])
+
+def visible_articles
+  case role
+  when 'Country Manager'
+    Article.where(country: country)
+  when 'Reviewer'
+    Article.published
+  when 'Bad User'
+    Article.none # => returning [] or nil breaks the caller code in this case
+  end
+end
+----
