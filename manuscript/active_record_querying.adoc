@@ -998,3 +998,94 @@ client.save
 
 [[locking-records-for-update]]
 === 在更新时锁定记录
+
+在数据库中，锁定用于避免更新记录时的条件竞争并确保原子更新。
+
+Active Record 提供了两种锁定机制：
+
+* 乐观锁定
+* 悲观锁定
+
+[[optimistic-locking]]
+==== 乐观锁定
+
+乐观锁定允许多个用户访问并编辑同一记录，并假设数据发生冲突的可能性最小。其原理是检查读取记录后是否有其他进程尝试更新记录，如果有就引发 `ActiveRecord::StaleObjectError` 异常并忽略该更新。
+
+[[optimistic-locking-column]]
+===== 字段的乐观锁定
+
+为了使用乐观锁定，数据表中需要有一个整数类型的 `lock_version` 字段。每次更新记录时，Active Record 都会增加 `lock_version` 字段的值。如果更新请求中 `lock_version` 字段的值比当前数据库中 `lock_version` 字段的值小，更新请求就会失败并引发 `ActiveRecord::StaleObjectError` 异常。例如：
+
+[source,ruby]
+----
+c1 = Client.find(1)
+c2 = Client.find(1)
+
+c1.first_name = "Michael"
+c1.save
+
+c2.name = "should fail"
+c2.save # Raises an ActiveRecord::StaleObjectError
+----
+
+在引发异常后，我们需要救援异常并处理冲突，或回滚，或合并，或应用其他业务逻辑来解决冲突。
+
+通过设置 `ActiveRecord::Base.lock_optimistically = false` 可以关闭乐观锁定。
+
+可以使用 `ActiveRecord::Base` 提供的 `locking_column` 类属性来覆盖 `lock_version` 字段名：
+
+[source,ruby]
+----
+class Client < ApplicationRecord
+  self.locking_column = :lock_client_column
+end
+----
+
+[[pessimistic-locking]]
+==== 悲观锁定
+
+悲观锁定使用底层数据库提供的锁定机制。在创建关联时使用 `lock` 方法，会在选定字段上生成互斥锁。使用 `lock` 方法的关联通常被包装在事务中，以避免发生死锁。例如：
+
+[source,ruby]
+----
+Item.transaction do
+  i = Item.lock.first
+  i.name = 'Jones'
+  i.save!
+end
+----
+
+对于 MySQL 后端，上面的会话会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SQL (0.2ms)   BEGIN
+Item Load (0.3ms)   SELECT * FROM `items` LIMIT 1 FOR UPDATE
+Item Update (0.4ms)   UPDATE `items` SET `updated_at` = '2009-02-07 18:05:56', `name` = 'Jones' WHERE `id` = 1
+SQL (0.8ms)   COMMIT
+----
+
+要想支持其他锁定类型，可以直接传递 SQL 给 `lock` 方法。例如，MySQL 的 `LOCK IN SHARE MODE` 表达式在锁定记录时允许其他查询读取记录，这个表达式可以用作锁定选项：
+
+[source,ruby]
+----
+Item.transaction do
+  i = Item.lock("LOCK IN SHARE MODE").find(1)
+  i.increment!(:views)
+end
+----
+
+对于已有模型实例，可以启动事务并一次性获取锁：
+
+[source,ruby]
+----
+item = Item.first
+item.with_lock do
+  # This block is called within a transaction,
+  # item is already locked.
+  item.increment!(:views)
+end
+----
+
+[[joining-tables]]
+=== 连接数据表
