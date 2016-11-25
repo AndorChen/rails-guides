@@ -560,7 +560,7 @@ NOTE: 等式条件中的值不能是符号。例如，`Client.where(status: :act
 Client.where(created_at: (Time.now.midnight - 1.day)..Time.now.midnight)
 ----
 
-上面的代码会使用 `BETWEEN` SQL 表达式·查找所有昨天创建的客户记录：
+上面的代码会使用 `BETWEEN` SQL 表达式查找所有昨天创建的客户记录：
 
 [source,sql]
 ----
@@ -1088,4 +1088,188 @@ end
 ----
 
 [[joining-tables]]
-=== 连接数据表
+=== 数据表关联
+
+Active Record 提供了 `joins` 和 `left_outer_joins` 这两个查找器方法，用于说明生成的 SQL 语句中的 `JOIN` 子句。其中 `joins` 方法用于 `INNER JOIN` 查询或定制查询，`left_outer_joins` 用于 `LEFT OUTER JOIN` 查询。
+
+[[joins]]
+==== `joins` 方法
+
+`joins` 方法有多种用法。
+
+[[using-a-string-sql-fragment]]
+===== 使用字符串 SQL 片段
+
+在 `joins` 方法中可以直接用 SQL 来说明 `JOIN` 子句：
+
+[source,ruby]
+----
+Author.joins("INNER JOIN posts ON posts.author_id = author.id AND posts.published = 't'")
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT clients.* FROM clients INNER JOIN posts ON posts.author_id = author.id AND posts.published = 't'
+----
+
+[[using-array-hash-of-named-associations]]
+===== 使用具名关联数组或 Hash
+
+使用 `joins` 方法时，Active Record 允许我们使用在模型上定义的关联的名称，作为说明这些关联的 `JOIN` 子句的快捷方式。
+
+例如，假设有 `Category`、`Article`、`Comment`、`Guest` 和 `Tag` 这几个模型：
+
+[source,ruby]
+----
+class Category < ApplicationRecord
+  has_many :articles
+end
+
+class Article < ApplicationRecord
+  belongs_to :category
+  has_many :comments
+  has_many :tags
+end
+
+class Comment < ApplicationRecord
+  belongs_to :article
+  has_one :guest
+end
+
+class Guest < ApplicationRecord
+  belongs_to :comment
+end
+
+class Tag < ApplicationRecord
+  belongs_to :article
+end
+----
+
+下面几种用法都会使用 `INNER JOIN` 生成我们想要的关联查询。
+
+（译者注：原文此处开始出现编号错误，由译者根据内容逻辑关系进行了修正。）
+
+[[joining-a-single-association]]
+====== 单个关联的连接
+
+[source,ruby]
+----
+Category.joins(:articles)
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT categories.* FROM categories
+  INNER JOIN articles ON articles.category_id = categories.id
+----
+
+这个查询的意思是把所有包含了文章的（非空）分类作为一个 `Category` 对象返回。请注意，如果多篇文章同属于一个分类，那么这个分类会在 `Category` 对象中出现多次。要想让每个分类只出现一次，可以使用 `Category.joins(:articles).distinct`。
+
+
+[[joining-multiple-associations]]
+====== 多个关联的连接
+
+[source,ruby]
+----
+Article.joins(:category, :comments)
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT articles.* FROM articles
+  INNER JOIN categories ON articles.category_id = categories.id
+  INNER JOIN comments ON comments.article_id = articles.id
+----
+
+这个查询的意思是把所有属于某个分类并至少拥有一条评论的文章作为一个 `Article` 对象返回。同样请注意，拥有多条评论的文章会在 `Article` 对象中出现多次。
+
+[[joining-nested-associations-single-level]]
+====== 单层嵌套关联的连接
+
+[source,ruby]
+----
+Article.joins(comments: :guest)
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT articles.* FROM articles
+  INNER JOIN comments ON comments.article_id = articles.id
+  INNER JOIN guests ON guests.comment_id = comments.id
+----
+
+这个查询的意思是把所有拥有访客评论的文章作为一个 `Article` 对象返回。
+
+[[joining-nested-associations-multiple-level]]
+====== 多层嵌套关联的连接
+
+[source,ruby]
+----
+Category.joins(articles: [{ comments: :guest }, :tags])
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT categories.* FROM categories
+  INNER JOIN articles ON articles.category_id = categories.id
+  INNER JOIN comments ON comments.article_id = articles.id
+  INNER JOIN guests ON guests.comment_id = comments.id
+  INNER JOIN tags ON tags.article_id = articles.id
+----
+
+这个查询的意思是把所有包含文章的分类作为一个 `Category` 对象返回，其中这些文章都拥有访客评论并且带有标签。
+
+[[specifying-conditions-on-the-joined-tables]]
+===== 为关联数据表说明条件
+
+可以使用普通的数组和字符串条件作为关联数据表的条件。但如果想使用 Hash 条件作为关联数据表的条件，就需要使用特殊语法了：
+
+[source,ruby]
+----
+time_range = (Time.now.midnight - 1.day)..Time.now.midnight
+Client.joins(:orders).where('orders.created_at' => time_range)
+----
+
+还有一种更干净的替代语法，即嵌套使用 Hash 条件：
+
+[source,ruby]
+----
+time_range = (Time.now.midnight - 1.day)..Time.now.midnight
+Client.joins(:orders).where(orders: { created_at: time_range })
+----
+
+这个查询会查找所有在昨天创建过订单的客户，在生成的 SQL 语句中同样使用了 `BETWEEN` SQL 表达式。
+
+
+[[left-outer-joins]]
+==== `left_outer_joins` 方法
+
+如果想要选择一组记录，而不管它们是否具有关联记录，可以使用 `left_outer_joins` 方法。
+
+[source,ruby]
+----
+Author.left_outer_joins(:posts).distinct.select('authors.*, COUNT(posts.*) AS posts_count').group('authors.id')
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT DISTINCT authors.*, COUNT(posts.*) AS posts_count FROM "authors"
+LEFT OUTER JOIN posts ON posts.author_id = authors.id GROUP BY authors.id
+----
+
+这个查询的意思是返回所有作者和每位作者的帖子数，而不管这些作者是否发过帖子。
+
+[[eager-loading-associations]]
+=== 关联的预先加载
