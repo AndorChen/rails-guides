@@ -981,3 +981,20 @@ def visible_articles
   end
 end
 ----
+
+[[readonly-objects]]
+=== 只读对象
+
+在关联中使用 Active Record 提供的 `readonly` 方法，可以显式禁止修改任何返回对象。如果尝试修改只读对象，不但不会成功，还会引发 `ActiveRecord::ReadOnlyRecord` 异常。
+
+[source,ruby]
+----
+client = Client.readonly.first
+client.visits += 1
+client.save
+----
+
+在上面的代码中，`client` 被显式设置为只读对象，因此在更新 `client.visits` 的值后调用 `client.save` 就会引发 `ActiveRecord::ReadOnlyRecord` 异常。
+
+[[locking-records-for-update]]
+=== 在更新时锁定记录
