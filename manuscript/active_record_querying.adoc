@@ -654,7 +654,7 @@ Client.order("orders_count ASC").order("created_at DESC")
 [[selecting-specific-fields]]
 === 选择特定字段
 
-`Model.find` 方法默认使用 `select *` 从结果集中选择所有字段。
+`Model.find` 默认使用 `select *` 从结果集中选择所有字段。
 
 可以使用 `select` 方法从结果集中选择字段的子集。
 
@@ -708,7 +708,7 @@ query.distinct(false)
 [[limit-and-offset]]
 === 限量和偏移量
 
-要想在 `Model.find` 方法生成的 SQL 语句中使用 `LIMIT` 子句，可以在关联上使用 `limit` 和 `offset` 方法。
+要想在 `Model.find` 生成的 SQL 语句中使用 `LIMIT` 子句，可以在关联上使用 `limit` 和 `offset` 方法。
 
 `limit` 方法用于说明想要取回的记录的数量，`offset` 方法用于说明取回记录时在第一条记录之前要跳过多少条记录。例如：
 
@@ -782,7 +782,7 @@ GROUP BY status
 [[having]]
 === `having` 方法
 
-SQL 语句用 `HAVING` 子句来说明 `GROUP BY` 字段的约束条件。要想在 `Model.find` 方法生成的 SQL 语句中使用 `HAVING` 子句，可以使用 `having` 方法。例如：
+SQL 语句用 `HAVING` 子句来说明 `GROUP BY` 字段的约束条件。要想在 `Model.find` 生成的 SQL 语句中使用 `HAVING` 子句，可以使用 `having` 方法。例如：
 
 [source,ruby]
 ----
@@ -1273,3 +1273,102 @@ LEFT OUTER JOIN posts ON posts.author_id = authors.id GROUP BY authors.id
 
 [[eager-loading-associations]]
 === 关联的预先加载
+
+预先加载是一种用于加载 `Model.find` 返回对象的关联记录的机制，目的是尽可能减少查询次数。
+
+**N + 1 查询问题**
+
+假设有如下代码，查找 10 条客户记录并打印这些客户的邮编：
+
+[source,ruby]
+----
+clients = Client.limit(10)
+
+clients.each do |client|
+  puts client.address.postcode
+end
+----
+
+上面的代码第一眼看起来不错，但实际上存在查询总次数较高的问题。这段代码总共需要执行 1（查找 10 条客户记录）+ 10（每条客户记录都需要加载地址）= 11 次查询。
+
+**N + 1 查询问题的解决办法**
+
+Active Record 允许我们预先说明需要加载的所有关联，这是通过在调用 `Model.find` 时说明 `includes` 方法实现的。通过说明 `includes` 方法，Active Record 会使用尽可能少的查询来加载所有已说明的关联。
+
+回到之前 N + 1 查询问题的例子，我们重写其中的 `Client.limit(10)` 来使用预先加载：
+
+[source,ruby]
+----
+clients = Client.includes(:address).limit(10)
+
+clients.each do |client|
+  puts client.address.postcode
+end
+----
+
+上面的代码只执行 2 次查询，而不是之前的 11 次查询：
+
+[source,sql]
+----
+SELECT * FROM clients LIMIT 10
+SELECT addresses.* FROM addresses
+  WHERE (addresses.client_id IN (1,2,3,4,5,6,7,8,9,10))
+----
+
+[[eager-loading-multiple-associations]]
+==== 预先加载多个关联
+
+通过在 `includes` 方法中使用数组、Hash 或嵌套 Hash，Active Record 允许我们在一次 `Model.find` 调用中预先加载任意数量的关联。
+
+[[array-of-multiple-associations]]
+===== 多个关联的数组
+
+[source,ruby]
+----
+Article.includes(:category, :comments)
+----
+
+上面的代码会加载所有文章、所有关联的分类和每篇文章的所有评论。
+
+[[nested-associations-hash]]
+===== 嵌套关联的 Hash
+
+[source,ruby]
+----
+Category.includes(articles: [{ comments: :guest }, :tags]).find(1)
+----
+
+上面的代码会查找 ID 为 1 的分类，并预先加载所有关联的文章、这些文章关联的标签和评论，以及这些评论关联的访客。
+
+[[specifying-conditions-on-eager-loaded-associations]]
+==== 为关联的预先加载说明条件
+
+尽管 Active Record 允许我们像 `joins` 方法那样为关联的预先加载说明条件，但推荐的方式是使用 <<active_record_querying#joining-tables>>。
+
+尽管如此，在必要时仍然可以用 `where` 方法来为关联的预先加载说明条件。
+
+[source,ruby]
+----
+Article.includes(:comments).where(comments: { visible: true })
+----
+
+上面的代码会生成使用 `LEFT OUTER JOIN` 子句的 SQL 语句，而 `joins` 方法会成生使用 `INNER JOIN` 子句的 SQL 语句。
+
+[source,sql]
+----
+SELECT "articles"."id" AS t0_r0, ... "comments"."updated_at" AS t1_r5 FROM "articles" LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id" WHERE (comments.visible = 1)
+----
+
+如果上面的代码没有使用 `where` 方法，就会生成正常的一组两条查询语句。
+
+NOTE: 要想像上面的代码这样使用 `where` 方法，必须在 `where` 方法中使用 Hash。如果想要在 `where` 方法中使用字符串 SQL 片段，就必须用 `references` 方法来强制使用关联数据表。
+
+[source,ruby]
+----
+Article.includes(:comments).where("comments.visible = true").references(:comments)
+----
+
+通过在 `where` 方法中使用字符串 SQL 片段并使用 `references` 方法这种方式，即便一条评论都没有，所有文章仍然会被加载。而在使用 `joins` 方法（`INNER JOIN`）时，必须匹配关联条件，否则一条记录都不会返回。
+
+[[scopes]]
+=== 作用域
