@@ -1707,3 +1707,105 @@ NOTE: 请注意，如果查询匹配多条记录，`find_by` 方法会取回第�
 
 [[find-or-build-a-new-object]]
 === 查找或创建新对象
+
+我们经常需要查找记录并在找不到记录时创建记录，这时我们可以使用 `find_or_create_by` 和 `find_or_create_by!` 方法。
+
+[[find-or-create_by]]
+==== `find_or_create_by` 方法
+
+`find_or_create_by` 方法检查具有指定属性的记录是否存在。如果记录不存在，就调用 `create` 方法创建记录。让我们看一个例子。
+
+假设我们在查找名为“Andy”的用户记录，但是没找到，因此要创建这条记录。这时我们可以执行下面的代码：
+
+[source,irb]
+----
+Client.find_or_create_by(first_name: 'Andy')
+# => #<Client id: 1, first_name: "Andy", orders_count: 0, locked: true, created_at: "2011-08-30 06:09:27", updated_at: "2011-08-30 06:09:27">
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.first_name = 'Andy') LIMIT 1
+BEGIN
+INSERT INTO clients (created_at, first_name, locked, orders_count, updated_at) VALUES ('2011-08-30 05:22:57', 'Andy', 1, NULL, '2011-08-30 05:22:57')
+COMMIT
+----
+
+`find_or_create_by` 方法会返回已存在的记录或新建的记录。在本例中，名为“Andy”的客户记录并不存在，因此会创建并返回这条记录。
+
+新建记录不一定会保存到数据库，是否保存取决于验证是否通过（就像 `create` 方法那样）。
+
+假设我们想在新建记录时把 `locked` 字段设置为 `false`，但又不想在查询中进行设置。例如，我们想查找名为“Andy”的客户记录，但这条记录并不存在，因此要创建这条记录并把 `locked` 字段设置为 `false`。
+
+要完成这一操作有两种方式。第一种方式是使用 `create_with` 方法：
+
+[source,ruby]
+----
+Client.create_with(locked: false).find_or_create_by(first_name: 'Andy')
+----
+
+第二种方式是使用块：
+
+[source,ruby]
+----
+Client.find_or_create_by(first_name: 'Andy') do |c|
+  c.locked = false
+end
+----
+
+只有在创建客户记录时才会执行该块。第二次运行这段代码时（此时客户记录已创建），块会被忽略。
+
+[[find-or-create-by-exclamation-point]]
+==== `find_or_create_by!` 方法
+
+我们也可以使用 `find_or_create_by!` 方法，这样如果新建记录是无效的就会引发异常。本文不涉及数据验证，不过这里我们暂且假设已经在 `Client` 模型中添加了下面的数据验证：
+
+[source,ruby]
+----
+validates :orders_count, presence: true
+----
+
+如果我们尝试新建客户记录，但忘了传递 `orders_count` 字段的值，新建记录就会是不合法的，因而会引发下面的异常：
+
+[source,irb]
+----
+Client.find_or_create_by!(first_name: 'Andy')
+# => ActiveRecord::RecordInvalid: Validation failed: Orders count can't be blank
+----
+
+[[find-or-initialize-by]]
+==== `find_or_initialize_by` 方法
+
+`find_or_initialize_by` 方法的工作原理和 `find_or_create_by` 方法类似，区别之处在于前者调用的是 `new` 方法而不是 `create` 方法。这意味着新建模型实例在内存中创建，但没有保存到数据库。下面继续使用介绍 `find_or_create_by` 方法时使用的例子，我们现在想查找名为“Nick”的客户记录：
+
+[source,irb]
+----
+nick = Client.find_or_initialize_by(first_name: 'Nick')
+# => #<Client id: nil, first_name: "Nick", orders_count: 0, locked: true, created_at: "2011-08-30 06:09:27", updated_at: "2011-08-30 06:09:27">
+
+nick.persisted?
+# => false
+
+nick.new_record?
+# => true
+----
+
+出现上面的执行结果是因为 `nick` 对象还没有保存到数据库。在上面的代码中，`find_or_initialize_by` 方法会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE (clients.first_name = 'Nick') LIMIT 1
+----
+
+要想把 `nick` 对象保存到数据库，只需调用 `save` 方法：
+
+[source,irb]
+----
+nick.save
+# => true
+----
+
+[[finding-by-sql]]
+=== 使用 SQL 语句查找
