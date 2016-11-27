@@ -108,7 +108,7 @@ Active Record 为取回单个对象提供了几个不同的方法。
 
 可以使用 `find` 方法取回指定主键对应的对象，指定主键时可以使用多个选项。例如：
 
-[source,ruby]
+[source,irb]
 ----
 # Find the client with primary key (id) 10.
 client = Client.find(10)
@@ -126,7 +126,7 @@ SELECT * FROM clients WHERE (clients.id = 10) LIMIT 1
 
 还可以使用 `find` 方法查询多个对象，方法是调用 `find` 方法并传入主键的数组。返回值是包含所提供的主键的所有匹配记录的数组。例如：
 
-[source,ruby]
+[source,irb]
 ----
 # Find the clients with primary keys 1 and 10.
 client = Client.find([1, 10]) # Or even Client.find(1, 10)
@@ -147,7 +147,7 @@ WARNING: 如果所提供的主键都没有匹配记录，那么 `find` 方法会
 
 `take` 方法会取回一条记录而不考虑排序问题。例如：
 
-[source,ruby]
+[source,irb]
 ----
 client = Client.take
 # => #<Client id: 1, first_name: "Lifo">
@@ -164,7 +164,7 @@ SELECT * FROM clients LIMIT 1
 
 `take` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
 
-[source,ruby]
+[source,irb]
 ----
 client = Client.take(2)
 # => [
@@ -189,7 +189,7 @@ NOTE: 对于不同的数据库引擎，`take` 方法取回的记录可能不一�
 
 `first` 方法默认会查找按主键排序的第一条记录。例如：
 
-[source,ruby]
+[source,irb]
 ----
 client = Client.first
 # => #<Client id: 1, first_name: "Lifo">
@@ -208,7 +208,7 @@ SELECT * FROM clients ORDER BY clients.id ASC LIMIT 1
 
 `first` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
 
-[source,ruby]
+[source,irb]
 ----
 client = Client.first(3)
 # => [
@@ -227,7 +227,7 @@ SELECT * FROM clients ORDER BY clients.id ASC LIMIT 3
 
 对于使用 `order` 排序的集合，`first` 方法返回按照指定属性排序的第一条记录。例如：
 
-[source,ruby]
+[source,irb]
 ----
 client = Client.order(:first_name).first
 # => #<Client id: 2, first_name: "Fifo">
@@ -247,7 +247,7 @@ SELECT * FROM clients ORDER BY clients.first_name ASC LIMIT 1
 
 `last` 方法默认会查找按主键排序的最后一条记录。例如：
 
-[source,ruby]
+[source,irb]
 ----
 client = Client.last
 # => #<Client id: 221, first_name: "Russel">
@@ -266,7 +266,7 @@ SELECT * FROM clients ORDER BY clients.id DESC LIMIT 1
 
 `last` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
 
-[source,ruby]
+[source,irb]
 ----
 client = Client.last(3)
 # => [
@@ -285,7 +285,7 @@ SELECT * FROM clients ORDER BY clients.id DESC LIMIT 3
 
 对于使用 `order` 排序的集合，`last` 方法返回按照指定属性排序的最后一条记录。例如：
 
-[source,ruby]
+[source,irb]
 ----
 client = Client.order(:first_name).last
 # => #<Client id: 220, first_name: "Sara">
@@ -305,7 +305,7 @@ SELECT * FROM clients ORDER BY clients.first_name DESC LIMIT 1
 
 `find_by` 方法查找匹配指定条件的第一条记录。 例如：
 
-[source,ruby]
+[source,irb]
 ----
 Client.find_by first_name: 'Lifo'
 # => #<Client id: 1, first_name: "Lifo">
@@ -330,7 +330,7 @@ SELECT * FROM clients WHERE (clients.first_name = 'Lifo') LIMIT 1
 
 `find_by!` 方法的行为和 `find_by` 方法类似，区别在于如果没有找到匹配的记录，`find_by!` 方法会引发 `ActiveRecord::RecordNotFound` 异常。例如：
 
-[source,ruby]
+[source,irb]
 ----
 Client.find_by! first_name: 'does not exist'
 # => ActiveRecord::RecordNotFound
@@ -696,7 +696,7 @@ SELECT DISTINCT name FROM clients
 
 唯一性约束在添加之后还可以删除：
 
-[source,ruby]
+[source,irb]
 ----
 query = Client.select(:name).distinct
 # => Returns unique names
@@ -764,7 +764,7 @@ GROUP BY date(created_at)
 
 要想得到一次查询中分组项目的总数，可以在调用 `group` 方法后调用 `count` 方法。
 
-[source,ruby]
+[source,irb]
 ----
 Order.group(:status).count
 # => { 'awaiting_approval' => 7, 'paid' => 12 }
@@ -1407,14 +1407,14 @@ end
 
 我们可以在模型上调用 `published` 作用域：
 
-[source,ruby]
+[source,irb]
 ----
 Article.published # => [published articles]
 ----
 
 或在多个 `Article` 对象组成的关联对象上调用 `published` 作用域：
 
-[source,ruby]
+[source,irb]
 ----
 category = Category.first
 category.articles.published # => [published articles belonging to this category]
@@ -1519,7 +1519,10 @@ NOTE: 默认作用域在创建记录时同样起作用，但在更新记录时�
 class Client < ApplicationRecord
   default_scope { where(active: true) }
 end
+----
 
+[source,irb]
+----
 Client.new          # => #<Client id: nil, active: true>
 Client.unscoped.new # => #<Client id: nil, active: nil>
 ----
@@ -1609,4 +1612,42 @@ Client.unscoped {
 ----
 
 [[dynamic-finders]]
-=== 动态查询器
+=== 动态查找器
+
+Active Record 为数据表中的每个字段（也称为属性）都提供了查找器方法（也就是动态查找器）。例如，对于 `Client` 模型的 `first_name` 字段，Active Record 会自动生成 `find_by_first_name` 查找器方法。对于 `Client` 模型的 `locked` 字段，Active Record 会自动生成 `find_by_locked` 查找器方法。
+
+在调用动态查找器时可以在末尾加上感叹号（`!`），例如 `Client.find_by_name!("Ryan")`，这样如果动态查找器没有返回任何记录，就会引发 `ActiveRecord::RecordNotFound` 异常。
+
+如果想同时查询 `first_name` 和 `locked` 字段，可以在动态查找器中用 `and` 把这两个字段连起来，例如 `Client.find_by_first_name_and_locked("Ryan", true)`。
+
+[[enums]]
+=== `enum` 宏
+
+`enum` 宏把整数字段映射为一组可能的值。
+
+[source,ruby]
+----
+class Book < ApplicationRecord
+  enum availability: [:available, :unavailable]
+end
+----
+
+上面的代码会自动创建用于查询模型的对应作用域，同时会添加用于转换状态和查询当前状态的方法。
+
+[source,irb]
+----
+# Both examples below query just available books.
+Book.available
+# or
+Book.where(availability: :available)
+
+book = Book.new(availability: :available)
+book.available?   # => true
+book.unavailable! # => true
+book.available?   # => false
+----
+
+查看 `enum` 宏的完整文档请访问 link:http://api.rubyonrails.org/classes/ActiveRecord/Enum.html[Rails API 文档]
+
+[[understanding-the-method-chaining]]
+=== 理解方法链
