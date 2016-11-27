@@ -108,7 +108,7 @@ Active Record 为取回单个对象提供了几个不同的方法。
 
 可以使用 `find` 方法取回指定主键对应的对象，指定主键时可以使用多个选项。例如：
 
-[source,irb]
+[source,ruby]
 ----
 # Find the client with primary key (id) 10.
 client = Client.find(10)
@@ -126,7 +126,7 @@ SELECT * FROM clients WHERE (clients.id = 10) LIMIT 1
 
 还可以使用 `find` 方法查询多个对象，方法是调用 `find` 方法并传入主键的数组。返回值是包含所提供的主键的所有匹配记录的数组。例如：
 
-[source,irb]
+[source,ruby]
 ----
 # Find the clients with primary keys 1 and 10.
 client = Client.find([1, 10]) # Or even Client.find(1, 10)
@@ -147,7 +147,7 @@ WARNING: 如果所提供的主键都没有匹配记录，那么 `find` 方法会
 
 `take` 方法会取回一条记录而不考虑排序问题。例如：
 
-[source,irb]
+[source,ruby]
 ----
 client = Client.take
 # => #<Client id: 1, first_name: "Lifo">
@@ -164,7 +164,7 @@ SELECT * FROM clients LIMIT 1
 
 `take` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
 
-[source,irb]
+[source,ruby]
 ----
 client = Client.take(2)
 # => [
@@ -189,7 +189,7 @@ NOTE: 对于不同的数据库引擎，`take` 方法取回的记录可能不一�
 
 `first` 方法默认会查找按主键排序的第一条记录。例如：
 
-[source,irb]
+[source,ruby]
 ----
 client = Client.first
 # => #<Client id: 1, first_name: "Lifo">
@@ -208,7 +208,7 @@ SELECT * FROM clients ORDER BY clients.id ASC LIMIT 1
 
 `first` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
 
-[source,irb]
+[source,ruby]
 ----
 client = Client.first(3)
 # => [
@@ -227,7 +227,7 @@ SELECT * FROM clients ORDER BY clients.id ASC LIMIT 3
 
 对于使用 `order` 排序的集合，`first` 方法返回按照指定属性排序的第一条记录。例如：
 
-[source,irb]
+[source,ruby]
 ----
 client = Client.order(:first_name).first
 # => #<Client id: 2, first_name: "Fifo">
@@ -247,7 +247,7 @@ SELECT * FROM clients ORDER BY clients.first_name ASC LIMIT 1
 
 `last` 方法默认会查找按主键排序的最后一条记录。例如：
 
-[source,irb]
+[source,ruby]
 ----
 client = Client.last
 # => #<Client id: 221, first_name: "Russel">
@@ -266,7 +266,7 @@ SELECT * FROM clients ORDER BY clients.id DESC LIMIT 1
 
 `last` 方法接受数字作为参数，并返回不超过指定数量的查询结果。例如：
 
-[source,irb]
+[source,ruby]
 ----
 client = Client.last(3)
 # => [
@@ -285,7 +285,7 @@ SELECT * FROM clients ORDER BY clients.id DESC LIMIT 3
 
 对于使用 `order` 排序的集合，`last` 方法返回按照指定属性排序的最后一条记录。例如：
 
-[source,irb]
+[source,ruby]
 ----
 client = Client.order(:first_name).last
 # => #<Client id: 220, first_name: "Sara">
@@ -305,7 +305,7 @@ SELECT * FROM clients ORDER BY clients.first_name DESC LIMIT 1
 
 `find_by` 方法查找匹配指定条件的第一条记录。 例如：
 
-[source,irb]
+[source,ruby]
 ----
 Client.find_by first_name: 'Lifo'
 # => #<Client id: 1, first_name: "Lifo">
@@ -330,7 +330,7 @@ SELECT * FROM clients WHERE (clients.first_name = 'Lifo') LIMIT 1
 
 `find_by!` 方法的行为和 `find_by` 方法类似，区别在于如果没有找到匹配的记录，`find_by!` 方法会引发 `ActiveRecord::RecordNotFound` 异常。例如：
 
-[source,irb]
+[source,ruby]
 ----
 Client.find_by! first_name: 'does not exist'
 # => ActiveRecord::RecordNotFound
@@ -696,7 +696,7 @@ SELECT DISTINCT name FROM clients
 
 唯一性约束在添加之后还可以删除：
 
-[source,irb]
+[source,ruby]
 ----
 query = Client.select(:name).distinct
 # => Returns unique names
@@ -764,7 +764,7 @@ GROUP BY date(created_at)
 
 要想得到一次查询中分组项目的总数，可以在调用 `group` 方法后调用 `count` 方法。
 
-[source,irb]
+[source,ruby]
 ----
 Order.group(:status).count
 # => { 'awaiting_approval' => 7, 'paid' => 12 }
@@ -871,7 +871,10 @@ SELECT "articles".* FROM "articles" WHERE (id > 10) ORDER BY id desc LIMIT 20
 class Article < ApplicationRecord
   has_many :comments, -> { order('posted_at DESC') }
 end
+----
 
+[source,ruby]
+----
 Article.find(10).comments.reorder('name')
 ----
 
@@ -1407,14 +1410,14 @@ end
 
 我们可以在模型上调用 `published` 作用域：
 
-[source,irb]
+[source,ruby]
 ----
 Article.published # => [published articles]
 ----
 
 或在多个 `Article` 对象组成的关联对象上调用 `published` 作用域：
 
-[source,irb]
+[source,ruby]
 ----
 category = Category.first
 category.articles.published # => [published articles belonging to this category]
@@ -1519,10 +1522,7 @@ NOTE: 默认作用域在创建记录时同样起作用，但在更新记录时�
 class Client < ApplicationRecord
   default_scope { where(active: true) }
 end
-----
 
-[source,irb]
-----
 Client.new          # => #<Client id: nil, active: true>
 Client.unscoped.new # => #<Client id: nil, active: nil>
 ----
@@ -1634,7 +1634,7 @@ end
 
 上面的代码会自动创建用于查询模型的对应作用域，同时会添加用于转换状态和查询当前状态的方法。
 
-[source,irb]
+[source,ruby]
 ----
 # Both examples below query just available books.
 Book.available
@@ -1717,7 +1717,7 @@ NOTE: 请注意，如果查询匹配多条记录，`find_by` 方法会取回第�
 
 假设我们在查找名为“Andy”的用户记录，但是没找到，因此要创建这条记录。这时我们可以执行下面的代码：
 
-[source,irb]
+[source,ruby]
 ----
 Client.find_or_create_by(first_name: 'Andy')
 # => #<Client id: 1, first_name: "Andy", orders_count: 0, locked: true, created_at: "2011-08-30 06:09:27", updated_at: "2011-08-30 06:09:27">
@@ -1769,7 +1769,7 @@ validates :orders_count, presence: true
 
 如果我们尝试新建客户记录，但忘了传递 `orders_count` 字段的值，新建记录就会是不合法的，因而会引发下面的异常：
 
-[source,irb]
+[source,ruby]
 ----
 Client.find_or_create_by!(first_name: 'Andy')
 # => ActiveRecord::RecordInvalid: Validation failed: Orders count can't be blank
@@ -1780,7 +1780,7 @@ Client.find_or_create_by!(first_name: 'Andy')
 
 `find_or_initialize_by` 方法的工作原理和 `find_or_create_by` 方法类似，区别之处在于前者调用的是 `new` 方法而不是 `create` 方法。这意味着新建模型实例在内存中创建，但没有保存到数据库。下面继续使用介绍 `find_or_create_by` 方法时使用的例子，我们现在想查找名为“Nick”的客户记录：
 
-[source,irb]
+[source,ruby]
 ----
 nick = Client.find_or_initialize_by(first_name: 'Nick')
 # => #<Client id: nil, first_name: "Nick", orders_count: 0, locked: true, created_at: "2011-08-30 06:09:27", updated_at: "2011-08-30 06:09:27">
@@ -1801,7 +1801,7 @@ SELECT * FROM clients WHERE (clients.first_name = 'Nick') LIMIT 1
 
 要想把 `nick` 对象保存到数据库，只需调用 `save` 方法：
 
-[source,irb]
+[source,ruby]
 ----
 nick.save
 # => true
@@ -1812,7 +1812,7 @@ nick.save
 
 要想直接使用 SQL 语句在数据表中查找记录，可以使用 `find_by_sql` 方法。`find_by_sql` 方法总是返回对象的数组，即使底层查询只返回了一条记录也是如此。例如，我们可以执行下面的查询：
 
-[source,irb]
+[source,ruby]
 ----
 Client.find_by_sql("SELECT * FROM clients
   INNER JOIN orders ON clients.id = orders.client_id
@@ -1831,7 +1831,7 @@ Client.find_by_sql("SELECT * FROM clients
 
 `find_by_sql` 方法有一个名为 `connection#select_all` 的近亲。和 `find_by_sql` 方法一样，`select_all` 方法也会使用定制的 SQL 语句从数据库取回对象，区别在于 `select_all` 方法不会对这些对象进行实例化，而是返回 Hash 的数组，其中每个 Hash 表示一条记录。
 
-[source,irb]
+[source,ruby]
 ----
 Client.connection.select_all("SELECT first_name, created_at FROM clients WHERE id = '1'")
 # => [
@@ -1845,7 +1845,7 @@ Client.connection.select_all("SELECT first_name, created_at FROM clients WHERE i
 
 `pluck` 方法用于在模型对应的底层数据表中查询单个或多个字段。它接受字段名的列表作为参数，并返回这些字段的值的数组，数组中的每个值都具有对应的数据类型。
 
-[source,irb]
+[source,ruby]
 ----
 Client.where(active: true).pluck(:id)
 # SELECT id FROM clients WHERE active = 1
@@ -1862,7 +1862,7 @@ Client.pluck(:id, :name)
 
 使用 `pluck` 方法，我们可以把下面的代码：
 
-[source,irb]
+[source,ruby]
 ----
 Client.select(:id).map { |c| c.id }
 # or
@@ -1873,7 +1873,7 @@ Client.select(:id, :name).map { |c| [c.id, c.name] }
 
 替换为：
 
-[source,irb]
+[source,ruby]
 ----
 Client.pluck(:id)
 # or
@@ -1889,10 +1889,7 @@ class Client < ApplicationRecord
     "I am #{super}"
   end
 end
-----
 
-[source,irb]
-----
 Client.select(:name).map &:name
 # => ["I am David", "I am Jeremy", "I am Jose"]
 
@@ -1902,7 +1899,7 @@ Client.pluck(:name)
 
 此外，和 `select` 方法及其他 `Relation` 作用域不同，`pluck` 方法会触发即时查询，因此在 `pluck` 方法之前可以连接作用域，但在 `pluck` 方法之后不能连接作用域：
 
-[source,irb]
+[source,ruby]
 ----
 Client.pluck(:name).limit(1)
 # => NoMethodError: undefined method `limit' for #<Array:0x007ff34d3ad6d8>
@@ -1916,7 +1913,7 @@ Client.limit(1).pluck(:name)
 
 使用 `ids` 方法可以获得关联的所有 ID，也就是数据表的主键。
 
-[source,irb]
+[source,ruby]
 ----
 Person.ids
 # SELECT id FROM people
@@ -1927,10 +1924,7 @@ Person.ids
 class Person < ApplicationRecord
   self.primary_key = "person_id"
 end
-----
 
-[source,irb]
-----
 Person.ids
 # SELECT person_id FROM people
 ----
@@ -1940,14 +1934,14 @@ Person.ids
 
 要想检查对象是否存在，可以使用 `exists?` 方法。`exists?` 方法查询数据库的工作原理和 `find` 方法相同，但是 `find` 方法返回的是对象或对象集合，而 `exists?` 方法返回的是 `true` 或 `false`。
 
-[source,irb]
+[source,ruby]
 ----
 Client.exists?(1)
 ----
 
 `exists?` 方法也接受多个值作为参数，并且只要有一条对应记录存在就会返回 `true`。
 
-[source,irb]
+[source,ruby]
 ----
 Client.exists?(id: [1,2,3])
 # or
@@ -1956,14 +1950,14 @@ Client.exists?(name: ['John', 'Sergei'])
 
 我们还可以在模型或关联上调用 `exists?` 方法，这时不需要任何参数。
 
-[source,irb]
+[source,ruby]
 ----
 Client.where(first_name: 'Ryan').exists?
 ----
 
 只要存在一条名为“Ryan”的客户记录，上面的代码就会返回 `true`，否则就会返回 `false`。
 
-[source,irb]
+[source,ruby]
 ----
 Client.exists?
 ----
@@ -1972,7 +1966,7 @@ Client.exists?
 
 我们还可以在模型或关联上调用 `any?` 和 `many?` 方法来检查对象是否存在。
 
-[source,irb]
+[source,ruby]
 ----
 # via a model
 Article.any?
@@ -1993,3 +1987,92 @@ Article.first.categories.many?
 
 [[calculations]]
 === 计算
+
+在本节的前言中我们以 `count` 方法为例，例子中提到的所有选项对本节的各小节都适用。
+
+所有用于计算的方法都可以直接在模型上调用：
+
+[source,ruby]
+----
+Client.count
+# SELECT count(*) AS count_all FROM clients
+----
+
+或者在关联上调用：
+
+[source,ruby]
+----
+Client.where(first_name: 'Ryan').count
+# SELECT count(*) AS count_all FROM clients WHERE (first_name = 'Ryan')
+----
+
+我们还可以在关联上执行各种查找器方法来执行复杂计算：
+
+[source,ruby]
+----
+Client.includes("orders").where(first_name: 'Ryan', orders: { status: 'received' }).count
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT count(DISTINCT clients.id) AS count_all FROM clients
+  LEFT OUTER JOIN orders ON orders.client_id = client.id WHERE
+  (clients.first_name = 'Ryan' AND orders.status = 'received')
+----
+
+[[count]]
+==== `count` 方法
+
+要想知道模型对应的数据表中有多少条记录，可以使用 `Client.count` 方法，这个方法的返回值就是记录条数。如果想要知道特定记录的条数，例如具有 `age` 字段值的所有客户记录的条数，可以使用 `Client.count(:age)`。
+
+关于 `count` 方法的选项的更多介绍，请参阅 <<active_record_querying#calculations>>。
+
+[[average]]
+==== `average` 方法
+
+要想知道数据表中某个字段的平均值，可以在数据表对应的类上调用 `average` 方法。例如：
+
+[source,ruby]
+----
+Client.average("orders_count")
+----
+
+上面的代码会返回表示 `orders_count` 字段平均值的数字（可能是浮点数，如 3.14159265）。
+
+关于 `average` 方法的选项的更多介绍，请参阅 <<active_record_querying#calculations>>。
+
+[[minimum]]
+==== `minimum` 方法
+
+要想查找数据表中某个字段的最小值，可以在数据表对应的类上调用 `minimum` 方法。例如：
+
+[source,ruby]
+----
+Client.minimum("age")
+----
+
+关于 `minimum` 方法的选项的更多介绍，请参阅 <<active_record_querying#calculations>>。
+
+[[maximum]]
+==== `maximum` 方法
+
+要想查找数据表中某个字段的最大值，可以在数据表对应的类上调用 `maximum` 方法。例如：
+
+[source,ruby]
+----
+Client.maximum("age")
+----
+
+关于 `maximum` 方法的选项的更多介绍，请参阅 <<active_record_querying#calculations>>。
+
+[[sum]]
+==== `sum` 方法
+
+要想知道数据表中某个字段的所有字段值之和，可以在数据表对应的类上调用 `sum` 方法。例如：
+
+关于 `sum` 方法的选项的更多介绍，请参阅 <<active_record_querying#calculations>>。
+
+[[running-explain]]
+=== 执行 `EXPLAIN` 命令
