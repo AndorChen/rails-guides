@@ -10,7 +10,7 @@
 - [x] Active Record Validations
 - [x] Active Record Callbacks
 - [x] Active Record Associations
-- [ ] Active Record Query Interface
+- [x] Active Record Query Interface
 - [x] Active Model Basics
 - [ ] Action View Overview
 - [x] Layouts and Rendering in Rails
