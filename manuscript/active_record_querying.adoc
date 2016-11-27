@@ -1359,7 +1359,7 @@ Article.includes(:comments).where(comments: { visible: true })
 SELECT "articles"."id" AS t0_r0, ... "comments"."updated_at" AS t1_r5 FROM "articles" LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id" WHERE (comments.visible = 1)
 ----
 
-如果上面的代码没有使用 `where` 方法，就会生成正常的一组两条查询语句。
+如果上面的代码没有使用 `where` 方法，就会生成常规的一组两条查询语句。
 
 NOTE: 要想像上面的代码这样使用 `where` 方法，必须在 `where` 方法中使用 Hash。如果想要在 `where` 方法中使用字符串 SQL 片段，就必须用 `references` 方法来强制使用关联数据表。
 
@@ -1372,3 +1372,241 @@ Article.includes(:comments).where("comments.visible = true").references(:comment
 
 [[scopes]]
 === 作用域
+
+作用域允许我们把常用查询定义为方法，然后通过在关联对象或模型上调用方法来引用这些查询。（译者注：“作用域”和“作用域方法”在本文中是一个意思。）在作用域中，我们可以使用之前介绍过的所有方法，如 `where`、`join` 和 `includes` 方法。所有作用域都会返回 `ActiveRecord::Relation` 对象，这样就可以继续在这个对象上调用其他方法（如其他作用域）。
+
+要想定义简单的作用域，我们可以在类中通过 `scope` 方法定义作用域，并传入调用这个作用域时执行的查询。
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  scope :published, -> { where(published: true) }
+end
+----
+
+通过上面这种方式定义作用域和通过定义类方法来定义作用域效果完全相同，至于使用哪种方式只是个人喜好问题：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  def self.published
+    where(published: true)
+  end
+end
+----
+
+在作用域中可以链接其他作用域：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  scope :published,               -> { where(published: true) }
+  scope :published_and_commented, -> { published.where("comments_count > 0") }
+end
+----
+
+我们可以在模型上调用 `published` 作用域：
+
+[source,ruby]
+----
+Article.published # => [published articles]
+----
+
+或在多个 `Article` 对象组成的关联对象上调用 `published` 作用域：
+
+[source,ruby]
+----
+category = Category.first
+category.articles.published # => [published articles belonging to this category]
+----
+
+[[passing-in-arguments]]
+==== 传入参数
+
+作用域可以接受参数：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  scope :created_before, ->(time) { where("created_at < ?", time) }
+end
+----
+
+调用作用域和调用类方法一样：
+
+[source,ruby]
+----
+Article.created_before(Time.zone.now)
+----
+
+不过这只是复制了本该通过类方法提供给我们的的功能。
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  def self.created_before(time)
+    where("created_at < ?", time)
+  end
+end
+----
+
+当作用域需要接受参数时，推荐改用类方法。使用类方法时，这些方法仍然可以在关联对象上访问：
+
+[source,ruby]
+----
+category.articles.created_before(time)
+----
+
+[[using-conditionals]]
+==== 使用条件
+
+我们可以在作用域中使用条件：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  scope :created_before, ->(time) { where("created_at < ?", time) if time.present? }
+end
+----
+
+和之前的例子一样，作用域的这一行为也和类方法类似。
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  def self.created_before(time)
+    where("created_at < ?", time) if time.present?
+  end
+end
+----
+
+不过有一点需要特别注意：不管条件的值是 `true` 还是 `false`，作用域总是返回 `ActiveRecord::Relation` 对象，而当条件是 `false` 时，类方法返回的是 `nil`。因此，当链接带有条件的类方法时，如果任何一个条件的值是 `false`，就会引发 `NoMethodError` 异常。
+
+[[applying-a-default-scope]]
+==== 应用默认作用域
+
+要想在模型的所有查询中应用作用域，我们可以在这个模型上使用 `default_scope` 方法。
+
+[source,ruby]
+----
+class Client < ApplicationRecord
+  default_scope { where("removed_at IS NULL") }
+end
+----
+
+应用默认作用域后，在这个模型上执行查询，会生成下面这样的 SQL 语句：
+
+[source,sql]
+----
+SELECT * FROM clients WHERE removed_at IS NULL
+----
+
+如果想用默认作用域做更复杂的事情，我们也可以把它定义为类方法：
+
+[source,ruby]
+----
+class Client < ApplicationRecord
+  def self.default_scope
+    # Should return an ActiveRecord::Relation.
+  end
+end
+----
+
+NOTE: 默认作用域在创建记录时同样起作用，但在更新记录时不起作用。例如：
+
+[source,ruby]
+----
+class Client < ApplicationRecord
+  default_scope { where(active: true) }
+end
+
+Client.new          # => #<Client id: nil, active: true>
+Client.unscoped.new # => #<Client id: nil, active: nil>
+----
+
+[[merging-of-scopes]]
+==== 作用域的合并
+
+和 `WHERE` 子句一样，我们用 `AND` 来合并作用域。
+
+[source,ruby]
+----
+class User < ApplicationRecord
+  scope :active, -> { where state: 'active' }
+  scope :inactive, -> { where state: 'inactive' }
+end
+
+User.active.inactive
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'active' AND "users"."state" = 'inactive'
+----
+
+我们可以混合使用 `scope` 和 `where` 方法，这样最后生成的 SQL 语句会使用 `AND` 连接所有条件。
+
+[source,ruby]
+----
+User.active.where(state: 'finished')
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'active' AND "users"."state" = 'finished'
+----
+
+如果使用 `Relation#merge` 方法，那么在发生条件冲突时总是最后的 `WHERE` 子句起作用。
+
+[source,ruby]
+----
+User.active.merge(User.inactive)
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'inactive'
+----
+
+有一点需要特别注意，`default_scope` 总是在所有 `scope` 和 `where` 之前起作用。
+
+[source,ruby]
+----
+class User < ApplicationRecord
+  default_scope { where state: 'pending' }
+  scope :active, -> { where state: 'active' }
+  scope :inactive, -> { where state: 'inactive' }
+end
+
+User.all
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'pending'
+
+User.active
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'pending' AND "users"."state" = 'active'
+
+User.where(state: 'inactive')
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'pending' AND "users"."state" = 'inactive'
+----
+
+在上面的代码中我们可以看到，在 `scope` 条件和 `where` 条件中都合并了 `default_scope` 条件。
+
+[[removing-all-scoping]]
+==== 删除所有作用域
+
+在需要时，可以使用 `unscoped` 方法删除作用域。如果在模型中说明了默认作用域，但在某次查询中又不想应用默认作用域，这时就可以使用 `unscoped` 方法。
+
+[source,ruby]
+----
+Client.unscoped.load
+----
+
+`unscoped` 方法会删除所有作用域，仅在数据表上执行常规查询。
+
+[source,ruby]
+----
+Client.unscoped.all
+# SELECT "clients".* FROM "clients"
+
+Client.where(published: false).unscoped.all
+# SELECT "clients".* FROM "clients"
+----
+
+`unscoped` 方法也接受块作为参数。
+
+[source,ruby]
+----
+Client.unscoped {
+  Client.created_before(Time.zone.now)
+}
+----
+
+[[dynamic-finders]]
+=== 动态查询器
