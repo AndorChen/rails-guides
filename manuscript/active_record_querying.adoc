@@ -1651,3 +1651,59 @@ book.available?   # => false
 
 [[understanding-the-method-chaining]]
 === 理解方法链
+
+Active Record 实现 link:http://en.wikipedia.org/wiki/Method_chaining[方法链] 的方式又简单又直接，有了方法链我们就可以同时使用多个 Active Record 方法。
+
+当之前的方法调用返回 `ActiveRecord::Relation` 对象时，例如 `all`、`where` 和 `joins` 方法，我们就可以在语句中把方法连接起来。返回单个对象的方法（请参阅 <<active_record_querying#retrieving-a-single-object>> 一节）必须位于语句的末尾。
+
+下面给出了一些例子。本文无法涵盖所有的可能性，这里给出的只是很少的一部分例子。在调用 Active Record 方法时，查询不会立即生成并发送到数据库，这些操作只有在实际需要数据时才会执行。下面的每个例子都会生成一次查询。
+
+[[retrieving-filtered-data-from-multiple-tables]]
+==== 从多个数据表取回过滤后的数据
+
+[source,ruby]
+----
+Person
+  .select('people.id, people.name, comments.text')
+  .joins(:comments)
+  .where('comments.created_at > ?', 1.week.ago)
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT people.id, people.name, comments.text
+FROM people
+INNER JOIN comments
+  ON comments.person_id = people.id
+WHERE comments.created_at = '2015-01-01'
+----
+
+[[retrieving-specific-data-from-multiple-tables]]
+==== 从多个数据表取回特定数据
+
+[source,ruby]
+----
+Person
+  .select('people.id, people.name, companies.name')
+  .joins(:company)
+  .find_by('people.name' => 'John') # this should be the last
+----
+
+上面的代码会生成下面的 SQL 语句：
+
+[source,sql]
+----
+SELECT people.id, people.name, companies.name
+FROM people
+INNER JOIN companies
+  ON companies.person_id = people.id
+WHERE people.name = 'John'
+LIMIT 1
+----
+
+NOTE: 请注意，如果查询匹配多条记录，`find_by` 方法会取回第一条记录并忽略其他记录（如上面的 SQL 语句中的 `LIMIT 1`）。
+
+[[find-or-build-a-new-object]]
+=== 查找或创建新对象
