@@ -1937,3 +1937,59 @@ Person.ids
 
 [[existence-of-objects]]
 === 检查对象是否存在
+
+要想检查对象是否存在，可以使用 `exists?` 方法。`exists?` 方法查询数据库的工作原理和 `find` 方法相同，但是 `find` 方法返回的是对象或对象集合，而 `exists?` 方法返回的是 `true` 或 `false`。
+
+[source,irb]
+----
+Client.exists?(1)
+----
+
+`exists?` 方法也接受多个值作为参数，并且只要有一条对应记录存在就会返回 `true`。
+
+[source,irb]
+----
+Client.exists?(id: [1,2,3])
+# or
+Client.exists?(name: ['John', 'Sergei'])
+----
+
+我们还可以在模型或关联上调用 `exists?` 方法，这时不需要任何参数。
+
+[source,irb]
+----
+Client.where(first_name: 'Ryan').exists?
+----
+
+只要存在一条名为“Ryan”的客户记录，上面的代码就会返回 `true`，否则就会返回 `false`。
+
+[source,irb]
+----
+Client.exists?
+----
+
+如果 `clients` 数据表是空的，上面的代码就会返回 `false`，否则就会返回 `true`。
+
+我们还可以在模型或关联上调用 `any?` 和 `many?` 方法来检查对象是否存在。
+
+[source,irb]
+----
+# via a model
+Article.any?
+Article.many?
+
+# via a named scope
+Article.recent.any?
+Article.recent.many?
+
+# via a relation
+Article.where(published: true).any?
+Article.where(published: true).many?
+
+# via an association
+Article.first.categories.any?
+Article.first.categories.many?
+----
+
+[[calculations]]
+=== 计算
