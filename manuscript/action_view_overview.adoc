@@ -1,1 +1,14 @@
-== Action View Overview
+[[action-view-overview]]
+== Action View 概述
+:imagesdir: ../images
+:numbered:
+
+[.chapter-abstract]
+--
+读完本文后，你将学会：
+
+* Action View 是什么，如何在 Rails 中使用 Action View。
+* 模板、局部视图和布局的最佳使用方法。
+* Action View 提供了哪些帮助方法，如何编写自己的帮助方法。
+* 如何使用本地化视图。
+--
