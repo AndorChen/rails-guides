@@ -48,3 +48,150 @@ $ bin/rails generate scaffold article
 
 [[templates-partials-and-layouts]]
 === 模板、局部视图和布局
+
+前面说过，最后输出的 HTML 由模板、局部视图和布局这三种 Rails 元素组成。下面分别进行简要介绍。
+
+[[templates]]
+==== 模板
+
+Action View 模板可以用多种方式编写。扩展名是 `.erb` 的模板文件混合使用 ERB（嵌入式 Ruby）和 HTML 编写，扩展名是 `.builder` 的模板文件使用 `Builder::XmlMarkup` 库编写。
+
+Rails 支持多种模板系统，并使用文件扩展名加以区分。例如，使用 ERB 模板系统的 HTML 文件的扩展名是 `.html.erb`。
+
+[[erb]]
+===== ERB 模板
+
+在 ERB 模板中，可以使用 `<% %>` 和 `<%= %>` 标签来包含 Ruby 代码。`<% %>` 标签用于执行不返回任何内容的 Ruby 代码，例如条件、循环或块，而 `<%= %>` 标签用于输出 Ruby 代码的执行结果。
+
+下面是一个循环输出名称的例子：
+
+[source,irb]
+----
+<h1>Names of all the people</h1>
+<% @people.each do |person| %>
+  Name: <%= person.name %><br>
+<% end %>
+----
+
+在上面的代码中，使用普通嵌入标签（`<% %>`）建立循环，使用输出嵌入标签（`<%= %>`）插入名称。请注意，这种用法不仅仅是建议用法（而是必须这样使用），因为在 ERB 模板中，普通的输出方法，例如 `print` 和 `puts` 方法，无法正常渲染。因此，下面的代码是错误的：
+
+[source,irb]
+----
+<%# WRONG %>
+Hi, Mr. <% puts "Frodo" %>
+----
+
+要想删除前导和结尾空格，可以把 `<% %>` 标签替换为 `<%- -%>` 标签。
+
+[[builder]]
+===== Builder 模板
+
+和 ERB 模板相比，Builder 模板更加按部就班，常用于生成 XML 内容。在扩展名为 `.builder` 的模板中，可以直接使用名为 `xml` 的 XmlMarkup 对象。
+
+下面是一些简单的例子：
+
+[source,ruby]
+----
+xml.em("emphasized")
+xml.em { xml.b("emph & bold") }
+xml.a("A Link", "href" => "http://rubyonrails.org")
+xml.target("name" => "compile", "option" => "fast")
+----
+
+上面的代码会生成下面的 XML：
+
+[source,xml]
+----
+<em>emphasized</em>
+<em><b>emph &amp; bold</b></em>
+<a href="http://rubyonrails.org">A link</a>
+<target option="fast" name="compile" />
+----
+
+带有块的方法会作为 XML 标签处理，块中的内容会嵌入这个标签中。例如：
+
+[source,ruby]
+----
+xml.div {
+  xml.h1(@person.name)
+  xml.p(@person.bio)
+}
+----
+
+上面的代码会生成下面的 XML：
+
+[source,xml]
+----
+<div>
+  <h1>David Heinemeier Hansson</h1>
+  <p>A product of Danish Design during the Winter of '79...</p>
+</div>
+----
+
+下面是 Basecamp 网站用于生成 RSS 的完整的实际代码：
+
+[source,ruby]
+----
+xml.rss("version" => "2.0", "xmlns:dc" => "http://purl.org/dc/elements/1.1/") do
+  xml.channel do
+    xml.title(@feed_title)
+    xml.link(@url)
+    xml.description "Basecamp: Recent items"
+    xml.language "en-us"
+    xml.ttl "40"
+
+    for item in @recent_items
+      xml.item do
+        xml.title(item_title(item))
+        xml.description(item_description(item)) if item_description(item)
+        xml.pubDate(item_pubDate(item))
+        xml.guid(@person.firm.account.url + @recent_items.url(item))
+        xml.link(@person.firm.account.url + @recent_items.url(item))
+        xml.tag!("dc:creator", item.author_name) if item_has_creator?(item)
+      end
+    end
+  end
+end
+----
+
+[[jbuilder]]
+===== Jbuilder 模板系统
+
+link:https://github.com/rails/jbuilder[Jbuilder] 是由 Rails 团队维护并默认包含在 Rails Gemfile 中的 gem。它类似 Builder，但用于生成 JSON，而不是 XML。
+
+如果你的程序中没有 Jbuilder 这个 gem，可以把下面的代码添加到 Gemfile：
+
+[source,ruby]
+----
+gem 'jbuilder'
+----
+
+在扩展名为 `.jbuilder` 的模板中，可以直接使用名为 `json` 的 Jbuilder 对象。
+
+下面是一个简单的例子：
+
+[source,ruby]
+----
+json.name("Alex")
+json.email("alex@example.com")
+----
+
+上面的代码会生成下面的 JSON：
+
+[source,json]
+----
+{
+  "name": "Alex",
+  "email": "alex@example.com"
+}
+----
+
+关于 Jbuilder 模板的更多例子和信息，请参阅 link:https://github.com/rails/jbuilder#jbuilder[Jbuilder 文档]。
+
+[[template-caching]]
+===== 模板缓存
+
+默认情况下，Rails 会把所有模板分别编译为方法，以便进行渲染。在开发环境中，当我们修改了模板时，Rails 会检查文件的修改时间并自动重新编译。
+
+[[partials]]
+==== 局部视图
