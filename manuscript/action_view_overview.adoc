@@ -20,7 +20,31 @@
 
 Action View 模板使用混合了 HTML 标签的嵌入式 Ruby 语言编写。为了避免样板代码把模板弄乱，Action View 提供了许多帮助方法，用于创建表单、日期和字符串等常用组件。随着开发的深入，为程序添加新的帮助方法也很容易。
 
-NOTE: Action View 的某些特性与 Active Record 有关，但这并不意味着 Action View 依赖 Active Record。 Action View 是独立的软件包，可以和任何类型的 Ruby 库一起使用。
+NOTE: Action View 的某些特性与 Active Record 有关，但这并不意味着 Action View 依赖 Active Record。Action View 是独立的软件包，可以和任何类型的 Ruby 库一起使用。
 
 [[using-action-view-with-rails]]
 === 在 Rails 中使用 Action View
+
+在 `app/views` 文件夹中，每个控制器都有一个对应的文件夹，其中保存了控制器对应视图的模板文件。这些模板文件用于显示每个控制器动作产生的视图。
+
+在 Rails 中使用脚手架生成器来新建资源时，默认会执行下面的操作：
+
+----
+$ bin/rails generate scaffold article
+      [...]
+      invoke  scaffold_controller
+      create    app/controllers/articles_controller.rb
+      invoke    erb
+      create      app/views/articles
+      create      app/views/articles/index.html.erb
+      create      app/views/articles/edit.html.erb
+      create      app/views/articles/show.html.erb
+      create      app/views/articles/new.html.erb
+      create      app/views/articles/_form.html.erb
+      [...]
+----
+
+在上面的输出结果中我们可以看到 Rails 中视图的命名约定。通常，视图和对应的控制器动作共享名称。例如，`articles_controller.rb` 控制器文件中的 `index` 动作对应 `app/views/articles` 文件夹中的 `index.html.erb` 视图文件。返回客户端的完整 HTML 由 ERB 视图文件和包装它的布局文件，以及视图可能引用的所有局部视图文件组成。后文会详细介绍这三种文件。
+
+[[templates-partials-and-layouts]]
+=== 模板、局部视图和布局
