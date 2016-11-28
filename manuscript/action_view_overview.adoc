@@ -12,3 +12,15 @@
 * Action View 提供了哪些帮助方法，如何编写自己的帮助方法。
 * 如何使用本地化视图。
 --
+
+[[what-is-action-view]]
+=== Action View 是什么
+
+在Rails中，Web 请求由 Action Controller（请参阅 <<action_controller_overview>>）和 Action View 处理。通常，Action Controller 参与和数据库的通信，并在需要时执行 CRUD 操作，然后由 Action View 负责编译响应。
+
+Action View 模板使用混合了 HTML 标签的嵌入式 Ruby 语言编写。为了避免样板代码把模板弄乱，Action View 提供了许多帮助方法，用于创建表单、日期和字符串等常用组件。随着开发的深入，为程序添加新的帮助方法也很容易。
+
+NOTE: Action View 的某些特性与 Active Record 有关，但这并不意味着 Action View 依赖 Active Record。 Action View 是独立的软件包，可以和任何类型的 Ruby 库一起使用。
+
+[[using-action-view-with-rails]]
+=== 在 Rails 中使用 Action View
