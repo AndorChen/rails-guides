@@ -195,3 +195,157 @@ json.email("alex@example.com")
 
 [[partials]]
 ==== 局部视图
+
+局部视图模板，通常直接称为“局部视图”，会把渲染过程分成多个更容易管理的部分。局部视图从模板中提取代码片断并保存在独立的文件中，然后在模板中重用这些代码片断。
+
+[[naming-partials]]
+===== 局部视图的名称
+
+在视图中我们使用 `render` 方法来渲染局部视图：
+
+[source,erb]
+----
+<%= render "menu" %>
+----
+
+在渲染视图的过程中，上面的代码会渲染 `_menu.html.erb` 局部视图文件。请注意前导的下划线：局部视图的文件名总是以下划线开头，以便和普通视图文件区分开来，但在引用局部视图时不写下划线。从其他文件夹中加载局部视图文件时同样遵守这一规则：
+
+[source,erb]
+----
+<%= render "shared/menu" %>
+----
+
+上面的代码会加载 `app/views/shared/_menu.html.erb` 局部视图文件。
+
+[[using-partials-to-simplify-views]]
+===== 使用局部视图来简化视图
+
+使用局部视图的一种方式是把它们看作子程序，也就是把细节内容从视图中移出来，这样会使视图更容易理解。例如：
+
+[source,erb]
+----
+<%= render "shared/ad_banner" %>
+
+<h1>Products</h1>
+
+<p>Here are a few of our fine products:</p>
+<% @products.each do |product| %>
+  <%= render partial: "product", locals: { product: product } %>
+<% end %>
+
+<%= render "shared/footer" %>
+----
+
+在上面的代码中，`_ad_banner.html.erb` 和 `_footer.html.erb` 局部视图可以在多个页面中使用。当我们专注于实现某个页面时，不必关心这些局部视图的细节。
+
+[[render-without-partial-and-locals-options]]
+===== 不使用 `partial` 和 `locals` 选项进行渲染
+
+在前面的例子中，`render` 方法有两个选项：`partial` 和 `locals`。如果一共只有这两个选项，那么可以跳过不写。例如，下面的代码：
+
+[source,erb]
+----
+<%= render partial: "product", locals: { product: @product } %>
+----
+
+可以改写为：
+
+[source,erb]
+----
+<%= render "product", product: @product %>
+----
+
+[[the-as-and-object-options]]
+===== `as` 和 `object` 选项
+
+默认情况下，`ActionView::Partials::PartialRenderer` 的对象储存在和模板同名的局部变量中。因此，我们可以扩展下面的代码：
+
+[source,erb]
+----
+<%= render partial: "product" %>
+----
+
+在 `_product` 局部视图中，我们可以通过局部变量 `product` 引用 `@product` 实例变量：
+
+[source,erb]
+----
+<%= render partial: "product", locals: { product: @product } %>
+----
+
+`as` 选项用于为局部变量指定不同的名称。例如，把局部变量的名称由 `product` 改为 `item`：
+
+[source,erb]
+----
+<%= render partial: "product", as: "item" %>
+----
+
+`object` 选项用于直接指定想要在局部视图中使用的对象，常用于模板对象位于其他地方（例如位于其他实例变量或局部变量中）的情况。例如，下面的代码：
+
+[source,erb]
+----
+<%= render partial: "product", locals: { product: @item } %>
+----
+
+可以改写为：
+
+[source,erb]
+----
+<%= render partial: "product", object: @item %>
+----
+
+`object` 和 `as` 选项还可一起使用：
+
+[source,erb]
+----
+<%= render partial: "product", object: @item, as: "item" %>
+----
+
+[[rendering-collections]]
+===== 集合的渲染
+
+模板经常需要遍历集合并使用集合的每个元素分别渲染子模板。在 Rails 中我们只需一行代码就可以完成这项工作。例如，下面这段渲染产品局部视图的代码：
+
+[source,erb]
+----
+<% @products.each do |product| %>
+  <%= render partial: "product", locals: { product: product } %>
+<% end %>
+----
+
+可以改写为：
+
+[source,erb]
+----
+<%= render partial: "product", collection: @products %>
+----
+
+当使用集合来渲染局部视图时，在每个局部视图实例中，都可以使用和局部视图同名的局部变量来访问集合中的元素。在本例中，局部视图是 `_product`，在这个局部视图中我们可以通过 `product` 局部变量来访问用于渲染局部视图的集合中的元素。
+
+渲染集合还有一个简易写法。假设 `@products` 是 `Product` 的实例的集合，上面的代码可以改写为：
+
+[source,erb]
+----
+<%= render @products %>
+----
+
+Rails 会根据集合中的模型名来确定应该使用哪个局部视图，在本例中模型名是 `Product`。实际上，我们甚至可以使用这种简易写法来渲染由不同模型实例组成的集合，Rails 会为集合中的每个元素选择适当的局部视图。
+
+[[spacer-templates]]
+===== 间隔模板
+
+我们还可以使用 `:spacer_template` 选项来指定第二个局部视图（也就是间隔模板），在渲染第一个局部视图（也就是主局部视图）的两个实例之间会渲染这个间隔模板:
+
+[source,erb]
+----
+<%= render partial: @products, spacer_template: "product_ruler" %>
+----
+
+上面的代码会在两个 `_product` 局部视图（主局部视图）之间渲染 `_product_ruler` 局部视图（间隔模板）。
+
+[[layouts]]
+==== 布局
+
+布局是渲染 Rails 控制器返回结果时使用的公共视图模板。通常，Rails 程序中会包含多个视图用于渲染不同页面。例如，网站中用户登录后页面的布局，营销或销售页面的布局。用户登录后页面的布局可以包含在多个控制器动作中出现的顶级导航。SaaS 程序的销售页面布局可以包含指向“定价”和“联系我们”页面的顶级导航。不同布局可以有不同的外观和感觉。关于布局的更多介绍，请参阅 <<layouts_and_rendering>> 一文。
+
+[[partial-layout]]
+=== 局部布局
