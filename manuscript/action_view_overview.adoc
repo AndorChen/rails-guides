@@ -660,3 +660,18 @@ end
 
 [[cachehelper]]
 ==== `CacheHelper` 模块
+
+[[cache]]
+===== `cache` 方法
+
+`cache` 方法用于缓存视图片段而不是整个动作或页面。此方法常用于缓存页面中诸如菜单、新闻主题列表、静态 HTML 片段等内容。`cache` 方法接受块作为参数，块中包含要缓存的内容。关于 `cache` 方法的更多介绍，请参阅 `AbstractController::Caching::Fragments` 模块的文档。
+
+[source,erb]
+----
+<% cache do %>
+  <%= render "shared/footer" %>
+<% end %>
+----
+
+[[capturehelper]]
+==== `CaptureHelper` 模块
