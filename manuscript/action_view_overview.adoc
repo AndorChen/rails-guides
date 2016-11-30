@@ -349,3 +349,52 @@ Rails 会根据集合中的模型名来确定应该使用哪个局部视图，�
 
 [[partial-layout]]
 === 局部布局
+
+应用于局部视图的布局称为局部布局。局部布局和应用于控制器动作的全局布局不一样，但两者的工作方式类似。
+
+比如说我们想在页面上显示文章，并使用 `div` 标签包装文章。首先，我们新建一个 `Article` 的实例：
+
+[source,ruby]
+----
+Article.create(body: 'Partial Layouts are cool!')
+----
+
+在 `show` 模板中，我们要在 `box` 布局中渲染 `_article` 局部视图：
+
+`articles/show.html.erb`
+
+[source,erb]
+----
+<%= render partial: 'article', layout: 'box', locals: { article: @article } %>
+----
+
+`box` 布局只是把 `_article` 局部视图包装在 `div` 标签中：
+
+`articles/_box.html.erb`
+
+[source,erb]
+----
+<div class='box'>
+  <%= yield %>
+</div>
+----
+
+请注意，局部布局可以访问传递给 `render` 方法的 `article` 本地变量。不过，和全局部局不同，局部布局的文件名使用下划线前缀。
+
+我们还可以直接渲染代码块而不调用 `yield` 方法。例如，如果不使用 `_article` 局部视图，我们可以像下面这样编写代码：
+
+**`articles/show.html.erb`**
+
+[source,erb]
+----
+<% render(layout: 'box', locals: { article: @article }) do %>
+  <div>
+    <p><%= article.body %></p>
+  </div>
+<% end %>
+----
+
+假设我们使用的 `_box` 局部布局和前面例子一样，那么本例中模板的渲染结果也会和前面的例子一样。
+
+[[view-paths]]
+=== 视图路径
