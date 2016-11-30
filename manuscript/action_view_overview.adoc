@@ -593,3 +593,53 @@ stylesheet_url "application" # => http://www.example.com/assets/application.css
 
 [[atomfeedhelper]]
 ==== `AtomFeedHelper` 模块
+
+[[atom-feed]]
+===== `atom_feed` 方法
+
+通过 `atom_feed` 帮助方法我们可以轻松创建 Atom 订阅。下面是一个完整的示例：
+
+`config/routes.rb`
+
+[source,ruby]
+----
+resources :articles
+----
+
+`app/controllers/articles_controller.rb`
+
+[source,ruby]
+----
+def index
+  @articles = Article.all
+
+  respond_to do |format|
+    format.html
+    format.atom
+  end
+end
+----
+
+`app/views/articles/index.atom.builder`
+
+[source,ruby]
+----
+atom_feed do |feed|
+  feed.title("Articles Index")
+  feed.updated(@articles.first.created_at)
+
+  @articles.each do |article|
+    feed.entry(article) do |entry|
+      entry.title(article.title)
+      entry.content(article.body, type: 'html')
+
+      entry.author do |author|
+        author.name(article.author_name)
+      end
+    end
+  end
+end
+----
+
+[[benchmarkhelper]]
+==== `BenchmarkHelper` 模块
