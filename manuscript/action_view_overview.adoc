@@ -643,3 +643,20 @@ end
 
 [[benchmarkhelper]]
 ==== `BenchmarkHelper` 模块
+
+[[benchmark]]
+===== `benchmark` 方法
+
+`benchmark` 方法用于测量模板中某个块的执行时间，并把测量结果写入日志。`benchmark` 方法常用于测量耗时操作或可能的性能瓶颈的执行时间。
+
+[source,erb]
+----
+<% benchmark "Process data files" do %>
+  <%= expensive_files_operation %>
+<% end %>
+----
+
+上面的代码会在日志中写入类似 `Process data files (0.34523)` 的测量结果，我们可以通过比较执行时间来优化代码。
+
+[[cachehelper]]
+==== `CacheHelper` 模块
