@@ -398,3 +398,33 @@ Article.create(body: 'Partial Layouts are cool!')
 
 [[view-paths]]
 === 视图路径
+
+在渲染响应时，控制器需要解析不同视图所在的位置。默认情况下，控制器只查找 `app/views` 文件夹。
+
+我们可以使用 `prepend_view_path` 和 `append_view_path` 方法分别在查找路径的开头和结尾添加其他位置。
+
+[[prepend-view-path]]
+==== 在开头添加视图路径
+
+例如，当需要把视图放在子域名的不同文件夹中时，我们可以使用下面的代码：
+
+[source,ruby]
+----
+prepend_view_path "app/views/#{request.subdomain}"
+----
+
+这样在解析视图时，Action View 会首先查找这个文件夹。
+
+[[append-view-path]]
+==== 在末尾添加视图路径
+
+同样，我们可以在查找路径的末尾添加视图路径：
+
+[source,ruby]
+----
+append_view_path "app/views/direct"
+----
+
+上面的代码会在查找路径的末尾添加 `app/views/direct` 文件夹。
+
+=== Action View 提供的帮助方法概述
