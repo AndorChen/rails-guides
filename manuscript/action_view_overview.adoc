@@ -427,4 +427,169 @@ append_view_path "app/views/direct"
 
 上面的代码会在查找路径的末尾添加 `app/views/direct` 文件夹。
 
+[[overview-of-helpers-provided-by-action-view]]
 === Action View 提供的帮助方法概述
+
+NOTE: 本节内容仍在完善中，目前并没有列出所有帮助方法。关于帮助方法的完整列表，请参阅 link:http://api.rubyonrails.org/classes/ActionView/Helpers.html[API文档]。
+
+本节内容只是对 Action View 中可用帮助方法的简要概述。在阅读本节内容之后，推荐查看 link:http://api.rubyonrails.org/classes/ActionView/Helpers.html[API文档]，该文档详细介绍了所有帮助方法。
+
+[[assettaghelper]]
+==== `AssetTagHelper` 模块
+
+`AssetTagHelper` 模块提供的方法用于生成链接静态资源文件的 HTML 代码，例如链接图片、JavaScript 文件和订阅的 HTML 代码。
+
+默认情况下，Rails 会链接当前主机 `public` 文件夹中的静态资源文件。要想链接专用的静态资源文件服务器上的文件，可以设置 Rails 程序配置文件（通常是 `config/environments/production.rb` 文件）中的 `config.action_controller.asset_host` 选项。例如，假设静态资源文件服务器的域名是 `assets.example.com`，我们可以像下面这样进行设置：
+
+[source,ruby]
+----
+config.action_controller.asset_host = "assets.example.com"
+image_tag("rails.png") # => <img src="http://assets.example.com/images/rails.png" alt="Rails" />
+----
+
+[[auto-discovery-link-tag]]
+===== `auto_discovery_link_tag` 方法
+
+`auto_discovery_link_tag` 方法用于返回链接标签，使浏览器和订阅阅读器可以自动检测 RSS 或 Atom 订阅。
+
+[source,ruby]
+----
+auto_discovery_link_tag(:rss, "http://www.example.com/feed.rss", { title: "RSS Feed" }) # =>
+  <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="http://www.example.com/feed.rss" />
+----
+
+[[image-path]]
+===== `image_path` 方法
+
+`image_path` 方法用于计算 `app/assets/images` 文件夹中图片资源的路径，得到的路径是从根目录开始的完整路径（也就是绝对路径）。`image_tag` 方法在内部使用 `image_path` 方法生成图片标签。
+
+[source,ruby]
+----
+image_path("edit.png") # => /assets/edit.png
+----
+当 `config.assets.digest` 选项设置为 `true` 时，Rails 会为图片资源的文件名添加指纹。
+
+[source,ruby]
+----
+image_path("edit.png") # => /assets/edit-2d1a2db63fc738690021fedb5a65b68e.png
+----
+
+[[image-url]]
+===== `image_url` 方法
+
+`image_url` 方法用于计算 `app/assets/images` 文件夹中图片资源的 URL 地址。`image_url` 方法在内部调用了 `image_path` 方法，并把得到的图片资源路径和当前主机或静态资源文件服务器的 URL 地址合并。
+
+[source,ruby]
+----
+image_url("edit.png") # => http://www.example.com/assets/edit.png
+----
+
+[[image-tag]]
+===== `image_tag` 方法
+
+`image_tag` 方法用于返回 HTML 图片标签。此方法接受图片的完整路径或 `app/assets/images` 文件夹中图片的文件名作为参数。
+
+[source,ruby]
+----
+image_tag("icon.png") # => <img src="/assets/icon.png" alt="Icon" />
+----
+
+[[javascript-include-tag]]
+===== `javascript_include_tag` 方法
+
+`javascript_include_tag` 方法用于返回 HTML 脚本标签。此方法接受 `app/assets/javascripts` 文件夹中 JavaScript 文件的文件名（`.js` 后缀可以省略）或 JavaScript 文件的完整路径（绝对路径）作为参数。
+
+[source,ruby]
+----
+javascript_include_tag "common" # => <script src="/assets/common.js"></script>
+----
+
+如果 Rails 程序不使用 Asset Pipeline，就需要向 `javascript_include_tag` 方法传递 `:defaults` 参数来包含 jQuery JavaScript 库。此时，如果 `app/assets/javascripts` 文件夹中存在 `application.js` 文件，那么这个文件也会包含到页面中。
+
+[source,ruby]
+----
+javascript_include_tag :defaults
+----
+
+通过向 `javascript_include_tag` 方法传递 `:all` 参数，可以把 `app/assets/javascripts` 文件夹下的所有 JavaScript 文件包含到页面中。
+
+[source,ruby]
+----
+javascript_include_tag :all
+----
+
+我们还可以把多个 JavaScript 文件缓存为一个文件，这样可以减少下载时的 HTTP 连接数，同时还可以启用 gzip 压缩来提高传输速度。当 `ActionController::Base.perform_caching` 选项设置为 `true` 时才会启用缓存，此选项在生产环境下默认为 `true`，在开发环境下默认为 `false`。
+
+[source,ruby]
+----
+javascript_include_tag :all, cache: true # =>
+  <script src="/javascripts/all.js"></script>
+----
+
+[[javascript-path]]
+===== `javascript_path` 方法
+
+`javascript_path` 方法用于计算 `app/assets/javascripts` 文件夹中 JavaScript 资源的路径。如果没有指定文件的扩展名，Rails 会自动添加 `.js` 扩展名。`javascript_path` 方法返回 JavaScript 资源的完整路径（绝对路径）。`javascript_include_tag` 方法在内部使用 `javascript_path` 方法生成脚本标签。
+
+[source,ruby]
+----
+javascript_path "common" # => /assets/common.js
+----
+
+[[javascript-url]]
+===== `javascript_url` 方法
+
+`javascript_url` 方法用于计算 `app/assets/javascripts` 文件夹中 JavaScript 资源的 URL 地址。`javascript_url` 方法在内部调用了 `javascript_path` 方法，并把得到的 JavaScript 资源的路径和当前主机或静态资源文件服务器的 URL 地址合并。
+
+[source,ruby]
+----
+javascript_url "common" # => http://www.example.com/assets/common.js
+----
+
+[[stylesheet-link-tag]]
+===== `stylesheet_link_tag` 方法
+
+`stylesheet_link_tag` 方法用于返回样式表链接标签。如果没有指定文件的扩展名，Rails 会自动添加 `.css` 扩展名。
+
+[source,ruby]
+----
+stylesheet_link_tag "application" # => <link href="/assets/application.css" media="screen" rel="stylesheet" />
+----
+
+通过向 `stylesheet_link_tag` 方法传递 `:all` 参数，可以把样式表文件夹中的所有样式表包含到页面中。
+
+[source,ruby]
+----
+stylesheet_link_tag :all
+----
+
+我们还可以把多个样式表缓存为一个文件，这样可以减少下载时的 HTTP 连接数，同时还可以启用 gzip 压缩来提高传输速度。当 `ActionController::Base.perform_caching` 选项设置为 `true` 时才会启用缓存，此选项在生产环境下默认为 `true`，在开发环境下默认为 `false`。
+
+[source,ruby]
+----
+stylesheet_link_tag :all, cache: true
+# => <link href="/assets/all.css" media="screen" rel="stylesheet" />
+----
+
+[[stylesheet-path]]
+===== `stylesheet_path` 方法
+
+`stylesheet_path` 方法用于计算 `app/assets/stylesheets` 文件夹中样式表资源的路径。如果没有指定文件的扩展名，Rails 会自动添加 `.css` 扩展名。`stylesheet_path` 方法返回样式表资源的完整路径（绝对路径）。`stylesheet_link_tag` 方法在内部使用 `stylesheet_path` 方法生成样式表链接标签。
+
+[source,ruby]
+----
+stylesheet_path "application" # => /assets/application.css
+----
+
+[[stylesheet-url]]
+===== `stylesheet_url` 方法
+
+`stylesheet_url` 方法用于计算 `app/assets/stylesheets` 文件夹中样式表资源的 URL 地址。`stylesheet_url` 方法在内部调用了 `stylesheet_path` 方法，并把得到的样式表资源路径和当前主机或静态资源文件服务器的 URL 地址合并。
+
+[source,ruby]
+----
+stylesheet_url "application" # => http://www.example.com/assets/application.css
+----
+
+[[atomfeedhelper]]
+==== `AtomFeedHelper` 模块
