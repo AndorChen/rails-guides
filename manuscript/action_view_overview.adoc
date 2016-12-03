@@ -903,3 +903,26 @@ time_select("order", "submitted")
 
 [[debughelper]]
 ==== `DebugHelper` 模块
+
+`debug` 方法用于返回用 `pre` 标签包装的 YAML 格式的对象内容。这种检查对象的方式可读性很好。
+
+[source,ruby]
+----
+my_hash = { 'first' => 1, 'second' => 'two', 'third' => [1,2,3] }
+debug(my_hash)
+----
+
+[source,html]
+----
+<pre class='debug_dump'>---
+first: 1
+second: two
+third:
+- 1
+- 2
+- 3
+</pre>
+----
+
+[[formhelper]]
+==== `FormHelper` 模块
