@@ -664,7 +664,7 @@ end
 [[cache]]
 ===== `cache` 方法
 
-`cache` 方法用于缓存视图片段而不是整个动作或页面。此方法常用于缓存页面中诸如菜单、新闻主题列表、静态 HTML 片段等内容。`cache` 方法接受块作为参数，块中包含要缓存的内容。关于 `cache` 方法的更多介绍，请参阅 `AbstractController::Caching::Fragments` 模块的文档。
+`cache` 方法用于缓存视图片断而不是整个动作或页面。此方法常用于缓存页面中诸如菜单、新闻主题列表、静态 HTML 片断等内容。`cache` 方法接受块作为参数，块中包含要缓存的内容。关于 `cache` 方法的更多介绍，请参阅 `AbstractController::Caching::Fragments` 模块的文档。
 
 [source,erb]
 ----
@@ -675,3 +675,65 @@ end
 
 [[capturehelper]]
 ==== `CaptureHelper` 模块
+
+[[capture]]
+===== `capture` 方法
+
+`capture` 方法用于取出模板的一部分并储存在变量中，然后我们可以在模板或布局中的任何地方使用这个变量。
+
+[source,erb]
+----
+<% @greeting = capture do %>
+  <p>Welcome! The date and time is <%= Time.now %></p>
+<% end %>
+----
+
+可以在模板或布局中的任何地方使用 `@greeting` 变量。
+
+[source,erb]
+----
+<html>
+  <head>
+    <title>Welcome!</title>
+  </head>
+  <body>
+    <%= @greeting %>
+  </body>
+</html>
+----
+
+[[content-for]]
+===== `content_for` 方法
+
+`content_for` 方法以块的方式把模板内容保存在标识符中，然后我们可以在模板或布局中把这个标识符传递给 `yield` 方法作为参数来调用所保存的内容。
+
+例如，假设程序拥有标准布局，同时拥有一个特殊页面，这个特殊页面需要包含其他页面都不需要的 JavaScript 脚本。为此我们可以在这个特殊页面中使用 `content_for` 方法来包含所需的 JavaScript 脚本，而不必增加其他页面的体积。
+
+`app/views/layouts/application.html.erb`
+
+[source,erb]
+----
+<html>
+  <head>
+    <title>Welcome!</title>
+    <%= yield :special_script %>
+  </head>
+  <body>
+    <p>Welcome! The date and time is <%= Time.now %></p>
+  </body>
+</html>
+----
+
+`app/views/articles/special.html.erb`
+
+[source,erb]
+----
+<p>This is a special page.</p>
+
+<% content_for :special_script do %>
+  <script>alert('Hello!')</script>
+<% end %>
+----
+
+[datehelper]
+==== `DateHelper` 模块
