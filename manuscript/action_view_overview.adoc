@@ -735,5 +735,171 @@ end
 <% end %>
 ----
 
-[datehelper]
+[[datehelper]]
 ==== `DateHelper` 模块
+
+[[date-select]]
+===== `date_select` 方法
+
+`date_select` 方法返回一组年、月、日的选择标签，用于设置 `date` 类型的属性的值。
+
+[source,ruby]
+----
+date_select("article", "published_on")
+----
+
+[[datetime-select]]
+===== `datetime_select` 方法
+
+`datetime_select` 方法返回一组年、月、日、时、分的选择标签，用于设置 `datetime` 类型的属性的值。
+
+[source,ruby]
+----
+datetime_select("article", "published_on")
+----
+
+[[distance-of-time-in-words]]
+===== `distance_of_time_in_words` 方法
+
+`distance_of_time_in_words` 方法用于计算两个 `Time` 对象、`Date` 对象或秒数的大致时间间隔。把 `include_seconds` 选项设置为 `true` 可以得到更精确的时间间隔。
+
+[source,ruby]
+----
+distance_of_time_in_words(Time.now, Time.now + 15.seconds)        # => less than a minute
+distance_of_time_in_words(Time.now, Time.now + 15.seconds, include_seconds: true)  # => less than 20 seconds
+----
+
+[[select-date]]
+===== `select_date` 方法
+
+`select_date` 方法返回一组年、月、日的选择标签，并通过 `Date` 对象来设置默认值。
+
+[source,ruby]
+----
+# Generates a date select that defaults to the date provided (six days after today)
+select_date(Time.today + 6.days)
+
+# Generates a date select that defaults to today (no specified date)
+select_date()
+----
+
+[[select-datetime]]
+===== `select_datetime` 方法
+
+`select_datetime` 方法返回一组年、月、日、时、分的选择标签，并通过 `Datetime` 对象来设置默认值。
+
+[source,ruby]
+----
+# Generates a datetime select that defaults to the datetime provided (four days after today)
+select_datetime(Time.now + 4.days)
+
+# Generates a datetime select that defaults to today (no specified datetime)
+select_datetime()
+----
+
+[[select-day]]
+===== `select_day` 方法
+
+`select_day` 方法返回一组当月全部天数的选择标签，如 1 到 31，并把当日设置为默认值。
+
+[source,ruby]
+----
+# Generates a select field for days that defaults to the day for the date provided
+select_day(Time.today + 2.days)
+
+# Generates a select field for days that defaults to the number given
+select_day(5)
+----
+
+[[select-hour]]
+===== `select_hour` 方法
+
+`select_hour` 方法返回一组一天中 24 小时的选择标签，即 0 到 23，并把当前小时设置为默认值。
+
+[source,ruby]
+----
+# Generates a select field for hours that defaults to the hours for the time provided
+select_hour(Time.now + 6.hours)
+----
+
+[[select-minute]]
+===== `select_minute` 方法
+
+`select_minute` 方法返回一组一小时中 60 分钟的选择标签，即 0 到 59，并把当前分钟设置为默认值。
+
+[source,ruby]
+----
+# Generates a select field for minutes that defaults to the minutes for the time provided.
+select_minute(Time.now + 10.minutes)
+----
+
+[[select-month]]
+===== `select_month` 方法
+
+`select_month` 方法返回一组一年中 12 个月的选择标签，并把当月设置为默认值。
+
+[source,ruby]
+----
+# Generates a select field for months that defaults to the current month
+select_month(Date.today)
+----
+
+[[select-second]]
+===== `select_second` 方法
+
+`select_second` 方法返回一组一分钟中 60 秒的选择标签，即 0 到 59，并把当前秒设置为默认值。
+
+[source,ruby]
+----
+# Generates a select field for seconds that defaults to the seconds for the time provided
+select_second(Time.now + 16.seconds)
+----
+
+[[select-time]]
+===== `select_time` 方法
+
+`select_time` 方法返回一组时、分的选择标签，并通过 `Time` 对象来设置默认值。
+
+[source,ruby]
+----
+# Generates a time select that defaults to the time provided
+select_time(Time.now)
+----
+
+[[select-year]]
+===== `select_year` 方法
+
+`select_year` 方法返回一组当年和前后各五年的选择标签，并把当年设置为默认值。可以通过 `:start_year` 和 `:end_year` 选项自定义年份范围。
+
+[source,ruby]
+----
+# Generates a select field for five years on either side of Date.today that defaults to the current year
+select_year(Date.today)
+
+# Generates a select field from 1900 to 2009 that defaults to the current year
+select_year(Date.today, start_year: 1900, end_year: 2009)
+----
+
+[[time-ago-in-words]]
+===== `time_ago_in_words` 方法
+
+`time_ago_in_words` 方法和 `distance_of_time_in_words` 方法类似，区别在于 `time_ago_in_words` 方法计算的是给定时间到 `Time.now` 给出的当前时间的时间间隔。
+
+[source,ruby]
+----
+time_ago_in_words(3.minutes.from_now)  # => 3 minutes
+----
+
+[[time-select]]
+===== `time_select` 方法
+
+`time_select` 方返回一组时、分、秒的选择标签（其中秒可选），用于设置 `time` 类型的属性的值。选择的结果作为多个参数赋值给 Active Record 对象。
+
+[source,ruby]
+----
+# Creates a time select tag that, when POSTed, will be stored in the order variable in the submitted attribute
+time_select("order", "submitted")
+----
+
+[[debughelper]]
+==== `DebugHelper` 模块
