@@ -1657,3 +1657,85 @@ number_with_precision(111.2345, 2)  # => 111.23
 
 [[sanitizehelper]]
 ==== `SanitizeHelper` 模块
+
+`SanitizeHelper` 模块提供从文本中清除不需要的 HTML 元素的方法。
+
+[[sanitize]]
+===== `sanitize` 方法
+
+`sanitize` 方法会对所有标签进行 HTML 编码，并清除所有未明确允许的属性。
+
+[source,ruby]
+----
+sanitize @article.body
+----
+
+如果指定了 `:attributes` 或 `:tags` 选项，那么只有指定的属性或标签才不会被清除。
+
+[source,ruby]
+----
+sanitize @article.body, tags: %w(table tr td), attributes: %w(id class style)
+----
+
+要想修改 `sanitize` 方法的默认选项，例如把表格标签设置为允许的属性，可以按下面的方式进行设置：
+
+[source,ruby]
+----
+class Application < Rails::Application
+  config.action_view.sanitized_allowed_tags = 'table', 'tr', 'td'
+end
+----
+
+[[sanitize-css-style]]
+===== `sanitize_css(style)` 方法
+
+`sanitize_css(style)` 方法用于净化 CSS 代码。
+
+[[strip-links-html]]
+===== `strip_links(html)` 方法
+
+`strip_links(html)` 方法用于清除文本中所有的链接标签，只保留链接文本。
+
+[source,ruby]
+----
+strip_links('<a href="http://rubyonrails.org">Ruby on Rails</a>')
+# => Ruby on Rails
+----
+
+[source,ruby]
+----
+strip_links('emails to <a href="mailto:me@email.com">me@email.com</a>.')
+# => emails to me@email.com.
+----
+
+[source,ruby]
+----
+strip_links('Blog: <a href="http://myblog.com/">Visit</a>.')
+# => Blog: Visit.
+----
+
+[[strip-tags-html]]
+===== `strip_tags(html)` 方法
+
+`strip_tags(html)` 方法用于清除包括注释在内的所有 HTML 标签。此方法使用 html-scanner 来解析 HTML，因此其 HTML 解析能力受到 html-scanner 的限制。
+
+[source,ruby]
+----
+strip_tags("Strip <i>these</i> tags!")
+# => Strip these tags!
+----
+
+[source,ruby]
+----
+strip_tags("<b>Bold</b> no more!  <a href='more.html'>See more</a>")
+# => Bold no more!  See more
+----
+
+注意：使用 `strip_tags(html)` 方法清除后的文本仍然可能包含 <、> 和 & 字符，从而导致浏览器显示异常。
+
+[[csrfhelper]]
+==== `CsrfHelper` 模块
+
+分别使用跨站点请求伪造保护参数和令牌的名称返回元标记“csrf-param”和“csrf-token”。
+
+正则表单生成隐藏字段，因此它们不使用这些标签。 有关详细信息，请参阅Rails安全指南。
