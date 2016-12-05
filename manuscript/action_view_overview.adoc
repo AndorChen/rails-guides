@@ -741,7 +741,7 @@ end
 [[date-select]]
 ===== `date_select` 方法
 
-`date_select` 方法返回一组年、月、日的选择标签，用于设置 `date` 类型的属性的值。
+`date_select` 方法返回年、月、日的选择列表标签，用于设置 `date` 类型的属性的值。
 
 [source,ruby]
 ----
@@ -751,7 +751,7 @@ date_select("article", "published_on")
 [[datetime-select]]
 ===== `datetime_select` 方法
 
-`datetime_select` 方法返回一组年、月、日、时、分的选择标签，用于设置 `datetime` 类型的属性的值。
+`datetime_select` 方法返回年、月、日、时、分的选择列表标签，用于设置 `datetime` 类型的属性的值。
 
 [source,ruby]
 ----
@@ -772,7 +772,7 @@ distance_of_time_in_words(Time.now, Time.now + 15.seconds, include_seconds: true
 [[select-date]]
 ===== `select_date` 方法
 
-`select_date` 方法返回一组年、月、日的选择标签，并通过 `Date` 对象来设置默认值。
+`select_date` 方法返回年、月、日的选择列表标签，并通过 `Date` 对象来设置默认值。
 
 [source,ruby]
 ----
@@ -786,7 +786,7 @@ select_date()
 [[select-datetime]]
 ===== `select_datetime` 方法
 
-`select_datetime` 方法返回一组年、月、日、时、分的选择标签，并通过 `Datetime` 对象来设置默认值。
+`select_datetime` 方法返回年、月、日、时、分的选择列表标签，并通过 `Datetime` 对象来设置默认值。
 
 [source,ruby]
 ----
@@ -800,7 +800,7 @@ select_datetime()
 [[select-day]]
 ===== `select_day` 方法
 
-`select_day` 方法返回一组当月全部天数的选择标签，如 1 到 31，并把当日设置为默认值。
+`select_day` 方法返回当月全部天数的选择列表标签，如 1 到 31，并把当日设置为默认值。
 
 [source,ruby]
 ----
@@ -814,7 +814,7 @@ select_day(5)
 [[select-hour]]
 ===== `select_hour` 方法
 
-`select_hour` 方法返回一组一天中 24 小时的选择标签，即 0 到 23，并把当前小时设置为默认值。
+`select_hour` 方法返回一天中 24 小时的选择列表标签，即 0 到 23，并把当前小时设置为默认值。
 
 [source,ruby]
 ----
@@ -825,7 +825,7 @@ select_hour(Time.now + 6.hours)
 [[select-minute]]
 ===== `select_minute` 方法
 
-`select_minute` 方法返回一组一小时中 60 分钟的选择标签，即 0 到 59，并把当前分钟设置为默认值。
+`select_minute` 方法返回一小时中 60 分钟的选择列表标签，即 0 到 59，并把当前分钟设置为默认值。
 
 [source,ruby]
 ----
@@ -836,7 +836,7 @@ select_minute(Time.now + 10.minutes)
 [[select-month]]
 ===== `select_month` 方法
 
-`select_month` 方法返回一组一年中 12 个月的选择标签，并把当月设置为默认值。
+`select_month` 方法返回一年中 12 个月的选择列表标签，并把当月设置为默认值。
 
 [source,ruby]
 ----
@@ -847,7 +847,7 @@ select_month(Date.today)
 [[select-second]]
 ===== `select_second` 方法
 
-`select_second` 方法返回一组一分钟中 60 秒的选择标签，即 0 到 59，并把当前秒设置为默认值。
+`select_second` 方法返回一分钟中 60 秒的选择列表标签，即 0 到 59，并把当前秒设置为默认值。
 
 [source,ruby]
 ----
@@ -858,7 +858,7 @@ select_second(Time.now + 16.seconds)
 [[select-time]]
 ===== `select_time` 方法
 
-`select_time` 方法返回一组时、分的选择标签，并通过 `Time` 对象来设置默认值。
+`select_time` 方法返回时、分的选择列表标签，并通过 `Time` 对象来设置默认值。
 
 [source,ruby]
 ----
@@ -869,7 +869,7 @@ select_time(Time.now)
 [[select-year]]
 ===== `select_year` 方法
 
-`select_year` 方法返回一组当年和前后各五年的选择标签，并把当年设置为默认值。可以通过 `:start_year` 和 `:end_year` 选项自定义年份范围。
+`select_year` 方法返回当年和前后各五年的选择列表标签，并把当年设置为默认值。可以通过 `:start_year` 和 `:end_year` 选项自定义年份范围。
 
 [source,ruby]
 ----
@@ -893,7 +893,7 @@ time_ago_in_words(3.minutes.from_now)  # => 3 minutes
 [[time-select]]
 ===== `time_select` 方法
 
-`time_select` 方返回一组时、分、秒的选择标签（其中秒可选），用于设置 `time` 类型的属性的值。选择的结果作为多个参数赋值给 Active Record 对象。
+`time_select` 方返回时、分、秒的选择列表标签（其中秒可选），用于设置 `time` 类型的属性的值。选择的结果作为多个参数赋值给 Active Record 对象。
 
 [source,ruby]
 ----
@@ -1112,4 +1112,259 @@ url_field(:user, :url)
 # => <input type="url" id="user_url" name="user[url]" value="#{@user.url}" />
 ----
 
+[[formoptionshelper]]
 ==== `FormOptionsHelper` 模块
+
+`FormOptionsHelper` 模块提供了许多方法，用于把不同类型的容器转换为一组选项标签。
+
+[[collection-select]]
+===== `collection_select` 方法
+
+`collection_select` 方法返回一个集合的选择列表标签，其中每个集合元素的两个指定方法的返回值分别是每个选项的值和文本。
+
+在下面的示例代码中，我们定义了两个模型：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  belongs_to :author
+end
+
+class Author < ApplicationRecord
+  has_many :articles
+  def name_with_initial
+    "#{first_name.first}. #{last_name}"
+  end
+end
+----
+
+在下面的示例代码中，`collection_select` 方法用于生成 `Article` 模型的实例 `@article` 的相关作者的选择列表：
+
+[source,ruby]
+----
+collection_select(:article, :author_id, Author.all, :id, :name_with_initial, { prompt: true })
+----
+
+如果 `@article.author_id` 的值为 1，上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<select name="article[author_id]">
+  <option value="">Please select</option>
+  <option value="1" selected="selected">D. Heinemeier Hansson</option>
+  <option value="2">D. Thomas</option>
+  <option value="3">M. Clark</option>
+</select>
+----
+
+[[collection-radio-buttons]]
+===== `collection_radio_buttons` 方法
+
+`collection_radio_buttons` 方法返回一个集合的单选按钮标签，其中每个集合元素的两个指定方法的返回值分别是每个选项的值和文本。
+
+在下面的示例代码中，我们定义了两个模型：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  belongs_to :author
+end
+
+class Author < ApplicationRecord
+  has_many :articles
+  def name_with_initial
+    "#{first_name.first}. #{last_name}"
+  end
+end
+----
+
+在下面的示例代码中，`collection_radio_buttons` 方法用于生成 `Article` 模型的实例 `@article` 的相关作者的单选按钮：
+
+[source,ruby]
+----
+collection_radio_buttons(:article, :author_id, Author.all, :id, :name_with_initial)
+----
+
+如果 `@article.author_id` 的值为 1，上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<input id="article_author_id_1" name="article[author_id]" type="radio" value="1" checked="checked" />
+<label for="article_author_id_1">D. Heinemeier Hansson</label>
+<input id="article_author_id_2" name="article[author_id]" type="radio" value="2" />
+<label for="article_author_id_2">D. Thomas</label>
+<input id="article_author_id_3" name="article[author_id]" type="radio" value="3" />
+<label for="article_author_id_3">M. Clark</label>
+----
+
+[[collection-check-boxes]]
+===== `collection_check_boxes` 方法
+
+`collection_check_boxes` 方法返回一个集合的复选框标签，其中每个集合元素的两个指定方法的返回值分别是每个选项的值和文本。
+
+在下面的示例代码中，我们定义了两个模型：
+
+[source,ruby]
+----
+class Article < ApplicationRecord
+  has_and_belongs_to_many :authors
+end
+
+class Author < ApplicationRecord
+  has_and_belongs_to_many :articles
+  def name_with_initial
+    "#{first_name.first}. #{last_name}"
+  end
+end
+----
+
+在下面的示例代码中，`collection_check_boxes` 方法用于生成 `Article` 模型的实例 `@article` 的相关作者的复选框：
+
+[source,ruby]
+----
+collection_check_boxes(:article, :author_ids, Author.all, :id, :name_with_initial)
+----
+
+如果 `@article.author_ids` 的值为 `[1]`，上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<input id="article_author_ids_1" name="article[author_ids][]" type="checkbox" value="1" checked="checked" />
+<label for="article_author_ids_1">D. Heinemeier Hansson</label>
+<input id="article_author_ids_2" name="article[author_ids][]" type="checkbox" value="2" />
+<label for="article_author_ids_2">D. Thomas</label>
+<input id="article_author_ids_3" name="article[author_ids][]" type="checkbox" value="3" />
+<label for="article_author_ids_3">M. Clark</label>
+<input name="article[author_ids][]" type="hidden" value="" />
+----
+
+[[option-groups-from-collection-for-select]]
+===== `option_groups_from_collection_for_select` 方法
+
+和 `options_from_collection_for_select` 方法类似，`option_groups_from_collection_for_select` 方法返回一组选项标签，区别在于使用 `option_groups_from_collection_for_select` 方法时这些选项会根据模型的关联关系用 `optgroup` 标签分组。
+
+在下面的示例代码中，我们定义了两个模型：
+
+[source,ruby]
+----
+class Continent < ApplicationRecord
+  has_many :countries
+  # attribs: id, name
+end
+
+class Country < ApplicationRecord
+  belongs_to :continent
+  # attribs: id, name, continent_id
+end
+----
+
+示例用法：
+
+[source,ruby]
+----
+option_groups_from_collection_for_select(@continents, :countries, :name, :id, :name, 3)
+----
+
+可能的输出结果：
+
+[source,html]
+----
+<optgroup label="Africa">
+  <option value="1">Egypt</option>
+  <option value="4">Rwanda</option>
+  ...
+</optgroup>
+<optgroup label="Asia">
+  <option value="3" selected="selected">China</option>
+  <option value="12">India</option>
+  <option value="5">Japan</option>
+  ...
+</optgroup>
+----
+
+注意：`option_groups_from_collection_for_select` 方法只返回 `optgroup` 和 `option` 标签，我们需要用 `select` 标签来包装这些 `optgroup` 和 `option` 标签。
+
+[[options-for-select]]
+===== `options_for_select` 方法
+
+`options_for_select` 方法接受容器（如Hash、数组、可枚举对象、自定义类型）作为参数，并返回一组选项标签。
+
+[source,ruby]
+----
+options_for_select([ "VISA", "MasterCard" ])
+# => <option>VISA</option> <option>MasterCard</option>
+----
+
+注意：`options_for_select` 方法只返回 `option` 标签，我们需要用 `select` 标签来包装这些 `option` 标签。
+
+[[options-from-collection-for-select]]
+===== `options_from_collection_for_select` 方法
+
+`options_from_collection_for_select` 方法通过遍历集合返回一组选项标签，其中每个集合元素的 `value_method` 和 `text_method` 方法的返回值分别是每个选项的值和文本。
+
+[source,ruby]
+----
+# options_from_collection_for_select(collection, value_method, text_method, selected = nil)
+----
+
+在下面的示例代码中，我们遍历 `@project.people` 集合得到 `person` 元素，`person.id` 和 `person.name` 方法分别是前面提到的 `value_method` 和 `text_method` 方法，这两个方法分别返回选项的值和文本：
+
+[source,ruby]
+----
+options_from_collection_for_select(@project.people, "id", "name")
+# => <option value="#{person.id}">#{person.name}</option>
+----
+
+注意：`options_from_collection_for_select` 方法只返回 `option` 标签，我们需要用 `select` 标签来包装这些 `option` 标签。
+
+[[select]]
+===== `select` 方法
+
+`select` 方法使用给定对象和方法创建选择列表标签。
+
+示例用法：
+
+[source,ruby]
+----
+select("article", "person_id", Person.all.collect { |p| [ p.name, p.id ] }, { include_blank: true })
+----
+
+如果 `@article.persion_id` 的值为 1，上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<select name="article[person_id]">
+  <option value=""></option>
+  <option value="1" selected="selected">David</option>
+  <option value="2">Eileen</option>
+  <option value="3">Rafael</option>
+</select>
+----
+
+[[time-zone-options-for-select]]
+===== `time_zone_options_for_select` 方法
+
+`time_zone_options_for_select` 方法返回一组选项标签，其中每个选项对应一个时区，这些时区几乎包含了世界上所有的时区。
+
+[[time-zone-select]]
+===== `time_zone_select` 方法
+
+`time_zone_select` 方法返回时区的选择列表标签，其中选项标签是通过 `time_zone_options_for_select` 方法生成的。
+
+[source,ruby]
+----
+time_zone_select( "user", "time_zone")
+----
+
+[[date-field]]
+===== `date_field` 方法
+
+`date_field` 方法返回用于处理指定模型属性的日期输入框标签。
+
+[source,ruby]
+----
+date_field("user", "dob")
+----
+
+[[formtaghelper]]
+==== `FormTagHelper` 模块
