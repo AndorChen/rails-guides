@@ -1561,3 +1561,32 @@ date_field_tag "dob"
 
 [[javascripthelper]]
 ==== `JavaScriptHelper` 模块
+
+`JavaScriptHelper` 模块提供在视图中使用 JavaScript 的相关方法。
+
+[[escape-javascript]]
+===== `escape_javascript` 方法
+
+`escape_javascript` 方法转义 JavaScript 代码中的回车、单引号和双引号。
+
+[[javascript-tag]]
+===== `javascript_tag` 方法
+
+`javascript_tag` 方法返回用 `script` 标签包装的 JavaScript 代码。
+
+[source,ruby]
+----
+javascript_tag "alert('All is good')"
+----
+
+[source,html]
+----
+<script>
+//<![CDATA[
+alert('All is good')
+//]]>
+</script>
+----
+
+[[numberhelper]]
+==== `NumberHelper` 模块
