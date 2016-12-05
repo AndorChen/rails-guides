@@ -926,3 +926,190 @@ third:
 
 [[formhelper]]
 ==== `FormHelper` 模块
+
+和仅使用标准 HTML 元素相比，表单帮助方法提供了一组基于模型创建表单的方法，可以大大简化模型处理过程。表单帮助方法生成表单的 HTML 代码，并提供了用于生成各种输入组件（如文本框、密码框、选择列表等）的 HTML 代码的帮助方法。在提交表单时（用户点击提交按钮或通过 JavaScript 调用 `form.submit`），表单输入会绑定到 `params` 对象上并回传给控制器。
+
+表单帮助方法分为两类：一类专门用于处理模型属性，另一类不处理模型属性。本节中介绍的帮助方法都属于前者，后者的例子可参阅 `ActionView::Helpers::FormTagHelper` 模块的文档。
+
+`form_for` 帮助方法是 `FormHelper` 模块中最核心的方法，用于创建处理模型实例的表单。例如，假设我们想为 `Person` 模型创建实例：
+
+[source,erb]
+----
+# Note: a @person variable will have been created in the controller (e.g. @person = Person.new)
+<%= form_for @person, url: { action: "create" } do |f| %>
+  <%= f.text_field :first_name %>
+  <%= f.text_field :last_name %>
+  <%= submit_tag 'Create' %>
+<% end %>
+----
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<form action="/people/create" method="post">
+  <input id="person_first_name" name="person[first_name]" type="text" />
+  <input id="person_last_name" name="person[last_name]" type="text" />
+  <input name="commit" type="submit" value="Create" />
+</form>
+----
+
+提交表单时创建的 `params` 对象会像下面这样：
+
+[source,ruby]
+----
+{ "action" => "create", "controller" => "people", "person" => { "first_name" => "William", "last_name" => "Smith" } }
+----
+
+`params` Hash 包含了嵌套的 `person` 值，这个值可以在控制器中通过 `params[:person]` 访问。
+
+[[check-box]]
+===== `check_box` 方法
+
+`check_box` 方法返回用于处理指定模型属性的复选框标签。
+
+[source,ruby]
+----
+# Let's say that @article.validated? is 1:
+check_box("article", "validated")
+# => <input type="checkbox" id="article_validated" name="article[validated]" value="1" />
+#    <input name="article[validated]" type="hidden" value="0" />
+----
+
+[[fields-for]]
+===== `fields_for` 方法
+
+和 `form_for` 方法类似，`fields_for` 方法创建用于处理指定模型对象的作用域，区别在于 `fields_for` 方法不会创建表单标签。`fields_for` 方法适用于在同一个表单中说明附加的模型对象。
+
+[source,erb]
+----
+<%= form_for @person, url: { action: "update" } do |person_form| %>
+  First name: <%= person_form.text_field :first_name %>
+  Last name : <%= person_form.text_field :last_name %>
+
+  <%= fields_for @person.permission do |permission_fields| %>
+    Admin?  : <%= permission_fields.check_box :admin %>
+  <% end %>
+<% end %>
+----
+
+[[file-field]]
+===== `file_field` 方法
+
+`file_field` 方法返回用于处理指定模型属性的文件上传组件标签。
+
+[source,ruby]
+----
+file_field(:user, :avatar)
+# => <input type="file" id="user_avatar" name="user[avatar]" />
+----
+
+[[form-for]]
+===== `form_for` 方法
+
+`form_for` 方法创建用于处理指定模型对象的表单和作用域，表单的各个组件用于处理模型对象的对应属性。
+
+[source,erb]
+----
+<%= form_for @article do |f| %>
+  <%= f.label :title, 'Title' %>:
+  <%= f.text_field :title %><br>
+  <%= f.label :body, 'Body' %>:
+  <%= f.text_area :body %><br>
+<% end %>
+----
+
+[[hidden-field]]
+===== `hidden_​​field` 方法
+
+`hidden_​​field` 方法返回用于处理指定模型属性的隐藏输入字段标签。
+
+[source,ruby]
+----
+hidden_field(:user, :token)
+# => <input type="hidden" id="user_token" name="user[token]" value="#{@user.token}" />
+----
+
+[[label]]
+===== `label` 方法
+
+`label` 方法返回用于处理指定模型属性的文本框的 label 标签。
+
+[source,ruby]
+----
+label(:article, :title)
+# => <label for="article_title">Title</label>
+----
+
+[[password-field]]
+===== `password_field` 方法
+
+`password_field` 方法返回用于处理指定模型属性的密码框标签。
+
+[source,ruby]
+----
+password_field(:login, :pass)
+# => <input type="text" id="login_pass" name="login[pass]" value="#{@login.pass}" />
+----
+
+[[radio-button]]
+===== `radio_button` 方法
+
+`radio_button` 方法返回用于处理指定模型属性的单选按钮标签。
+
+[source,ruby]
+----
+# Let's say that @article.category returns "rails":
+radio_button("article", "category", "rails")
+radio_button("article", "category", "java")
+# => <input type="radio" id="article_category_rails" name="article[category]" value="rails" checked="checked" />
+#    <input type="radio" id="article_category_java" name="article[category]" value="java" />
+----
+
+[[text-area]]
+===== `text_area` 方法
+
+`text_area` 方法返回用于处理指定模型属性的文本区域标签。
+
+[source,ruby]
+----
+text_area(:comment, :text, size: "20x30")
+# => <textarea cols="20" rows="30" id="comment_text" name="comment[text]">
+#      #{@comment.text}
+#    </textarea>
+----
+
+[[text-field]]
+===== `text_field` 方法
+
+`text_field` 方法返回用于处理指定模型属性的文本框标签。
+
+[source,ruby]
+----
+text_field(:article, :title)
+# => <input type="text" id="article_title" name="article[title]" value="#{@article.title}" />
+----
+
+[[email-field]]
+===== `email_field` 方法
+
+`email_field` 方法返回用于处理指定模型属性的电子邮件地址输入框标签。
+
+[source,ruby]
+----
+email_field(:user, :email)
+# => <input type="email" id="user_email" name="user[email]" value="#{@user.email}" />
+----
+
+[[url-field]]
+===== `url_field` 方法
+
+`url_field` 方法返回用于处理指定模型属性的 URL 地址输入框标签。
+
+[source,ruby]
+----
+url_field(:user, :url)
+# => <input type="url" id="user_url" name="user[url]" value="#{@user.url}" />
+----
+
+==== `FormOptionsHelper` 模块
