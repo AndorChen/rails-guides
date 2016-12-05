@@ -1590,3 +1590,70 @@ alert('All is good')
 
 [[numberhelper]]
 ==== `NumberHelper` 模块
+
+`NumberHelper` 模块提供把数字转换为格式化字符串的方法，包括把数字转换为电话号码、货币、百分数、具有指定精度的数字、带有千位分隔符的数字和文件大小的方法。
+
+[[number-to-currency]]
+===== `number_to_currency` 方法
+
+`number_to_currency` 方法用于把数字转换为货币字符串（例如 $13.65）。
+
+[source,ruby]
+----
+number_to_currency(1234567890.50) # => $1,234,567,890.50
+----
+
+[[number-to-human-size]]
+===== `number_to_human_size` 方法
+
+`number_to_human_size` 方法用于把数字转换为容易阅读的形式，常用于显示文件大小。
+
+[source,ruby]
+----
+number_to_human_size(1234)          # => 1.2 KB
+number_to_human_size(1234567)       # => 1.2 MB
+----
+
+[[number-to-percentage]]
+===== `number_to_percentage` 方法
+
+`number_to_percentage` 方法用于把数字转换为百分数字符串。
+
+[source,ruby]
+----
+number_to_percentage(100, precision: 0)        # => 100%
+----
+
+[[number-to-phone]]
+===== `number_to_phone` 方法
+
+`number_to_phone` 方法用于把数字转换为电话号码（默认为美国）。
+
+[source,ruby]
+----
+number_to_phone(1235551234) # => 123-555-1234
+----
+
+[[number-with-delimiter]]
+===== `number_with_delimiter` 方法
+
+`number_with_delimiter` 方法用于把数字转换为带有千位分隔符的数字。
+
+[source,ruby]
+----
+number_with_delimiter(12345678) # => 12,345,678
+----
+
+[[number-with-precision]]
+===== `number_with_precision` 方法
+
+`number_with_precision` 方法用于把数字转换为具有指定精度的数字，默认精度为 3。
+
+[source,ruby]
+----
+number_with_precision(111.2345)     # => 111.235
+number_with_precision(111.2345, 2)  # => 111.23
+----
+
+[[sanitizehelper]]
+==== `SanitizeHelper` 模块
