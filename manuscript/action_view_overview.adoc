@@ -883,7 +883,7 @@ select_year(Date.today, start_year: 1900, end_year: 2009)
 [[time-ago-in-words]]
 ===== `time_ago_in_words` 方法
 
-`time_ago_in_words` 方法和 `distance_of_time_in_words` 方法类似，区别在于 `time_ago_in_words` 方法计算的是给定时间到 `Time.now` 给出的当前时间的时间间隔。
+`time_ago_in_words` 方法和 `distance_of_time_in_words` 方法类似，区别在于 `time_ago_in_words` 方法计算的是指定时间到 `Time.now` 给出的当前时间的时间间隔。
 
 [source,ruby]
 ----
@@ -1320,7 +1320,7 @@ options_from_collection_for_select(@project.people, "id", "name")
 [[select]]
 ===== `select` 方法
 
-`select` 方法使用给定对象和方法创建选择列表标签。
+`select` 方法使用指定对象和方法创建选择列表标签。
 
 示例用法：
 
@@ -1368,3 +1368,196 @@ date_field("user", "dob")
 
 [[formtaghelper]]
 ==== `FormTagHelper` 模块
+
+`FormTagHelper` 模块提供了许多用于创建表单标签的方法。和 `FormHelper` 模块不同，`FormTagHelper` 模块提供的方法不依赖于传递给模板的 Active Record 对象。作为替代，我们可以手动为表单的各个组件的标签提供 `name` 和 `value` 属性。
+
+[[check-box-tag]]
+===== `check_box_tag` 方法
+
+`check_box_tag` 方法用于创建复选框标签。
+
+[source,ruby]
+----
+check_box_tag 'accept'
+# => <input id="accept" name="accept" type="checkbox" value="1" />
+----
+
+[[field-set-tag]]
+===== `field_set_tag` 方法
+
+`field_set_tag` 方法用于创建字段集标签。
+
+----
+<%= field_set_tag do %>
+  <p><%= text_field_tag 'name' %></p>
+<% end %>
+# => <fieldset><p><input id="name" name="name" type="text" /></p></fieldset>
+----
+
+[[file-field-tag]]
+===== `file_field_tag` 方法
+
+`file_field_tag` 方法用于创建文件上传组件标签。
+
+[source,erb]
+----
+<%= form_tag({ action: "post" }, multipart: true) do %>
+  <label for="file">File to Upload</label> <%= file_field_tag "file" %>
+  <%= submit_tag %>
+<% end %>
+----
+
+示例输出：
+
+[source,ruby]
+----
+file_field_tag 'attachment'
+# => <input id="attachment" name="attachment" type="file" />
+----
+
+[[form-tag]]
+===== `form_tag` 方法
+
+`form_tag` 方法用于创建表单标签。和 `ActionController::Base#url_for` 方法类似，`form_tag` 方法的第一个参数是 `url_for_options` 选项，用于说明提交表单的 URL。
+
+----
+<%= form_tag '/articles' do %>
+  <div><%= submit_tag 'Save' %></div>
+<% end %>
+# => <form action="/articles" method="post"><div><input type="submit" name="submit" value="Save" /></div></form>
+----
+
+[[hidden-field-tag]]
+===== `hidden_​​field_tag` 方法
+
+`hidden_​​field_tag` 方法用于创建隐藏输入字段标签。隐藏输入字段用于传递因 HTTP 无状态特性而丢失的数据，或不想让用户看到的数据。
+
+[source,ruby]
+----
+hidden_field_tag 'token', 'VUBJKB23UIVI1UU1VOBVI@'
+# => <input id="token" name="token" type="hidden" value="VUBJKB23UIVI1UU1VOBVI@" />
+----
+
+[[image-submit-tag]]
+===== `image_submit_tag` 方法
+
+`image_submit_tag` 方法会显示一张图片，点击这张图片会提交表单。
+
+[source,ruby]
+----
+image_submit_tag("login.png")
+# => <input src="/images/login.png" type="image" />
+----
+
+[[label-tag]]
+===== `label_tag` 方法
+
+`label_tag` 方法用于创建 `label` 标签。
+
+[source,ruby]
+----
+label_tag 'name'
+# => <label for="name">Name</label>
+----
+
+[[password-field-tag]]
+===== `password_field_tag` 方法
+
+`password_field_tag` 方法用于创建密码框标签。用户在密码框中输入的密码会被隐藏起来。
+
+[source,ruby]
+----
+password_field_tag 'pass'
+# => <input id="pass" name="pass" type="password" />
+----
+
+[[radio-button-tag]]
+===== `radio_button_tag` 方法
+
+`radio_button_tag` 方法用于创建单选按钮标签。为一组单选按钮设置相同的 `name` 属性即可实现对一组选项进行单选。
+
+[source,ruby]
+----
+radio_button_tag 'gender', 'male'
+# => <input id="gender_male" name="gender" type="radio" value="male" />
+----
+
+[[select-tag]]
+===== `select_tag` 方法
+
+`select_tag` 方法用于创建选择列表标签。
+
+[source,ruby]
+----
+select_tag "people", "<option>David</option>"
+# => <select id="people" name="people"><option>David</option></select>
+----
+
+[[submit-tag]]
+===== `submit_tag` 方法
+
+`submit_tag` 方法用于创建提交按钮标签，并在按钮上显示指定的文本。
+
+[source,ruby]
+----
+submit_tag "Publish this article"
+# => <input name="commit" type="submit" value="Publish this article" />
+----
+
+[[text-area-tag]]
+===== `text_area_tag` 方法
+
+`text_area_tag` 方法用于创建文本区域标签。文本区域用于输入较长的文本，如博客帖子或页面描述。
+
+[source,ruby]
+----
+text_area_tag 'article'
+# => <textarea id="article" name="article"></textarea>
+----
+
+[[text-field-tag]]
+===== `text_field_tag` 方法
+
+`text_field_tag` 方法用于创建文本框标签。文本框用于输入较短的文本，如用户名或搜索关键词。
+
+[source,ruby]
+----
+text_field_tag 'name'
+# => <input id="name" name="name" type="text" />
+----
+
+[[email-field-tag]]
+===== `email_field_tag` 方法
+
+`email_field_tag` 方法用于创建电子邮件地址输入框标签。
+
+[source,ruby]
+----
+email_field_tag 'email'
+# => <input id="email" name="email" type="email" />
+----
+
+[[url-field-tag]]
+===== `url_field_tag` 方法
+
+`url_field_tag` 方法用于创建 URL 地址输入框标签。
+
+[source,ruby]
+----
+url_field_tag 'url'
+# => <input id="url" name="url" type="url" />
+----
+
+[[date-field-tag]]
+===== `date_field_tag` 方法
+
+`date_field_tag` 方法用于创建日期输入框标签。
+
+[source,ruby]
+----
+date_field_tag "dob"
+# => <input id="dob" name="dob" type="date" />
+----
+
+[[javascripthelper]]
+==== `JavaScriptHelper` 模块
