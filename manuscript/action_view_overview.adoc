@@ -1736,6 +1736,14 @@ strip_tags("<b>Bold</b> no more!  <a href='more.html'>See more</a>")
 [[csrfhelper]]
 ==== `CsrfHelper` 模块
 
-分别使用跨站点请求伪造保护参数和令牌的名称返回元标记“csrf-param”和“csrf-token”。
+`csrf_meta_tags` 方法用于生成 `csrf-param` 和 `csrf-token` 这两个元标签，它们分别是用于防止跨站请求伪造的参数和令牌。
 
-正则表单生成隐藏字段，因此它们不使用这些标签。 有关详细信息，请参阅Rails安全指南。
+[source,erb]
+----
+<%= csrf_meta_tags %>
+----
+
+NOTE: 普通表单生成隐藏字段，因此不使用这些标签。关于这个问题的更多介绍，请参阅 <<security#cross-site-request-forgery-csrf>>。
+
+[[localized-views]]
+=== 本地化视图
