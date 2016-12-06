@@ -12,7 +12,7 @@
 - [x] Active Record Associations
 - [x] Active Record Query Interface
 - [x] Active Model Basics
-- [ ] Action View Overview
+- [x] Action View Overview
 - [x] Layouts and Rendering in Rails
 - [ ] Action View Form Helpers
 - [x] Action Controller Overview
