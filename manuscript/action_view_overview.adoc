@@ -1743,7 +1743,28 @@ strip_tags("<b>Bold</b> no more!  <a href='more.html'>See more</a>")
 <%= csrf_meta_tags %>
 ----
 
-NOTE: 普通表单生成隐藏字段，因此不使用这些标签。关于这个问题的更多介绍，请参阅 <<security#cross-site-request-forgery-csrf>>。
+NOTE: 普通表单生成隐藏字段，因此不使用这些标签。关于这个问题的更多介绍，请参阅 <<security#cross-site-request-forgery-csrf>> 一节。
 
 [[localized-views]]
 === 本地化视图
+
+Action View 可以根据当前的本地化设置渲染不同的模板。
+
+例如，假设 `ArticlesController` 控制器具有 `show` 动作。默认情况下，调用 `show` 动作会渲染 `app/views/articles/show.html.erb` 模板。如果我们设置了 `I18n.locale = :de`，那么调用 `show` 动作会渲染 `app/views/articles/show.de.html.erb` 模板。如果对应的本地化模板不存在，就会使用对应的默认模板。这意味着我们不需要为所有情况提供本地化视图，但如果本地化视图可用就会优先使用。
+
+我们可以使用相同的技术来本地化公共目录中的救援文件。例如，通过设置 `I18n.locale = :de` 并创建 `public/500.de.html` 和 `public/404.de.html` 文件，我们就拥有了本地化的求援文件。
+
+由于 Rails 不会限制用于设置 `I18n.locale` 的符号，我们可以利用本地化视图根据我们喜欢的任何东西来显示不同的内容。例如，假设专家用户应该看到和普通用户不同的页面，我们可以在 `app/controllers/application.rb` 配置文件中进行如下设置：
+
+[source,ruby]
+----
+before_action :set_expert_locale
+
+def set_expert_locale
+  I18n.locale = :expert if current_user.expert?
+end
+----
+
+然后创建 `app/views/articles/show.expert.html.erb` 这样的显示给专家用户看的特殊视图。
+
+关于 Rails 国际化的更多介绍，请参阅 <<i18n>> 一文。
