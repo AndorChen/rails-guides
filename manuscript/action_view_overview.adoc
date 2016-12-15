@@ -1736,7 +1736,7 @@ strip_tags("<b>Bold</b> no more!  <a href='more.html'>See more</a>")
 [[csrfhelper]]
 ==== `CsrfHelper` 模块
 
-`csrf_meta_tags` 方法用于生成 `csrf-param` 和 `csrf-token` 这两个元标签，它们分别是用于防止跨站请求伪造的参数和令牌。
+`csrf_meta_tags` 方法用于生成 `csrf-param` 和 `csrf-token` 这两个元标签，它们分别是跨站请求伪造保护的参数和令牌。
 
 [source,erb]
 ----

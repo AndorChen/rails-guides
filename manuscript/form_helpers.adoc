@@ -18,7 +18,206 @@
 * 如何创建复杂表单。
 --
 
-NOTE: 本文并非所有可用表单帮助方法及其参数的完整文档。关于表单帮助方法的完整介绍，请参阅 link:http://api.rubyonrails.org/[Rails API文档]。
+NOTE: 本文不是所有可用表单帮助方法及其参数的完整文档。关于表单帮助方法的完整介绍，请参阅 link:http://api.rubyonrails.org/[Rails API文档]。
 
 [[dealing-with-basic-forms]]
 === 处理基本表单
+
+`form_tag` 方法是最基本的表单帮助方法。
+
+[source,erb]
+----
+<%= form_tag do %>
+  Form contents
+<% end %>
+----
+
+无参数调用 `form_tag` 方法会创建 `<form>` 标签，在提交表单时会向当前页面发起 POST 请求。例如，假设当前页面是 `/home/index`，上面的代码会生成下面的 HTML（为了提高可读性，添加了一些换行）：
+
+[source,html]
+----
+<form accept-charset="UTF-8" action="/" method="post">
+  <input name="utf8" type="hidden" value="&#x2713;" />
+  <input name="authenticity_token" type="hidden" value="J7CBxfHalt49OSHp27hblqK20c9PgwJ108nDHX/8Cts=" />
+  Form contents
+</form>
+----
+
+我们注意到，上面的 HTML 的第二行是一个 `hidden` 类型的 `input` 元素。这个 `input` 元素很重要，一旦缺少表单就不能成功提交。这个 `input` 元素的 `name` 属性的值是 `utf8`，用于说明浏览器处理表单时使用的字符编码方式。对于所有表单，不管表单动作是“GET”还是“POST”，都会生成这个 `input` 元素。
+
+上面的 HTML 的第三行也是一个 `input` 元素，元素的 `name` 属性的值是 `authenticity_token`。这个 `input` 元素是 Rails 的一个名为跨站请求伪造保护的安全特性。在启用跨站请求伪造保护的情况下，表单帮助方法会为所有非 GET 表单生成这个 `input` 元素。关于跨站请求伪造保护的更多介绍，请参阅 <<security#cross-site-request-forgery-csrf>>。
+
+[[a-generic-search-form]]
+==== 通用搜索表单
+
+搜索表单是上网时最常见的基本表单，包含：
+
+* 具有“GET”方法的表单元素
+* 文本框的 `label` 标签
+* 文本框
+* 提交按钮
+
+我们可以分别使用 `form_tag`、`label_tag`、`text_field_tag`、`submit_tag` 标签来创建搜索表单，就像下面这样：
+
+[source,erb]
+----
+<%= form_tag("/search", method: "get") do %>
+  <%= label_tag(:q, "Search for:") %>
+  <%= text_field_tag(:q) %>
+  <%= submit_tag("Search") %>
+<% end %>
+----
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<form accept-charset="UTF-8" action="/search" method="get">
+  <input name="utf8" type="hidden" value="&#x2713;" />
+  <label for="q">Search for:</label>
+  <input id="q" name="q" type="text" />
+  <input name="commit" type="submit" value="Search" />
+</form>
+----
+
+NOTE: 表单中的文本框会根据 `name` 属性（在上面的例子中值为 `q`）生成 `id` 属性。`id` 属性在应用 CSS 样式或使用 JavaScript 操作表单控件时非常有用。
+
+除 `text_field_tag` 和 `submit_tag` 方法之外，每个 HTML 表单控件都有对应的帮助方法。
+
+WARNING: 搜索表单的方法都应该设置为“GET”，这样用户就可以把搜索结果添加为书签。一般来说，Rails 推荐为表单动作使用正确的 HTTP 动词。
+
+[[multiple-hashes-in-form-helper-calls]]
+==== 在调用表单帮助方法时使用多个 Hash
+
+`form_tag` 帮助方法接受两个参数：提交表单的地址和选项 Hash。选项 Hash 用于说明提交表单的方法，以及 HTML 选项，例如表单的 `class` 属性。
+
+和 `link_to` 帮助方法一样，提交表单的地址可以是字符串，也可以是 URL 参数的 Hash。Rails 路由能够识别 URL 参数的 Hash，并将其转换为合法的 URL 地址。尽管如此，由于 `form_tag` 方法的两个参数都是 Hash，如果我们想同时指定两个参数，就很容易遇到问题。例如，假设有下面的代码：
+
+[source,ruby]
+----
+form_tag(controller: "people", action: "search", method: "get", class: "nifty_form")
+# => '<form accept-charset="UTF-8" action="/people/search?method=get&class=nifty_form" method="post">'
+----
+
+在上面的代码中，`method` 和 `class` 选项的值会被添加到生成的 URL 地址的查询字符串中，不管我们是不是想要使用两个 Hash 作为参数，Rails 都会把这些选项当作一个 Hash。为了告诉 Rails 我们想要使用两个 Hash 作为参数，我们可以把第一个 Hash 放在大括号中，或者把两个 Hash 都放在大括号中。这样就可以生成我们想要的 HTML 了：
+
+[source,ruby]
+----
+form_tag({controller: "people", action: "search"}, method: "get", class: "nifty_form")
+# => '<form accept-charset="UTF-8" action="/people/search" method="get" class="nifty_form">'
+----
+
+[[helpers-for-generating-form-elements]]
+==== 用于生成表单元素的帮助方法
+
+Rails 提供了一系列用于生成表单元素（如复选框、文本字段和单选按钮）的帮助方法。这些名称以 `_tag` 结尾的基本帮助方法（如 `text_field_tag` 和 `check_box_tag`）只生成单个 `input` 元素，并且第一个参数都是 `input` 元素的 `name` 属性的值。在提交表单时，`name` 属性的值会和表单数据一起传递，这样在控制器中就可以通过 `params` 来获得各个 `input` 元素的值。例如，如果表单包含 `<%= text_field_tag(:query) %>`，我们就可以通过 `params[:query]` 来获得这个文本字段的值。
+
+在给 `input` 元素命名时，Rails 有一些命名约定，使我们可以提交非标量值（如数组或 Hash），这些值同样可以通过 `params` 来获得。关于这些命名约定的更多介绍，请参阅 <<form_helpers#understanding-parameter-naming-conventions>>。
+
+关于这些帮助方法的用法的详细介绍，请参阅 link:http://api.rubyonrails.org/classes/ActionView/Helpers/FormTagHelper.html[API 文档]。
+
+[[checkboxes]]
+===== 复选框
+
+复选框表单控件为用户提供了一组可以启用或禁用的选项：
+
+[source,erb]
+----
+<%= check_box_tag(:pet_dog) %>
+<%= label_tag(:pet_dog, "I own a dog") %>
+<%= check_box_tag(:pet_cat) %>
+<%= label_tag(:pet_cat, "I own a cat") %>
+----
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<input id="pet_dog" name="pet_dog" type="checkbox" value="1" />
+<label for="pet_dog">I own a dog</label>
+<input id="pet_cat" name="pet_cat" type="checkbox" value="1" />
+<label for="pet_cat">I own a cat</label>
+----
+
+`check_box_tag` 帮助方法的第一个参数是生成的 `input` 元素的 `name` 属性的值。可选的第二个参数是 `input` 元素的值，当对应复选框被选中时，这个值会包含在表单数据中，并可以通过 `params` 来获得。
+
+[[radio-buttons]]
+===== 单选按钮
+
+和复选框类似，单选按钮表单控件为用户提供了一组选项，区别在于这些选项是互斥的，用户只能从中选择一个：
+
+[source,erb]
+----
+<%= radio_button_tag(:age, "child") %>
+<%= label_tag(:age_child, "I am younger than 21") %>
+<%= radio_button_tag(:age, "adult") %>
+<%= label_tag(:age_adult, "I'm over 21") %>
+----
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<input id="age_child" name="age" type="radio" value="child" />
+<label for="age_child">I am younger than 21</label>
+<input id="age_adult" name="age" type="radio" value="adult" />
+<label for="age_adult">I'm over 21</label>
+----
+
+和 `check_box_tag` 一样，`radio_button_tag` 帮助方法的第二个参数是生成的 `input` 元素的值。因为两个单选按钮的 `name` 属性的值相同（都是 `age`），所以用户只能从中选择一个，`params[:age]` 的值要么是 `"child"` 要么是 `"adult"`。
+
+NOTE: 在使用复选框和单选按钮时一定要指定 `label` 标签。`label` 标签为对应选项提供说明文字，并扩大可点击区域，使用户更容易选中想要的选项。
+
+[[other-helpers-of-interest]]
+==== 其他你可能感兴趣的帮助方法
+
+其他值得一提的表单控件包括文本区域、密码框、隐藏输入字段、搜索字段、电话号码字段、日期字段、时间字段、颜色字段、日期时间字段、本地日期时间字段、月份字段、星期字段、URL 地址字段、电子邮件地址字段、数字字段和范围字段：
+
+[source,erb]
+----
+<%= text_area_tag(:message, "Hi, nice site", size: "24x6") %>
+<%= password_field_tag(:password) %>
+<%= hidden_field_tag(:parent_id, "5") %>
+<%= search_field(:user, :name) %>
+<%= telephone_field(:user, :phone) %>
+<%= date_field(:user, :born_on) %>
+<%= datetime_local_field(:user, :graduation_day) %>
+<%= month_field(:user, :birthday_month) %>
+<%= week_field(:user, :birthday_week) %>
+<%= url_field(:user, :homepage) %>
+<%= email_field(:user, :address) %>
+<%= color_field(:user, :favorite_color) %>
+<%= time_field(:task, :started_at) %>
+<%= number_field(:product, :price, in: 1.0..20.0, step: 0.5) %>
+<%= range_field(:product, :discount, in: 1..100) %>
+----
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<textarea id="message" name="message" cols="24" rows="6">Hi, nice site</textarea>
+<input id="password" name="password" type="password" />
+<input id="parent_id" name="parent_id" type="hidden" value="5" />
+<input id="user_name" name="user[name]" type="search" />
+<input id="user_phone" name="user[phone]" type="tel" />
+<input id="user_born_on" name="user[born_on]" type="date" />
+<input id="user_graduation_day" name="user[graduation_day]" type="datetime-local" />
+<input id="user_birthday_month" name="user[birthday_month]" type="month" />
+<input id="user_birthday_week" name="user[birthday_week]" type="week" />
+<input id="user_homepage" name="user[homepage]" type="url" />
+<input id="user_address" name="user[address]" type="email" />
+<input id="user_favorite_color" name="user[favorite_color]" type="color" value="#000000" />
+<input id="task_started_at" name="task[started_at]" type="time" />
+<input id="product_price" max="20.0" min="1.0" name="product[price]" step="0.5" type="number" />
+<input id="product_discount" max="100" min="1" name="product[discount]" type="range" />
+----
+
+隐藏输入字段不显示给用户，但和其他 `input` 元素一样可以保存数据。我们可以使用 JavaScript 来修改隐藏输入字段的值。
+
+WARNING: 搜索字段、电话号码字段、日期字段、时间字段、颜色字段、日期时间字段、本地日期时间字段、月份字段、星期字段、URL 地址字段、电子邮件地址字段、数字字段和范围字段都是 HTML5 控件。要想在旧版本浏览器中拥有一致的体验，我们需要使用 HTML5 polyfill（针对 CSS 或 JavaScript 代码）。link:https://github.com/Modernizr/Modernizr/wiki/HTML5-Cross-Browser-Polyfills[HTML5 Cross Browser Polyfills] 提供了 HTML5 polyfill 的完整列表，目前最流行的工具是 link:https://modernizr.com/[Modernizr]，通过检测 HTML5 特性是否存在来添加缺失的功能。
+
+NOTE: 在使用密码框时，我们可以通过配置 Rails 程序来避免密码框的值被写入日志，更多介绍请参阅 <<security#logging>>。
+
+[[dealing-with-model-objects]]
+=== 处理模型对象
