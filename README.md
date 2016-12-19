@@ -21,9 +21,9 @@
 - [ ] Rails Internationalization API
 - [x] Action Mailer Basics
 - [ ] Active Job Basics
-- [ ] Testing Rails Applications
+- [x] Testing Rails Applications
 - [ ] Securing Rails Applications
-- [ ] Debugging Rails Applications
+- [x] Debugging Rails Applications
 - [ ] Configuring Rails Applications
 - [ ] Rails Command Line Tools and Rake Tasks
 - [ ] Asset Pipeline
