@@ -221,3 +221,182 @@ NOTE: 在使用密码框时，我们可以通过配置 Rails 程序来避免密�
 
 [[dealing-with-model-objects]]
 === 处理模型对象
+
+[[model-object-helpers]]
+==== 模型对象帮助方法
+
+表单经常用于修改或创建模型对象。这种情况下当然可以使用 `*_tag` 帮助方法，但使用起来却有些麻烦，因为我们需要确保每个标记都使用了正确的参数名称并设置了合适的默认值。为此，Rails 提供了量身定制的帮助方法。这些帮助方法的名称不使用 `_tag` 后缀，例如 `text_field` 和 `text_area`。
+
+这些帮助方法的第一个参数是实例变量，第二个参数是在这个实例变量对象上调用的方法（通常是模型属性）的名称。 Rails 会把 `input` 控件的值设置为所调用方法的返回值，并为 `input` 控件的 `name` 属性设置合适的值。假设我们在控制器中定义了 `@person` 实例变量，这个人的名字是 Henry，那么下面这个表单：
+
+[source,erb]
+----
+<%= text_field(:person, :name) %>
+----
+
+会生成下面的HTML：
+
+[source,html]
+----
+<input id="person_name" name="person[name]" type="text" value="Henry"/>
+----
+
+在提交表单时，用户输入的值储存在 `params[:person][:name]` 中。`params[:person]` 这个 Hash 可以传递给 `Person.new` 方法作为参数，而如果 `@person` 是 `Person` 模型的实例，这个 Hash 还可以传递给 `@person.update` 方法作为参数。尽管这些帮助方法的第二个参数通常都是模型属性的名称，但不是必须这样做。在上面的例子中，只要 `@person` 对象拥有 `name` 和 `name=` 方法即可省略第二个参数。
+
+WARNING: 传入的参数必须是实例变量的名称，如 `:person` 或 `"person"`，而不是模型实例本身。
+
+Rails 还提供了用于显示模型对象数据验证错误的帮助方法，更多介绍请参阅 <<hactive_record_validations#displaying-validation-errors-in-views>> 一节。
+
+[[binding-a-form-to-an-object]]
+==== 把表单绑定到对象上
+
+上一节介绍的帮助方法使用起来虽然很方便，但远非完美的解决方案。如果 `Person` 模型有很多属性需要修改，那么实例变量对象的名称就需要重复写很多遍。更好的解决方案是把表单绑定到模型对象上，为此我们可以使用 `form_for` 帮助方法。
+
+假设有一个用于处理文章的控制器 `app/controllers/articles_controller.rb`：
+
+[source,ruby]
+----
+def new
+  @article = Article.new
+end
+----
+
+在对应的 `app/views/articles/new.html.erb` 视图中，可以像下面这样使用 `form_for` 帮助方法：
+
+[source,erb]
+----
+<%= form_for @article, url: {action: "create"}, html: {class: "nifty_form"} do |f| %>
+  <%= f.text_field :title %>
+  <%= f.text_area :body, size: "60x12" %>
+  <%= f.submit "Create" %>
+<% end %>
+----
+
+这里有几点需要注意：
+
+* 实际需要修改的对象是 `@article`。
+* `form_for` 帮助方法的选项是一个 Hash，其中 `:url` 键对应的值是路由选项，`:html` 键对应的值是 HTML 选项，这两个选项本身也是 Hash。还可以提供 `:namespace` 选项来确保表单元素具有唯一的 ID 属性，自动生成的 ID 会以 `:namespace` 选项的值和下划线作为前缀。
+* `form_for` 帮助方法会产生一个表单生成器对象，即变量 `f`。
+* 用于生成表单控件的帮助方法都在表单生成器对象 `f` 上调用。
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<form accept-charset="UTF-8" action="/articles" method="post" class="nifty_form">
+  <input id="article_title" name="article[title]" type="text" />
+  <textarea id="article_body" name="article[body]" cols="60" rows="12"></textarea>
+  <input name="commit" type="submit" value="Create" />
+</form>
+----
+
+`form_for` 帮助方法的第一个参数决定了 `params` 使用哪个键来访问表单数据。在上面的例子中，这个参数为 `@article`，因此所有 `input` 控件的 `name` 属性都是 `article[attribute_name]` 这种形式，而在 `create` 动作中 `params[:article]` 是一个拥有 `:title` 和 `:body` 键的 Hash。关于 `input` 控件 `name` 属性重要性的更多介绍，请参阅 <<form_helpers#understanding-parameter-naming-conventions>> 一节。
+
+在表单生成器上调用的帮助方法和模型对象帮助方法几乎完全相同，区别在于前者无需指定需要修改的对象，因为表单生成器已经指定了需要修改的对象。
+
+使用 `fields_for` 帮助方法也可以把表单绑定到对象上，但不会创建 `<form>` 标签。需要在同一个表单中修改多个模型对象时可以使用 `fields_for` 方法。例如，假设 `Person` 模型和 `ContactDetail` 模型关联，我们可以在下面这个表单中同时创建这两个模型的对象：
+
+[source,erb]
+----
+<%= form_for @person, url: {action: "create"} do |person_form| %>
+  <%= person_form.text_field :name %>
+  <%= fields_for @person.contact_detail do |contact_detail_form| %>
+    <%= contact_detail_form.text_field :phone_number %>
+  <% end %>
+<% end %>
+----
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<form accept-charset="UTF-8" action="/people" class="new_person" id="new_person" method="post">
+  <input id="person_name" name="person[name]" type="text" />
+  <input id="contact_detail_phone_number" name="contact_detail[phone_number]" type="text" />
+</form>
+----
+
+和 `form_for` 帮助方法一样， `fields_for` 方法产生的对象是一个表单生成器（实际上 `form_for` 方法在内部调用了 `fields_for` 方法）。
+
+[[relying-on-record-identification]]
+==== 使用记录识别技术
+
+`Article` 模型对我们来说是直接可用的，因此根据 Rails 开发的最佳实践，我们应该把这个模型声明为资源：
+
+[source,ruby]
+----
+resources :articles
+----
+
+NOTE: 资源的声明有许多副作用。关于设置和使用资源的更多介绍，请参阅 <<routing#resource-routing-the-rails-default>>。
+
+在处理 REST 架构的资源时，使用记录识别技术可以大大简化 `form_for` 帮助方法的调用。简而言之，使用记录识别技术后，我们只需把模型实例传递给 `form_for` 方法作为参数，Rails 会找出模型名称和其他信息：
+
+[source,ruby]
+----
+## Creating a new article
+# long-style:
+form_for(@article, url: articles_path)
+# same thing, short-style (record identification gets used):
+form_for(@article)
+
+## Editing an existing article
+# long-style:
+form_for(@article, url: article_path(@article), html: {method: "patch"})
+# short-style:
+form_for(@article)
+----
+
+注意，不管是新建记录还是修改已有记录，`form_for` 方法调用的短格式都是相同的，很方便。记录识别技术很智能，能够通过调用 `record.new_record?` 方法来判断记录是否为新记录，同时还能选择正确的提交地址，并根据对象的类设置 `name` 属性的值。
+
+Rails 还会自动为表单的 `class` 和 `id` 属性设置合适的值，例如，用于创建文章的表单，其 `id` 和 `class` 属性的值都会被设置为 `new_article`。用于修改 ID 为 23 的文章的表单，其 `class` 属性会被设置为 `edit_article`，其 `id` 属性会被设置为 `edit_article_23`。为了行文简洁，后文会省略这些属性。
+
+WARNING: 在模型中使用单表继承（single-table inheritance，简称 STI）时，如果只有父类声明为资源，在子类上就不能使用记录识别技术。这时，必须显式说明模型名称、`:url` 和 `:method`。
+
+[[dealing-with-namespaces]]
+===== 处理命名空间
+
+如果在路由中使用了命名空间，我们同样可以使用 `form_for` 方法调用的短格式。例如，假设有 `admin` 命名空间，那么 `form_for` 方法调用的短格式可以写成：
+
+[source,ruby]
+----
+form_for [:admin, @article]
+----
+
+上面的代码会创建提交到 `admin` 命名空间中 `ArticlesController` 控制器的表单（在更新文章时会提交到 `admin_article_path(@article)` 这个地址）。对于多层命名空间的情况，语法也类似：
+
+[source,ruby]
+----
+form_for [:admin, :management, @article]
+----
+
+关于 Rails 路由及其相关约定的更多介绍，请参阅 <<routing>> 一文。
+
+[[how-do-forms-with-patch-put-or-delete-methods-work]]
+==== 具有 PATCH、PUT 或 DELETE 方法的表单是如何工作的？
+
+Rails 框架鼓励程序使用 REST 架构的设计，这意味着除了 GET 和 POST 请求，程序还要处理许多 PATCH 和 DELETE 请求。不过，大多数浏览器只支持表单的 GET 和 POST 方法而不支持其他方法。
+
+为了解决这个问题，Rails 使用 `name` 属性的值为 `_method` 的隐藏的 `input` 标签和 POST 方法来模拟其他方法，从而实现相同的效果：
+
+[source,ruby]
+----
+form_tag(search_path, method: "patch")
+----
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<form accept-charset="UTF-8" action="/search" method="post">
+  <input name="_method" type="hidden" value="patch" />
+  <input name="utf8" type="hidden" value="&#x2713;" />
+  <input name="authenticity_token" type="hidden" value="f755bb0ed134b76c432144748a6d4b7a7ddf2b71" />
+  ...
+</form>
+----
+
+在处理提交的数据时，Rails 会考虑 `_method` 这个特殊参数的值，并按照指定的 HTTP 方法处理请求（在本例中为 PATCH）。
+
+[[making-select-boxes-with-ease]]
+=== 快速创建选择列表
