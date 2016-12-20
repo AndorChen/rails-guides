@@ -42,7 +42,7 @@
 
 ## 译者
 
-- 安道
+- [安道](http://about.ac)
 - [chinakr](https://github.com/chinakr)
 
 ## 赞助商
