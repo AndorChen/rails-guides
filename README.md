@@ -27,7 +27,7 @@
 - [ ] Configuring Rails Applications
 - [x] Rails Command Line Tools and Rake Tasks
 - [ ] Asset Pipeline
-- [ ] Working with JavaScript in Rails
+- [x] Working with JavaScript in Rails
 - [ ] The Rails Initialization Process
 - [ ] Autoloading and Reloading Constants
 - [ ] Caching with Rails: An Overview
