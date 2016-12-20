@@ -25,7 +25,7 @@
 - [ ] Securing Rails Applications
 - [x] Debugging Rails Applications
 - [ ] Configuring Rails Applications
-- [ ] Rails Command Line Tools and Rake Tasks
+- [x] Rails Command Line Tools and Rake Tasks
 - [ ] Asset Pipeline
 - [ ] Working with JavaScript in Rails
 - [ ] The Rails Initialization Process
