@@ -400,3 +400,178 @@ form_tag(search_path, method: "patch")
 
 [[making-select-boxes-with-ease]]
 === 快速创建选择列表
+
+选择列表由大量 HTML 标签组成（需要为每个选项分别创建 `option` 标签），因此最适合动态生成。
+
+下面是选择列表的一个例子：
+
+[source,html]
+----
+<select name="city_id" id="city_id">
+  <option value="1">Lisbon</option>
+  <option value="2">Madrid</option>
+  ...
+  <option value="12">Berlin</option>
+</select>
+----
+
+这个选择列表显示了一组城市的列表，用户看到的是城市的名称，程序处理的是城市的 ID。每个 `option` 标签的 `value` 属性的值就是城市的 ID。下面我们会看到 Rails 为生成选择列表提供了哪些帮助方法。
+
+[[the-select-and-option-tags]]
+==== `select` 和 `option` 标签
+
+最通用的帮助方法是 `select_tag`，故名思义，这个帮助方法用于生成 `select` 标签，并在这个 `select` 标签中封装选项字符串：
+
+[source,erb]
+----
+<%= select_tag(:city_id, '<option value="1">Lisbon</option>...') %>
+----
+
+使用 `select_tag` 帮助方法只是第一步，仅靠它我们还无法动态生成 `option` 标签。接下来，我们可以使用 `options_for_select` 帮助方法生成 `option` 标签：
+
+----
+<%= options_for_select([['Lisbon', 1], ['Madrid', 2], ...]) %>
+
+output:
+
+<option value="1">Lisbon</option>
+<option value="2">Madrid</option>
+...
+----
+
+`options_for_select` 帮助方法的第一个参数是嵌套数组，其中每个子数组都有两个元素：选项文本（城市名称）和选项值（城市 ID）。选项值会提交给控制器。选项值通常是对应的数据库对象的 ID，但并不一定是这样。
+
+掌握了上述知识，我们就可以联合使用 `select_tag` 和 `options_for_select` 帮助方法来动态生成选择列表了：
+
+[source,erb]
+----
+<%= select_tag(:city_id, options_for_select(...)) %>
+----
+
+`options_for_select` 帮助方法允许我们传递第二个参数来设置默认选项：
+
+----
+<%= options_for_select([['Lisbon', 1], ['Madrid', 2], ...], 2) %>
+
+output:
+
+<option value="1">Lisbon</option>
+<option value="2" selected="selected">Madrid</option>
+...
+----
+
+当 Rails 发现生成的选项值和第二个参数指定的值一样时，就会为这个选项添加 `selected` 属性。
+
+NOTE: `options_for_select` 帮助方法的第二个参数必须和选项值完全一样。例如，如果选项值是整数 2，就必须指定整数 2，而不是字符串 `"2"`。需要注意的是，从 `params`  Hash 中提取的值都是字符串。
+
+WARNING: 如果 `select` 标签的 `required` 属性的值为 `true`，`size` 属性的值为 1，`multiple` 属性未设置为 `true`，并且未设置 `:include_blank` 或 `:prompt` 选项时，`:include_blank` 选项的值会被强制设置为 `true`。
+
+我们可以通过 Hash 为选项添加任意属性：
+
+----
+<%= options_for_select(
+  [
+    ['Lisbon', 1, { 'data-size' => '2.8 million' }],
+    ['Madrid', 2, { 'data-size' => '3.2 million' }]
+  ], 2
+) %>
+
+output:
+
+<option value="1" data-size="2.8 million">Lisbon</option>
+<option value="2" selected="selected" data-size="3.2 million">Madrid</option>
+...
+----
+
+[[select-boxes-for-dealing-with-models]]
+==== 用于处理模型的选择列表
+
+在大多数情况下，表单控件会绑定到特定的数据库模型，和我们期望的一样，Rails 为此提供了帮助方法。与其他表单帮助方法一致，在处理模型时，需要从 `select_tag` 中删除 `_tag` 后缀：
+
+[source,ruby]
+----
+# controller:
+@person = Person.new(city_id: 2)
+----
+
+[source,erb]
+----
+# view:
+<%= select(:person, :city_id, [['Lisbon', 1], ['Madrid', 2], ...]) %>
+----
+
+需要注意的是，`select` 帮助方法的第三个参数，即选项数组，和传递给 `options_for_select` 帮助方法作为参数的选项数组是一样的。如果用户已经设置了默认城市，Rails 会从 `@person.city_id` 属性中读取这一设置，一切都是自动的，十分方便。
+
+和其他帮助方法一样，如果要在绑定到 `@person` 对象的表单生成器上使用 `select` 帮助方法，相关语法如下：
+
+[source,erb]
+----
+# select on a form builder
+<%= f.select(:city_id, ...) %>
+----
+
+我们还可以把块传递给 `select` 帮助方法：
+
+[source,erb]
+----
+<%= f.select(:city_id) do %>
+  <% [['Lisbon', 1], ['Madrid', 2]].each do |c| -%>
+    <%= content_tag(:option, c.first, value: c.last) %>
+  <% end %>
+<% end %>
+----
+
+WARNING: 如果我们使用 `select` 帮助方法（或类似的帮助方法，如 `collection_select`、`select_tag`）来设置 `belongs_to` 关联，就必须传入外键的名称（在上面的例子中是 `city_id`），而不是关联的名称。在上面的例子中，如果传入的是 `city` 而不是 `city_id`，在把 `params` 传递给 `Person.new` 或 `update` 方法时，Active Record 就会引发 `ActiveRecord::AssociationTypeMismatch: City(#17815740) expected, got String(#1138750)` 错误。换一个角度看，这说明表单帮助方法只能修改模型属性。我们还应该注意到允许用户直接修改外键的潜在安全后果。
+
+[[pption-tags-from-a-collection-of-arbitrary-objects]]
+==== 从任意对象组成的集合创建 `option` 标签
+
+使用 `options_for_select` 帮助方法生成 `option` 标签需要创建包含各个选项的文本和值的数组。但如果我们已经拥有 `City` 模型（可能是 Active Record 模型），并且想要从这些对象的集合生成 `option` 标签，那么应该怎么做呢？一个解决方案是创建并遍历嵌套数组：
+
+[source,erb]
+----
+<% cities_array = City.all.map { |city| [city.name, city.id] } %>
+<%= options_for_select(cities_array) %>
+----
+
+这是一个完全有效的解决方案，但 Rails 提供了一个更简洁的替代方案：`options_from_collection_for_select` 帮助方法。这个帮助方法接受一个任意对象组成的集合作为参数，以及两个附加参数：分别用于读取选项值和选项文本的方法的名称：
+
+[source,erb]
+----
+<%= options_from_collection_for_select(City.all, :id, :name) %>
+----
+
+顾名思义，`options_from_collection_for_select` 帮助方法只生成 `option` 标签。和 `options_for_select` 帮助方法一样，要想生成可用的选择列表，我们需要联合使用 `options_from_collection_for_select` 和 `select_tag` 帮助方法。在处理模型对象时，`select` 帮助方法联合使用了 `select_tag` 和 `options_for_select` 帮助方法，同样，`collection_select` 帮助方法联合使用了 `select_tag` 和 `options_from_collection_for_select` 帮助方法。
+
+[source,erb]
+----
+<%= collection_select(:person, :city_id, City.all, :id, :name) %>
+----
+
+和其他帮助方法一样，如果要在绑定到 `@person` 对象的表单生成器上使用 `collection_select` 帮助方法，相关语法如下：
+
+[source,erb]
+----
+<%= f.collection_select(:city_id, City.all, :id, :name) %>
+----
+
+总结一下，`options_from_collection_for_select` 对于 `collection_select` 帮助方法，就如同 `options_for_select` 对于 `select` 帮助方法。
+
+NOTE: 传递给 `options_for_select` 帮助方法作为参数的嵌套数组，子数组的第一个元素是选项文本，第二个元素是选项值，然而传递给 `options_from_collection_for_select` 帮助方法作为参数的嵌套数组，子数组的第一个元素是读取选项值的方法的名称，第二个元素是读取选项文本的方法的名称。
+
+[[time-zone-and-country-select]]
+==== 时区和国家选择列表
+
+要想利用 Rails 提供的时区相关功能，首先需要设置用户所在的时区。为此，我们可以使用 `collection_select` 帮助方法从预定义时区对象生成选择列表，我们也可以使用更简单的 `time_zone_select` 帮助方法：
+
+[source,erb]
+----
+<%= time_zone_select(:person, :time_zone) %>
+----
+
+Rails 还提供了 `time_zone_options_for_select` 帮助方法用于手动生成定制的时区选择列表。关于 `time_zone_select` 和 `time_zone_options_for_select` 帮助方法的更多介绍，请参阅 API 文档。
+
+Rails 的早期版本提供了用于生成国家选择列表的 `country_select` 帮助方法，现在这一功能被放入独立的 link:https://github.com/stefanpenner/country_select[country_select 插件]。需要注意的是，在使用这个插件来生成国家选择列表时，一些特定地区是否应该被当作国家还存在争议，这也是 Rails 不再内置这一功能的原因。
+
+[[using-date-and-time-form-helpers]]
+=== 使用日期和时间的表单帮助方法
