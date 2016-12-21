@@ -665,3 +665,47 @@ NOTE: 在许多情况下，内置的日期选择器显得笨手笨脚，不能�
 
 [[uploading-files]]
 === 上传文件
+
+上传某种类型的文件是常见任务，例如上传某人的照片或包含待处理数据的 CSV 文件。在上传文件时特别需要注意的是，表单的编码必须设置为 `multipart/form-data`。使用 `form_for` 帮助方法时会自动完成这一设置。如果使用 `form_tag` 帮助方法，就必须手动完成这一设置，具体操作可以参考下面的例子。
+
+下面这两个表单都用于上传文件。
+
+[source,erb]
+----
+<%= form_tag({action: :upload}, multipart: true) do %>
+  <%= file_field_tag 'picture' %>
+<% end %>
+
+<%= form_for @person do |f| %>
+  <%= f.file_field :picture %>
+<% end %>
+----
+
+Rails 同样为上传文件提供了一对帮助方法：独立的帮助方法 `file_field_tag` 和处理模型的帮助方法 `file_field`。这两个帮助方法和其他帮助方法的唯一区别是，我们无法为文件上传组件设置默认值，因为这样做没有意义。和我们期望的一样，在上述示例的第一个表单中上传的文件通过 `params[:picture]` 取回，在第二个表单中通过 `params[:person][:picture]` 取回。
+
+[[what-gets-uploaded]]
+==== 上传的内容
+
+在上传文件时，`params` Hash 中保存的文件对象实际上是 `IO` 类的子类的实例。根据上传文件大小的不同，这个实例有可能是 `StringIO` 类的实例，也可能是临时文件的 `File` 类的实例。在这两种情况下，文件对象具有 `original_filename` 属性，其值为上传的文件在用户计算机上的文件名，也具有 `content_type` 属性，其值为上传的文件的 MIME 类型。下面这段代码把上传的文件保存在 `#{Rails.root}/public/uploads` 文件夹中，文件名不变（假设使用上一节示例中的表单来上传文件）。
+
+[source,ruby]
+----
+def upload
+  uploaded_io = params[:person][:picture]
+  File.open(Rails.root.join('public', 'uploads', uploaded_io.original_filename), 'wb') do |file|
+    file.write(uploaded_io.read)
+  end
+end
+----
+
+一旦文件上传完毕，就可以执行很多后续操作，例如把文件储存到磁盘、Amazon S3 等位置并和模型关联起来，缩放图片并生成缩略图等。这些复杂的操作已经超出本文的范畴，不过有一些 Ruby 库可以帮助我们完成这些操作，其中两个众所周知的是 link:https://github.com/jnicklas/carrierwave[CarrierWave] 和 link:https://github.com/thoughtbot/paperclip[Paperclip]。
+
+NOTE: 如果用户没有选择要上传的文件，对应参数会是空字符串。
+
+[[dealing-with-ajax]]
+==== 处理 Ajax
+
+和其他表单不同，异步上传文件的表单可不是为 `form_for` 帮助方法设置 `remote: true` 选项这么简单。在这个 Ajax 表单中，上传文件的序列化是通过浏览器的 JavaScript 完成的，而 JavaScript 无法读取硬盘上的文件，因此文件无法上传。最常见的解决方案是使用不可见的 iframe 作为表单提交的目标。
+
+[[customizing-form-builders]]
+=== 定制表单生成器
