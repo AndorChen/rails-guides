@@ -709,3 +709,54 @@ NOTE: 如果用户没有选择要上传的文件，对应参数会是空字符�
 
 [[customizing-form-builders]]
 === 定制表单生成器
+
+前面说过，`form_for` 和 `fields_for` 帮助方法产生的对象是 `FormBuilder` 类或其子类的实例，即表单生成器。表单生成器为单个对象封装了显示表单所需的功能。我们可以用通常的方式使用表单帮助方法，也可以继承 `FormBuilder` 类并添加其他帮助方法。例如：
+
+[source,erb]
+----
+<%= form_for @person do |f| %>
+  <%= text_field_with_label f, :first_name %>
+<% end %>
+----
+
+可以写成：
+
+[source,erb]
+----
+<%= form_for @person, builder: LabellingFormBuilder do |f| %>
+  <%= f.text_field :first_name %>
+<% end %>
+----
+
+在使用前需要定义 `LabellingFormBuilder` 类：
+
+[source,ruby]
+----
+class LabellingFormBuilder < ActionView::Helpers::FormBuilder
+  def text_field(attribute, options={})
+    label(attribute) + super
+  end
+end
+----
+
+如果经常这样使用，我们可以定义 `labeled_form_for` 帮助方法，自动应用 `builder: LabellingFormBuilder` 选项。
+
+[source,ruby]
+----
+def labeled_form_for(record, options = {}, &block)
+  options.merge! builder: LabellingFormBuilder
+  form_for record, options, &block
+end
+----
+
+表单生成器还会确定进行下面的渲染时应该执行的操作：
+
+[source,erb]
+----
+<%= render partial: f %>
+----
+
+如果表单生成器 `f` 是 `FormBuilder` 类的实例，那么上面的代码会渲染局部视图 `form`，并把传入局部视图的对象设置为表单生成器。如果表单生成器 `f` 是 `LabellingFormBuilder` 类的实例，那么上面的代码会渲染局部视图 `labelling_form`。
+
+[[understanding-parameter-naming-conventions]]
+=== 理解参数命名约定
