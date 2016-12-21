@@ -575,3 +575,93 @@ Rails 的早期版本提供了用于生成国家选择列表的 `country_select`
 
 [[using-date-and-time-form-helpers]]
 === 使用日期和时间的表单帮助方法
+
+我们可以选择不使用生成 HTML5 日期和时间输入字段的表单帮助方法，而使用替代的日期和时间帮助方法。这些日期和时间帮助方法和所有其他表单帮助方法在两个重要方面有所不同：
+
+* 日期和时间不是在单个 `input` 元素中输入，而是每个时间单位（年、月、日等）都有各自的 `input` 元素。因此在 `params` Hash 中没有表示日期和时间的单个值。
+* 其他表单帮助方法使用 `_tag` 后缀来区分独立的帮助方法和处理模型对象的帮助方法。对于日期和时间帮助方法，`select_date`、`select_time` 和 `select_datetime` 是独立的帮助方法，`date_select`、`time_select` 和 `datetime_select` 是对应的处理模型对象的帮助方法。
+
+这两类帮助方法都会为每个时间单位（年、月、日等）生成各自的选择列表。
+
+[[barebones-helpers]]
+==== 独立的帮助方法
+
+`select_*` 这类帮助方法的第一个参数是 `Date`、`Time` 或 `DateTime` 类的实例，用于说明选中的日期时间。如果省略这个参数，就会选中当前的日期时间。例如：
+
+[source,erb]
+----
+<%= select_date Date.today, prefix: :start_date %>
+----
+
+上面的代码会生成下面的 HTML（为了行文简洁，省略了实际选项值）：
+
+[source,html]
+----
+<select id="start_date_year" name="start_date[year]"> ... </select>
+<select id="start_date_month" name="start_date[month]"> ... </select>
+<select id="start_date_day" name="start_date[day]"> ... </select>
+----
+
+上面的代码会使 `params[:start_date]` 成为拥有 `:year`、`:month` 和 `:day` 键的 Hash。要想得到实际的 `Date`、`Time` 或 `DateTime` 对象，我们需要提取 `params[:start_date]` 中的信息并传递给适当的构造器，例如：
+
+[source,ruby]
+----
+Date.civil(params[:start_date][:year].to_i, params[:start_date][:month].to_i, params[:start_date][:day].to_i)
+----
+
+`:prefix` 选项用于说明从 `params` Hash 中取回时间信息的键名。这个选项的默认值是 `date`，在上面的例子中被设置为 `start_date`。
+
+[[model-object-helpers]]
+==== 处理模型对象的帮助方法
+
+在更新或创建 Active Record 对象的表单中 `select_date` 帮助方法不能很好地工作，因为 Active Record 期望 `params` Hash 的每个元素都对应一个模型属性。处理模型对象的日期和时间帮助方法使用特殊名称提交参数，Active Record 一看到这些参数就知道必须把这些参数和其他参数一起传递给对应字段类型的构造器。例如：
+
+[source,erb]
+----
+<%= date_select :person, :birth_date %>
+----
+
+上面的代码会生成下面的 HTML（为了行文简洁，省略了实际选项值）：
+
+[source,html]
+----
+<select id="person_birth_date_1i" name="person[birth_date(1i)]"> ... </select>
+<select id="person_birth_date_2i" name="person[birth_date(2i)]"> ... </select>
+<select id="person_birth_date_3i" name="person[birth_date(3i)]"> ... </select>
+----
+
+上面的代码会生成下面的 `params` Hash：
+
+[source,ruby]
+----
+{'person' => {'birth_date(1i)' => '2008', 'birth_date(2i)' => '11', 'birth_date(3i)' => '22'}}
+----
+
+当把这个 `params` Hash 传递给 `Person.new` 或 `update` 方法时，Active Record 会发现应该把这些参数都用于构造 `birth_date` 属性，并且会使用附加信息来确定把这些参数传递给构造器（如 `Date.civil` 方法）的顺序。
+
+[[common-options]]
+==== 通用选项
+
+这两类帮助方法使用一组相同的核心函数来生成选择列表，因此使用的选项也大体相同。特别是默认情况下，Rails 生成的年份选项会包含当前年份的前后 5 年。如果这个范围不能满足使用需求，可以使用 `:start_year` 和 `:end_year` 选项覆盖这一默认设置。关于这两类帮助方法的可用选项的更多介绍，请参阅 link:http://api.rubyonrails.org/classes/ActionView/Helpers/DateHelper.html[API 文档]。
+
+根据经验，在处理模型对象时应该使用 `date_select` 帮助方法，在其他情况下应该使用 `select_date` 帮助方法。例如在根据日期过滤搜索结果时就应该使用 `select_date` 帮助方法。
+
+NOTE: 在许多情况下，内置的日期选择器显得笨手笨脚，不能帮助用户正确计算出日期和星期几之间的关系。
+
+[[individual-components]]
+==== 独立组件
+
+偶尔我们需要显示单个日期组件，例如年份或月份。为此，Rails 提供了一系列帮助方法，每个时间单位对应一个帮助方法，即 `select_year`、`select_month`、`select_day`、`select_hour`、`select_minute` 和 `select_second` 帮助方法。这些帮助方法的用法非常简单。默认情况下，它们会生成以时间单位命名的输入字段（例如，`select_year` 帮助方法生成名为“year”的输入字段，`select_month` 帮助方法生成名为“month”的输入字段），我们可以使用 `:field_name` 选项指定输入字段的名称。`:prefix` 选项的用法和在 `select_date` 和 `select_time` 帮助方法中一样，默认值也一样。
+
+这些帮助方法的第一个参数可以是 `Date`、`Time` 或 `DateTime` 类的实例（会从实例中取出对应的值）或数值，用于说明选中的日期时间。例如：
+
+[source,erb]
+----
+<%= select_year(2009) %>
+<%= select_year(Time.now) %>
+----
+
+如果当前年份是 2009 年，上面的代码会成生相同的 HTML。用户选择的年份可以通过 `params[:date][:year]` 取回。
+
+[[uploading-files]]
+=== 上传文件
