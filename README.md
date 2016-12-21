@@ -29,7 +29,7 @@
 - [ ] Asset Pipeline
 - [x] Working with JavaScript in Rails
 - [ ] The Rails Initialization Process
-- [ ] Autoloading and Reloading Constants
+- [x] Autoloading and Reloading Constants
 - [ ] Caching with Rails: An Overview
 - [ ] Active Support Instrumentation
 - [ ] Profiling Rails Applications
