@@ -35,7 +35,7 @@
 :epub-cover-image: rails-guides-cover.jpg
 :cover-page-title: 封面
 :ebook-theme: rails_guides
-:rails-version: 5.0.0.1
+:rails-version: 5.0.1
 
 :numbered:
 
