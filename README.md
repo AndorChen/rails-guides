@@ -33,7 +33,7 @@
 - [ ] Caching with Rails: An Overview
 - [x] Active Support Instrumentation
 - [ ] Profiling Rails Applications
-- [ ] Using Rails for API-only Applications
+- [x] Using Rails for API-only Applications
 - [ ] Action Cable Overview
 - [ ] The Basics of Creating Rails Plugins
 - [ ] Rails on Rack
