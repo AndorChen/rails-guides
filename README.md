@@ -31,7 +31,7 @@
 - [ ] The Rails Initialization Process
 - [x] Autoloading and Reloading Constants
 - [ ] Caching with Rails: An Overview
-- [ ] Active Support Instrumentation
+- [x] Active Support Instrumentation
 - [ ] Profiling Rails Applications
 - [ ] Using Rails for API-only Applications
 - [ ] Action Cable Overview
