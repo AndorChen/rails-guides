@@ -1,1 +1,20 @@
-== Rails Routing from the Outside In
+[[rails-routing-from-the-outside-in]]
+== Rails 路由全解
+:imagesdir: ../images
+:numbered:
+
+[.chapter-abstract]
+--
+本文介绍 Rails 路由面向用户的特性。
+
+读完本文后，你将学会：
+
+* 如何理解 `config/routes.rb` 文件中的代码。
+* 如何使用推荐的资源式风格或 `match` 方法构建路由。
+* 动作应该收到什么参数。
+* 如何使用路由帮助方法自动创建路径和 URL 地址。
+* 约束和 Rack 端点等高级技术。
+--
+
+[[the-purpose-of-the-rails-router]]
+=== Rails 路由的用途
