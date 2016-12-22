@@ -897,3 +897,42 @@ Rails 之所以知道这些输入组件的值是 `person` Hash 的一部分，�
 
 [[forms-to-external-resources]]
 === 处理外部资源的表单
+
+Rails 表单帮助方法也可用于创建向外部资源提交数据的表单。不过，有时我们需要为这些外部资源设置 `authenticity_token`，具体操作是为 `form_tag` 帮助方法设置 `authenticity_token: 'your_external_token'` 选项：
+
+[source,erb]
+----
+<%= form_tag 'http://farfar.away/form', authenticity_token: 'external_token' do %>
+  Form contents
+<% end %>
+----
+
+在向外部资源（例如支付网关）提交数据时，有时表单中可用的字段会受到外部 API 的限制，并且不需要生成 `authenticity_token`。通过设置 `authenticity_token: false` 选项即可禁用 `authenticity_token`。
+
+[source,erb]
+----
+<%= form_tag 'http://farfar.away/form', authenticity_token: false do %>
+  Form contents
+<% end %>
+----
+
+相同的技术也可用于 `form_for` 帮助方法：
+
+[source,erb]
+----
+<%= form_for @invoice, url: external_url, authenticity_token: 'external_token' do |f| %>
+  Form contents
+<% end %>
+----
+
+或者，如果想要禁用 `authenticity_token`：
+
+[source,erb]
+----
+<%= form_for @invoice, url: external_url, authenticity_token: false do |f| %>
+  Form contents
+<% end %>
+----
+
+[[building-complex-forms]]
+=== 创建复杂表单
