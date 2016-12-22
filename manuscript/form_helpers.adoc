@@ -681,12 +681,12 @@ NOTE: 在许多情况下，内置的日期选择器显得笨手笨脚，不能�
 <% end %>
 ----
 
-Rails 同样为上传文件提供了一对帮助方法：独立的帮助方法 `file_field_tag` 和处理模型的帮助方法 `file_field`。这两个帮助方法和其他帮助方法的唯一区别是，我们无法为文件上传组件设置默认值，因为这样做没有意义。和我们期望的一样，在上述示例的第一个表单中上传的文件通过 `params[:picture]` 取回，在第二个表单中通过 `params[:person][:picture]` 取回。
+Rails 同样为上传文件提供了一对帮助方法：独立的帮助方法 `file_field_tag` 和处理模型的帮助方法 `file_field`。这两个帮助方法和其他帮助方法的唯一区别是，我们无法为文件上传组件设置默认值，因为这样做没有意义。和我们期望的一样，在上述例子的第一个表单中上传的文件通过 `params[:picture]` 取回，在第二个表单中通过 `params[:person][:picture]` 取回。
 
 [[what-gets-uploaded]]
 ==== 上传的内容
 
-在上传文件时，`params` Hash 中保存的文件对象实际上是 `IO` 类的子类的实例。根据上传文件大小的不同，这个实例有可能是 `StringIO` 类的实例，也可能是临时文件的 `File` 类的实例。在这两种情况下，文件对象具有 `original_filename` 属性，其值为上传的文件在用户计算机上的文件名，也具有 `content_type` 属性，其值为上传的文件的 MIME 类型。下面这段代码把上传的文件保存在 `#{Rails.root}/public/uploads` 文件夹中，文件名不变（假设使用上一节示例中的表单来上传文件）。
+在上传文件时，`params` Hash 中保存的文件对象实际上是 `IO` 类的子类的实例。根据上传文件大小的不同，这个实例有可能是 `StringIO` 类的实例，也可能是临时文件的 `File` 类的实例。在这两种情况下，文件对象具有 `original_filename` 属性，其值为上传的文件在用户计算机上的文件名，也具有 `content_type` 属性，其值为上传的文件的 MIME 类型。下面这段代码把上传的文件保存在 `#{Rails.root}/public/uploads` 文件夹中，文件名不变（假设使用上一节例子中的表单来上传文件）。
 
 [source,ruby]
 ----
@@ -760,3 +760,140 @@ end
 
 [[understanding-parameter-naming-conventions]]
 === 理解参数命名约定
+
+从前面几节我们可以看到，表单提交的数据可以保存在 `params` Hash 或嵌套的子 Hash中。例如，在 `Person` 模型的标准 `create` 动作中，`params[:person]` 通常是储存了创建 `Person` 实例所需的所有属性的 Hash。`params` Hash 也可以包含数组、 Hash 的数组等等。
+
+从根本上说，HTML 表单并不理解任何类型的结构化数据，表单提交的数据都是普通字符串组成的键值对。我们在程序中看到的数组和 Hash 都是 Rails 根据参数命名约定生成的。
+
+[[basic-structures]]
+==== 基本结构
+
+数组和 Hash 是两种基本数据结构。Hash 语法用于访问 `params` 中的值。例如，如果表单包含：
+
+[source,html]
+----
+<input id="person_name" name="person[name]" type="text" value="Henry"/>
+----
+
+`params` Hash 会包含：
+
+[source,ruby]
+----
+{'person' => {'name' => 'Henry'}}
+----
+
+在控制器中可以使用 `params[:person][:name]` 取回表单提交的值。
+
+Hash 可以根据需要嵌套，不限制层级，例如：
+
+[source,html]
+----
+<input id="person_address_city" name="person[address][city]" type="text" value="New York"/>
+----
+
+`params` Hash 会包含：
+
+[source,ruby]
+----
+{'person' => {'address' => {'city' => 'New York'}}}
+----
+
+通常 Rails 会忽略重复的参数名。如果参数名包含一组空的方括号 `[]`，Rails 就会用这些参数的值生成一个数组。例如，要想让用户输入多个电话号码，我们可以在表单中添加：
+
+[source,html]
+----
+<input name="person[phone_number][]" type="text"/>
+<input name="person[phone_number][]" type="text"/>
+<input name="person[phone_number][]" type="text"/>
+----
+
+得到的 `params[:person][:phone_number]` 是包含用户输入的电话号码的数组。
+
+[[combining-them]]
+==== 联合使用
+
+我们可以联合使用数组和 Hash。Hash 的元素可以是前面例子中那样的数组，也可以是 Hash 的数组。例如，通过重复使用下面的表单控件我们可以添加任意长度的多行地址：
+
+[source,html]
+----
+<input name="addresses[][line1]" type="text"/>
+<input name="addresses[][line2]" type="text"/>
+<input name="addresses[][city]" type="text"/>
+----
+
+得到的 `params[:addresses]` 是 Hash 的数组，Hash 的键包括 `line1`、`line2` 和 `city`。如果 Rails 发现输入组件的名称已经存在于当前 Hash 的键中，就会新建一个 Hash。
+
+不过还有一个限制，尽管 Hash 可以任意嵌套，但数组只能有一层。数组通常可以用 Hash 替换。例如，模型对象的数组可以用以模型对象 ID 、数组索引或其他参数为键的 Hash 替换。
+
+WARNING: 数组参数在 `check_box` 帮助方法中不能很好地工作。根据 HTML 规范，未选中的复选框不提交任何值。然而，未选中的复选框也提交值往往会更容易处理。为此，`check_box` 帮助方法通过创建辅助的同名隐藏 `input` 元素来模拟这一行为。如果复选框未选中，只有隐藏的 `input` 元素的值会被提交；如果复选框被选中，复选框本身的值和隐藏的 `input` 元素的值都会被提交，但复选框本身的值优先级更高。在处理数组参数时，这样的重复提交会把 Rails 搞糊涂，因为 Rails 无法确定什么时候创建新的数组元素。这种情况下，我们可以使用 `check_box_tag` 帮助方法，或者用 Hash 代替数组。
+
+[[using-form-helpers]]
+==== 使用表单帮助方法
+
+在前面两节中我们没有使用 Rails 表单帮助方法。尽管我们可以手动为 `input` 元素命名，然后直接把它们传递给 `text_field_tag` 这类帮助方法，但 Rails 支持更高级的功能。我们可以使用 `form_for` 和 `fields_for` 帮助方法的 `name` 参数以及 `:index` 选项。
+
+假设我们想要渲染一个表单，用于修改某人地址的各个字段。例如：
+
+[source,erb]
+----
+<%= form_for @person do |person_form| %>
+  <%= person_form.text_field :name %>
+  <% @person.addresses.each do |address| %>
+    <%= person_form.fields_for address, index: address.id do |address_form|%>
+      <%= address_form.text_field :city %>
+    <% end %>
+  <% end %>
+<% end %>
+----
+
+如果某人有两个地址，ID 分别为 23 和 45，那么上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<form accept-charset="UTF-8" action="/people/1" class="edit_person" id="edit_person_1" method="post">
+  <input id="person_name" name="person[name]" type="text" />
+  <input id="person_address_23_city" name="person[address][23][city]" type="text" />
+  <input id="person_address_45_city" name="person[address][45][city]" type="text" />
+</form>
+----
+
+得到的 `params` Hash 会包含：
+
+[source,ruby]
+----
+{'person' => {'name' => 'Bob', 'address' => {'23' => {'city' => 'Paris'}, '45' => {'city' => 'London'}}}}
+----
+
+Rails 之所以知道这些输入组件的值是 `person` Hash 的一部分，是因为我们在第一个表单生成器上调用了 `fields_for` 帮助方法。指定 `:index` 选项是为了告诉 Rails，不要把输入组件命名为 `person[address][city]`，而要在 `address` 和 `city` 之间插入索引（放在 `[]` 中）。这样要想确定需要修改的 `Address` 记录就变得很容易，因此往往也很有用。`:index` 选项的值还可以是其他重要数字、字符串甚至 `nil`（使用 `nil` 时会创建数组参数）。
+
+要想创建更复杂的嵌套，我们可以显式指定输入组件名称的 `name` 参数（在上面的例子中是 `person[address]`）：
+
+[source,erb]
+----
+<%= fields_for 'person[address][primary]', address, index: address do |address_form| %>
+  <%= address_form.text_field :city %>
+<% end %>
+----
+
+上面的代码会生成下面的 HTML：
+
+[source,html]
+----
+<input id="person_address_primary_1_city" name="person[address][primary][1][city]" type="text" value="bologna" />
+----
+
+一般来说，输入组件的最终名称是 `fields_for` 或 `form_for` 帮助方法的 `name` 参数，加上 `:index` 选项的值，再加上属性名。我们也可以直接把 `:index` 选项传递给 `text_field` 这样的帮助方法作为参数，但在表单生成器中指定这个选项比在输入组件中分别指定这个选项要更为简洁。
+
+还有一种简易写法，可以在 `name` 参数后加上 `[]` 并省略 `:index` 选项。这种简易写法和指定 `index: address` 选项的效果是一样的：
+
+[source,erb]
+----
+<%= fields_for 'person[address][primary][]', address do |address_form| %>
+  <%= address_form.text_field :city %>
+<% end %>
+----
+
+上面的代码生成的 HTML 和前一个例子完全相同。
+
+[[forms-to-external-resources]]
+=== 处理外部资源的表单
