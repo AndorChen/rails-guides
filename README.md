@@ -14,7 +14,7 @@
 - [x] Active Model Basics
 - [x] Action View Overview
 - [x] Layouts and Rendering in Rails
-- [ ] Action View Form Helpers
+- [x] Action View Form Helpers
 - [x] Action Controller Overview
 - [ ] Rails Routing from the Outside In
 - [x] Active Support Core Extensions
