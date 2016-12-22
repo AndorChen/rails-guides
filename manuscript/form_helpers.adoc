@@ -936,3 +936,163 @@ Rails 表单帮助方法也可用于创建向外部资源提交数据的表单�
 
 [[building-complex-forms]]
 === 创建复杂表单
+
+许多程序不像在表单中修改单个对象这样简单。例如，在创建 `Person` 模型的实例时，我们可能还想让用户在同一个表单中创建多条地址记录（如家庭地址、单位地址等）。之后在修改 `Person` 模型的实例时，用户应该能够根据需要添加、删除或修改地址。
+
+[[configuring-the-model]]
+==== 配置模型
+
+为此，Active Record 通过 `accepts_nested_attributes_for` 方法在模型层面提供支持：
+
+[source,ruby]
+----
+class Person < ApplicationRecord
+  has_many :addresses
+  accepts_nested_attributes_for :addresses
+end
+
+class Address < ApplicationRecord
+  belongs_to :person
+end
+----
+
+上面的代码会在 `Person` 模型上创建 `addresses_attributes=` 方法，用于创建、更新或删除地址。
+
+[[nested-forms]]
+==== 嵌套表单
+
+通过下面的表单我们可以创建 `Person` 模型的实例及其关联的地址：
+
+[source,erb]
+----
+<%= form_for @person do |f| %>
+  Addresses:
+  <ul>
+    <%= f.fields_for :addresses do |addresses_form| %>
+      <li>
+        <%= addresses_form.label :kind %>
+        <%= addresses_form.text_field :kind %>
+
+        <%= addresses_form.label :street %>
+        <%= addresses_form.text_field :street %>
+        ...
+      </li>
+    <% end %>
+  </ul>
+<% end %>
+----
+
+如果关联支持嵌套属性，`fields_for` 方法会为关联中的每个元素执行块。如果 `Person` 模型的实例没有关联地址，就不会显示地址字段。一般的做法是构建一个或多个空的子属性，这样至少会显示一组字段。下面的例子会在新建 `Person` 模型实例的表单中显示两组地址字段。
+
+[source,ruby]
+----
+def new
+  @person = Person.new
+  2.times { @person.addresses.build}
+end
+----
+
+`fields_for` 帮助方法会产生表单生成器，而 `accepts_nested_attributes_for` 方法需要参数名。例如，当创建具有两个地址的 `Person` 模型的实例时，表单提交的参数如下：
+
+[source,ruby]
+----
+{
+  'person' => {
+    'name' => 'John Doe',
+    'addresses_attributes' => {
+      '0' => {
+        'kind' => 'Home',
+        'street' => '221b Baker Street'
+      },
+      '1' => {
+        'kind' => 'Office',
+        'street' => '31 Spooner Street'
+      }
+    }
+  }
+}
+----
+
+`:addresses_attributes` Hash 的键是什么并不重要，只要每个地址的键互不相同即可。
+
+如果关联对象在数据库中已存在，`fields_for` 方法会使用这个对象的 ID 自动生成隐藏输入字段。通过设置 `include_id: false` 选项可以禁止自动生成隐藏输入字段。如果自动生成的隐藏输入字段位置不对导致 HTML 不合法，或者 ORM 中子对象不存在 ID，那么我们就应该禁止自动生成隐藏输入字段。
+
+[[the-controller]]
+==== 控制器
+
+照例，我们需要在控制器中 link:http://guides.rubyonrails.org/action_controller_overview.html#strong-parameters[把参数列入白名单]，然后再把参数传递给模型：
+
+[source,ruby]
+----
+def create
+  @person = Person.new(person_params)
+  # ...
+end
+
+private
+  def person_params
+    params.require(:person).permit(:name, addresses_attributes: [:id, :kind, :street])
+  end
+----
+
+[[removing-objects]]
+==== 删除对象
+
+通过为 `accepts_nested_attributes_for` 方法设置 `allow_destroy: true` 选项，用户就可以删除关联对象。
+
+[source,ruby]
+----
+class Person < ApplicationRecord
+  has_many :addresses
+  accepts_nested_attributes_for :addresses, allow_destroy: true
+end
+----
+
+如果对象属性的 Hash 包含 `_destroy` 键并且值为 1，这个对象就会被删除。下面的表单允许用户删除地址：
+
+[source,erb]
+----
+<%= form_for @person do |f| %>
+  Addresses:
+  <ul>
+    <%= f.fields_for :addresses do |addresses_form| %>
+      <li>
+        <%= addresses_form.check_box :_destroy %>
+        <%= addresses_form.label :kind %>
+        <%= addresses_form.text_field :kind %>
+        ...
+      </li>
+    <% end %>
+  </ul>
+<% end %>
+----
+
+别忘了在控制器中更新参数白名单，添加 `_destroy` 字段。
+
+[source,ruby]
+----
+def person_params
+  params.require(:person).
+    permit(:name, addresses_attributes: [:id, :kind, :street, :_destroy])
+end
+----
+
+[[preventing-empty-records]]
+==== 防止创建空记录
+
+通常我们需要忽略用户没有填写的字段。要实现这个功能，我们可以为 `accepts_nested_attributes_for` 方法设置 `:reject_if` 选项，这个选项的值是一个 Proc 对象。在表单提交每个属性 Hash 时都会调用这个 Proc 对象。当 Proc 对象的返回值为 `true` 时（译者注：原文为 `false`，但根据上下文应为 `true`），Active Record 不会为这个属性 Hash 创建关联对象。在下面的例子中，当设置了 `kind` 属性时，Active Record 才会创建地址：
+
+[source,ruby]
+----
+class Person < ApplicationRecord
+  has_many :addresses
+  accepts_nested_attributes_for :addresses, reject_if: lambda {|attributes| attributes['kind'].blank?}
+end
+----
+
+为方便起见，我们可以把 `:reject_if` 选项的值设为 `:all_blank`，此时创建的 Proc 对象会拒绝为除 `_destroy` 之外的其他属性都为空的属性 Hash 创建关联对象。
+
+[[adding-fields-on-the-fly]]
+==== 按需添加字段
+
+有时，与其提前显示多组字段，倒不如等用户点击“添加新地址”按钮后再添加这些字段。Rails 没有内置这种功能。在生成这些字段时，我们必须保证关联数组的键是唯一的，这种情况下通常会使用 JavaScript 的当前时间（从 1970 年 1 月 1 日午夜开始经过的毫秒数）。
