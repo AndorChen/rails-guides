@@ -144,3 +144,7 @@ include::manuscript/4_2_release_notes.adoc[]
 include::manuscript/4_1_release_notes.adoc[]
 
 include::manuscript/4_0_release_notes.adoc[]
+
+include::manuscript/supplement.adoc[]
+
+include::manuscript/rails_application_templates.adoc[]
