@@ -1,0 +1,1 @@
+== Ruby on Rails 4.2 Release Notes

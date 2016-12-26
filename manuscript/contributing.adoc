@@ -1,0 +1,2 @@
+[part]
+= 第七部分 为 Ruby on Rails 做贡献

@@ -1,0 +1,2 @@
+[[contributing-to-ruby-on-rails]]
+== 为 Ruby on Rails 做贡献
