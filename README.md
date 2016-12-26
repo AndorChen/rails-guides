@@ -37,7 +37,7 @@
 - [ ] Action Cable Overview
 - [x] The Basics of Creating Rails Plugins
 - [ ] Rails on Rack
-- [ ] Creating and Customizing Rails Generators
+- [x] Creating and Customizing Rails Generators
 - [ ] Getting Started with Engines
 
 ## 译者
