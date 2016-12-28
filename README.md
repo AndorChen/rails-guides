@@ -42,7 +42,7 @@
 - [x] Contributing to Ruby on Rails
 - [x] API Documentation Guidelines
 - [x] Ruby on Rails Guides Guidelines
-- [ ] Maintenance Policy
+- [x] Maintenance Policy
 - [ ] Upgrading Ruby on Rails
 - [ ] Ruby on Rails 5.0 Release Notes
 - [ ] Ruby on Rails 4.2 Release Notes
