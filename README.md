@@ -43,7 +43,7 @@
 - [x] API Documentation Guidelines
 - [x] Ruby on Rails Guides Guidelines
 - [x] Maintenance Policy
-- [ ] Upgrading Ruby on Rails
+- [x] Upgrading Ruby on Rails
 - [ ] Ruby on Rails 5.0 Release Notes
 - [ ] Ruby on Rails 4.2 Release Notes
 - [ ] Ruby on Rails 4.1 Release Notes

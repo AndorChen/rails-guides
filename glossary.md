@@ -5,3 +5,4 @@
 | validation | 数据验证 | |
 | eager load | 及早加载 | |
 | action | 动作 | |
+| sanitizer | 净化程序 | |
