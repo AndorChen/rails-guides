@@ -45,9 +45,6 @@
 - [x] Maintenance Policy
 - [x] Upgrading Ruby on Rails
 - [x] Ruby on Rails 5.0 Release Notes
-- [ ] Ruby on Rails 4.2 Release Notes
-- [ ] Ruby on Rails 4.1 Release Notes
-- [ ] Ruby on Rails 4.0 Release Notes
 
 ## 译者
 
