@@ -5,13 +5,13 @@
 --
 本文简介 Active Record。
 
-读完本文后，您将了解：
+读完本文后，您将学到：
 
 * 对象关系映射（Object Relational Mapping，ORM）和 Active Record 是什么，以及如何在 Rails 中使用；
 * Active Record 在 MVC 中的作用；
 * 如何使用 Active Record 模型处理保存在关系型数据库中的数据；
 * Active Record 模式（schema）的命名约定；
-* 数据库迁移，数据验证和回调；
+* 数据库迁移，数据验证和回调。
 --
 
 [[what-is-active-record]]
@@ -27,7 +27,7 @@ http://www.martinfowler.com/eaaCatalog/activeRecord.html[Active Record 模式]�
 [[object-relational-mapping]]
 ==== 对象关系映射
 
-对象关系映射（ORM）是一种技术手段，把程序中的对象和关系型数据库中的数据表连接起来。使用 ORM，程序中对象的属性和对象之间的关系可以通过一种简单的方法从数据库获取，无需直接编写 SQL 语句，也不过度依赖特定的数据库种类。
+对象关系映射（ORM）是一种技术手段，把应用中的对象和关系型数据库中的数据表连接起来。使用 ORM，应用中对象的属性和对象之间的关系可以通过一种简单的方法从数据库中获取，无需直接编写 SQL 语句，也不过度依赖特定的数据库种类。
 
 [[active-record-as-an-orm-framework]]
 ==== 用作 ORM 框架的 Active Record
@@ -38,7 +38,7 @@ Active Record 提供了很多功能，其中最重要的几个如下：
 * 表示模型之间的关系；
 * 通过相关联的模型表示继承层次结构；
 * 持久存入数据库之前，验证模型；
-* 以面向对象的方式处理数据库操作；
+* 以面向对象的方式处理数据库操作。
 
 [[convention-over-configuration-in-active-record]]
 === Active Record 中的“多约定少配置”原则
@@ -75,14 +75,14 @@ Active Record 提供了很多功能，其中最重要的几个如下：
 
 * `created_at`：创建记录时，自动设为当前的日期和时间；
 * `updated_at`：更新记录时，自动设为当前的日期和时间；
-* `lock_version`：在模型中添加link:http://api.rubyonrails.org/classes/ActiveRecord/Locking.html[乐观锁定]功能；
+* `lock_version`：在模型中添加link:http://api.rubyonrails.org/classes/ActiveRecord/Locking.html[乐观锁]；
 * `type`：让模型使用link:http://api.rubyonrails.org/classes/ActiveRecord/Base.html#class-ActiveRecord::Base-label-Single+table+inheritance[单表继承]；
 * `(association_name)_type`：存储<<association_basics#polymorphic-associations,多态关联>>的类型；
 * `(table_name)_count`：缓存所关联对象的数量。比如说，一个 `Article` 有多个 `Comment`，那么 `comments_count` 列存储各篇文章现有的评论数量；
 
 [NOTE]
 ====
-虽然这些字段是可选的，但在 Active Record 中是被保留的。如果想使用相应的功能，就不要把这些保留字段用作其他用途。例如，`type` 这个保留字段是用来指定数据库表使用单表继承（Single Table Inheritance，STI）的。如果不用单表继承，请使用其他的名字，例如“context”，这也能表明数据的作用。
+虽然这些字段是可选的，但在 Active Record 中是被保留的。如果想使用相应的功能，就不要把这些保留字段用作其他用途。例如，`type` 这个保留字段是用来指定数据库表使用单表继承（Single Table Inheritance，STI）的。如果不用单表继承，请使用其他的名称，例如“context”，这也能表明数据的作用。
 ====
 
 [[creating-active-record-models]]
@@ -119,7 +119,7 @@ puts p.name # "Some Book"
 [[overriding-the-naming-conventions]]
 === 覆盖命名约定
 
-如果想使用其他的命名约定，或者在 Rails 程序中使用即有的数据库可以吗？没问题，默认的约定能轻易覆盖。
+如果想使用其他的命名约定，或者在 Rails 应用中使用即有的数据库可以吗？没问题，默认的约定能轻易覆盖。
 
 `ApplicationRecord` 继承自 `ActiveRecord::Base`，后者定义了一系列有用的方法。使用 `ActiveRecord::Base.table_name=` 方法可以指定要使用的表名：
 
@@ -158,7 +158,7 @@ CURD 是四种数据操作的简称：C 表示创建，R 表示读取，U 表示
 [[create]]
 ==== 创建
 
-Active Record 对象可以使用 Hash 创建，在块中创建，或者创建后手动设置属性。`new` 方法创建一个新对象，`create` 方法创建新对象，并将其存入数据库。
+Active Record 对象可以使用散列创建，在块中创建，或者创建后手动设置属性。`new` 方法创建一个新对象，`create` 方法创建新对象，并将其存入数据库。
 
 例如，`User` 模型中有两个属性，`name` 和 `occupation`。调用 `create` 方法会创建一个新记录，并将其存入数据库：
 
@@ -217,7 +217,7 @@ david = User.find_by(name: 'David')
 users = User.where(name: 'David', occupation: 'Code Artist').order(created_at: :desc)
 ----
 
-<<active_record_querying#active-record-querying>>会详细介绍查询 Active Record 模型的方法。
+<<active_record_querying#active-record-query-interface>>会详细介绍查询 Active Record 模型的方法。
 
 [[update]]
 ==== 更新
@@ -231,7 +231,7 @@ user.name = 'Dave'
 user.save
 ----
 
-还有种使用 Hash 的简写方式，指定属性名和属性值，例如：
+还有种使用散列的简写方式，指定属性名和属性值，例如：
 
 [source,ruby]
 ----
