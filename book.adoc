@@ -3,7 +3,7 @@
 :translator: 安道/chinakr
 :translator-email: andor.chen.27@email.com
 :revnumber: 0.0.1
-:revdate: 2016-11-02T13:32:37+08:00
+:revdate: 2017-01-05T20:00:00+08:00
 :lang: zh-CN
 :description: Rails 全方位解读。
 :keywords: rails, guide, guides, 指南
