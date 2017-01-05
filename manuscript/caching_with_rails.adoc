@@ -1,1 +1,2 @@
-== Caching with Rails: An Overview
+[[caching-with-rails-an-overview]]
+== Rails 缓存概览

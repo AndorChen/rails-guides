@@ -1,1 +1,2 @@
-== The Rails Initialization Process
+[[the-rails-initialization-process]]
+== Rails 初始化过程

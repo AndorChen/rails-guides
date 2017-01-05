@@ -1,1 +1,2 @@
-== Securing Rails Applications
+[[ruby-on-rails-security-guide]]
+== Ruby on Rails 安全指南

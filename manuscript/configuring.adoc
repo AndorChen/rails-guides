@@ -1,1 +1,2 @@
-== Configuring Rails Applications
+[[configuring-rails-applications]]
+== 配置 Rails 应用

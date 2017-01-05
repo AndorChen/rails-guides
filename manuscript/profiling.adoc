@@ -1,1 +1,2 @@
-== Profiling Rails Applications
+[[a-guide-to-profiling-rails-applications]]
+== Rails 应用分析指南

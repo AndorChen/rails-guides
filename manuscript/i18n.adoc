@@ -1,1 +1,2 @@
+[[rails-internationalization-api]]
 == Rails Internationalization API

@@ -1,1 +1,2 @@
+[[rails-on-rack]]
 == Rails on Rack

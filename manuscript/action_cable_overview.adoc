@@ -1,1 +1,2 @@
-== Action Cable Overview
+[[action-cable-overview]]
+== Action Cable 概览
