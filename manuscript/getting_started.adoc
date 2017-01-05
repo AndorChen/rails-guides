@@ -1,3 +1,5 @@
+:sample:
+
 [[getting-started-with-rails]]
 == Rails 入门
 

@@ -1,3 +1,5 @@
+:sample:
+
 [[active-record-migrations]]
 == Active Record 迁移
 
