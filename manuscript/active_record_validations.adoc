@@ -3,13 +3,13 @@
 
 [.chapter-abstract]
 --
-本文介绍如何使用 Active Record 提供的数据验证功能在数据存入数据库之前验证对象的状态。
+本文介绍如何使用 Active Record 提供的数据验证功能，在数据存入数据库之前验证对象的状态。
 
-读完后，您将学会：
+读完本文后，您将学到：
 
 * 如何使用 Active Record 内置的数据验证辅助方法；
 * 如果自定义数据验证方法；
-* 如何处理验证过程产生的错误消息；
+* 如何处理验证过程产生的错误消息。
 --
 
 [[validations-overview]]
@@ -39,8 +39,8 @@ Person.create(name: nil).valid? # => false
 在数据存入数据库之前，也有几种验证数据的方法，包括数据库原生的约束、客户端验证和控制器层验证。下面列出这几种验证方法的优缺点：
 
 * 数据库约束和存储过程无法兼容多种数据库，而且难以测试和维护。然而，如果其他应用也要使用这个数据库，最好在数据库层做些约束。此外，数据库层的某些验证（例如在使用量很高的表中做唯一性验证）通过其他方式实现起来有点困难。
-* 客户端验证很有用，但单独使用时可靠性不高。如果使用 JavaScript 实现，用户在浏览器中禁用 JavaScript 后很容易跳过验证。然而，客户端验证和其他验证方式结合使用，可以为用户提供实时反馈。
-* 控制器层验证很诱人，但一般都不灵便，难以测试和维护。只要可能，就要保证控制器的代码简洁性，这样才有利于长远发展。
+* 客户端验证很有用，但单独使用时可靠性不高。如果使用 JavaScript 实现，用户在浏览器中禁用 JavaScript 后很容易跳过验证。然而，客户端验证和其他验证方式相结合，可以为用户提供实时反馈。
+* 控制器层验证很诱人，但一般都不灵便，难以测试和维护。只要可能，就要保证控制器的代码简洁，这样才有利于长远发展。
 
 你可以根据实际需求选择使用合适的验证方式。Rails 团队认为，模型层数据验证最具普适性。
 
@@ -185,7 +185,7 @@ end
 [[validations-overview-errors-details]]
 ==== `errors.details`
 
-若想查看是哪个验证导致属性无效的，可以使用 `errors.details[:attribute]`。它的返回值是一个由 Hash 组成的数组，`:error` 键的值是一个符号，指明出错的数据验证。
+若想查看是哪个验证导致属性无效的，可以使用 `errors.details[:attribute]`。它的返回值是一个由散列组成的数组，`:error` 键的值是一个符号，指明出错的数据验证。
 
 [source,ruby]
 ----
@@ -240,7 +240,7 @@ class Person < ApplicationRecord
 end
 ----
 
-这种验证只针对 Web 应用，接受与否无需存入数据库。如果没有对应的字段，该方法会创建一个虚拟属性。如果数据库中对应的字段，必须把 `accept` 选项的值设为或包含 `true`，否则验证不会执行。
+这种验证只针对 Web 应用，接受与否无需存入数据库。如果没有对应的字段，该方法会创建一个虚拟属性。如果数据库中有对应的字段，必须把 `accept` 选项的值设为或包含 `true`，否则验证不会执行。
 
 [[validates-associated]]
 ==== `validates_associated`
@@ -388,7 +388,7 @@ class Person < ApplicationRecord
 end
 ----
 
-这个帮助方法默认统计字符数，但可以使用 `:tokenizer` 选项设置其他的统计方式：
+这个辅助方法默认统计字符数，但可以使用 `:tokenizer` 选项设置其他的统计方式：
 
 注意，默认的错误消息使用复数形式（例如，“is too short (minimum is %{count} characters”），所以如果长度限制是 `minimum: 1`，就要提供一个定制的消息，或者使用 `presence: true` 代替。`:in` 或 `:within` 的下限值比 1 小时，要提供一个定制的消息，或者在 `length` 之前调用 `presence` 方法。
 
@@ -397,7 +397,7 @@ end
 
 这个辅助方法检查属性的值是否只包含数字。默认情况下，匹配的值是可选的正负符号后加整数或浮点数。如果只接受整数，把 `:only_integer` 选项设为 `true`。
 
-如果把 `:only_integer` 的值设为 `true`，使用下面的正则表达式验证属性的值。
+如果把 `:only_integer` 的值设为 `true`，使用下面的正则表达式验证属性的值：
 
 [source,ruby]
 ----
@@ -607,7 +607,7 @@ class Person < ApplicationRecord
 end
 ----
 
-注意，做验证的类在整个程序的生命周期内只会初始化一次，而不是每次验证时都初始化，所以使用实例变量时要特别小心。
+注意，做验证的类在整个应用的生命周期内只会初始化一次，而不是每次验证时都初始化，所以使用实例变量时要特别小心。
 
 如果做验证的类很复杂，必须要用实例变量，可以用纯粹的 Ruby 对象代替：
 
@@ -690,7 +690,7 @@ Topic.create(title: nil).valid? # => true
 
 字符串消息中可以包含 `%{value}`、`%{attribute}` 和 `%{model}`，在验证失败时它们会被替换成具体的值。
 
-`Proc` 形式的消息有两个参数：验证的对象，以及包含 `:model`、`:attribute` 和 `:value` 键值对的 Hash。
+`Proc` 形式的消息有两个参数：验证的对象，以及包含 `:model`、`:attribute` 和 `:value` 键值对的散列。
 
 [source,ruby]
 ----
@@ -698,7 +698,7 @@ class Person < ApplicationRecord
   # 直接写消息
   validates :name, presence: { message: "must be given please" }
 
-  # 带有动态属性值的消息。%{value} 会被替换成属性的值。
+  # 带有动态属性值的消息。%{value} 会被替换成属性的值
   # 此外还可以使用 %{attribute} 和 %{model}
   validates :age, numericality: { message: "%{value} seems wrong" }
 
@@ -728,7 +728,7 @@ class Person < ApplicationRecord
   # 创建记录时允许年龄不是数字
   validates :age, numericality: true, on: :update
 
-  # 模型行为（创建和更新时都验证）
+  # 默认行为（创建和更新时都验证）
   validates :name, presence: true
 end
 ----
@@ -775,7 +775,7 @@ Person.new.valid?  # => TokenGenerationException: Token can't be blank
 [[conditional-validation]]
 === 条件验证
 
-有时，只有满足特定条件时做验证才说得通。条件可通过 `:if` 和 `:unless` 选项指定，这两个选项的值可以是符合、字符串、`Proc` 或数组。`:if` 选项指定何时做验证。如果要指定何时不做验证，使用 `:unless` 选项。
+有时，只有满足特定条件时做验证才说得通。条件可通过 `:if` 和 `:unless` 选项指定，这两个选项的值可以是符号、字符串、`Proc` 或数组。`:if` 选项指定何时做验证。如果要指定何时不做验证，使用 `:unless` 选项。
 
 [[using-a-symbol-with-if-and-unless]]
 ==== 使用符号
@@ -948,7 +948,7 @@ end
 [[working-with-validation-errors-errors]]
 ==== `errors`
 
-`ActiveModel::Errors` 的实例包含所有的错误。键是每个属性的名字，值是一个数组，包含错误消息字符串。
+`ActiveModel::Errors` 的实例包含所有的错误。键是每个属性的名称，值是一个数组，包含错误消息字符串。
 
 [source,ruby]
 ----
@@ -996,7 +996,7 @@ person.errors[:name]
 
 `add` 方法用于手动添加某属性的错误消息，它的参数是属性和错误消息。
 
-使用 `errors.full_messages`（或等价的 `errors.to_a`）方法以对用户友好的格式显示错误消息。这些错误消息的前面都会加上属性名（首字母大写）如下述示例所示。
+使用 `errors.full_messages`（或等价的 `errors.to_a`）方法以对用户友好的格式显示错误消息。这些错误消息的前面都会加上属性名（首字母大写），如下述示例所示。
 
 [source,ruby]
 ----
@@ -1037,7 +1037,7 @@ person.errors.to_a
 [[working-with-validation-errors-errors-details]]
 ==== `errors.details`
 
-使用 `errors.add` 方法可以为返回的错误详情 Hash 指定验证程序类型。
+使用 `errors.add` 方法可以为返回的错误详情散列指定验证程序类型。
 
 [source,ruby]
 ----
@@ -1069,7 +1069,7 @@ person.errors.details[:name]
 # => [{error: :invalid_characters, not_allowed: "!@#%*()_-+="}]
 ----
 
-Rails 内置的验证程序生成的错误详情 Hash 都有对应的验证程序类型。
+Rails 内置的验证程序生成的错误详情散列都有对应的验证程序类型。
 
 [[errors-base]]
 ==== `errors[:base]`
@@ -1159,7 +1159,7 @@ person.errors.size # => 0
 [source,html]
 ----
 <div class="field_with_errors">
- <input id="article_title" name="article[title]" size="30" type="text" value="">
+  <input id="article_title" name="article[title]" size="30" type="text" value="">
 </div>
 ----
 
