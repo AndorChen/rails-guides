@@ -1,37 +1,35 @@
 [[active-record-callbacks]]
 == Active Record 回调
-:imagesdir: ../images
-:numbered:
 
 [.chapter-abstract]
 --
 本文介绍如何介入 Active Record 对象的生命周期。
 
-读完后，你将学会：
+读完本文后，您将学到：
 
-* Active Record 对象的生命周期。
-* 如何创建用于响应对象生命周期内事件的回调方法。
-* 如何把常用的回调封装到特殊类中。
+* Active Record 对象的生命周期；
+* 如何创建用于响应对象生命周期内事件的回调方法；
+* 如何把常用的回调封装到特殊的类中。
 --
 
 [[the-object-life-cycle]]
 === 对象的生命周期
 
-在 Rails 程序正常操作期间，对象可以被创建、更新或删除。Active Record 为对象的生命周期提供了钩子，使我们可以控制程序及其数据。
+在 Rails 应用正常运作期间，对象可以被创建、更新或删除。Active Record 为对象的生命周期提供了钩子，使我们可以控制应用及其数据。
 
 回调使我们可以在对象状态更改之前或之后触发逻辑。
 
 [[callbacks-overview]]
 === 回调概述
 
-回调是在对象生命周期的某些时刻被调用的方法。通过回调，我们可以编写在创建、保存、更新、删除、验证或从数据库加载 Active Record 对象时执行的代码。
+回调是在对象生命周期的某些时刻被调用的方法。通过回调，我们可以编写在创建、保存、更新、删除、验证或从数据库中加载 Active Record 对象时执行的代码。
 
 [[callback-registration]]
 ==== 注册回调
 
-回调在使用之前需要注册。我们可以先把回调定义为普通方法，然后使用宏样式类方法把这些普通方法注册为回调：
+回调在使用之前需要注册。我们可以先把回调定义为普通方法，然后使用宏式类方法把这些普通方法注册为回调：
 
-[[source,ruby]]
+[source,ruby]
 ----
 class User < ApplicationRecord
   validates :login, :email, presence: true
@@ -47,7 +45,7 @@ class User < ApplicationRecord
 end
 ----
 
-宏样式类方法也接受块参数。如果块中的代码短到可以放在一行里，就可以考虑使用块参数这种编程风格：
+宏式类方法也接受块。如果块中的代码短到可以放在一行里，可以考虑使用这种编程风格：
 
 [source,ruby]
 ----
@@ -67,7 +65,7 @@ end
 class User < ApplicationRecord
   before_validation :normalize_name, on: :create
 
-  # :on takes an array as well
+  # :on 选项的值也可以是数组
   after_validation :set_location, on: [ :create, :update ]
 
   protected
@@ -86,7 +84,7 @@ end
 [[available-callbacks]]
 === 可用的回调
 
-下面按照回调在 Rails 程序正常操作期间被调用的顺序，列出了所有可用的 Active Record 回调：
+下面按照回调在 Rails 应用正常运作期间被调用的顺序，列出所有可用的 Active Record 回调。
 
 [[creating-an-object]]
 ==== 创建对象
@@ -127,11 +125,11 @@ WARNING: 无论按什么顺序注册回调，在创建和更新对象时，`afte
 [[after-initialize-and-after-find]]
 ==== `after_initialize` 和 `after_find` 回调
 
-当 Active Record 对象被实例化时，不管是通过直接使用 `new` 方法还是从数据库加载记录，都会调用 `after_initialize` 回调。使用这个回调可以避免直接重载 Active Record 的 `initialize` 方法。
+当 Active Record 对象被实例化时，不管是通过直接使用 `new` 方法还是从数据库加载记录，都会调用 `after_initialize` 回调。使用这个回调可以避免直接覆盖 Active Record 的 `initialize` 方法。
 
-当 Active Record 从数据库加载记录时，会调用 `after_find` 回调。如果同时定义了 `after_initialize` 和 `after_find` 回调，会先调用 `after_find` 回调。
+当 Active Record 从数据库中加载记录时，会调用 `after_find` 回调。如果同时定义了 `after_initialize` 和 `after_find` 回调，会先调用 `after_find` 回调。
 
-`after_initialize` 和 `after_find` 回调没有对应的 `before_*` 回调，这两个回调的注册方法和其他 Active Record 回调一样。
+`after_initialize` 和 `after_find` 回调没有对应的 `before_*` 回调，这两个回调的注册方式和其他 Active Record 回调一样。
 
 [source,ruby]
 ----
@@ -163,7 +161,7 @@ You have initialized an object!
 
 当我们在 Active Record 对象上调用 `touch` 方法时，会调用 `after_touch` 回调。
 
-[[source,ruby]]
+[source,ruby]
 ----
 class User < ApplicationRecord
   after_touch do |user|
@@ -237,7 +235,7 @@ An Employee was touched
 * `update!`
 * `valid?`
 
-此外，下面这些查找器方法会触发 `after_find` 回调：
+此外，下面这些查找方法会触发 `after_find` 回调：
 
 * `all`
 * `first`
@@ -250,7 +248,7 @@ An Employee was touched
 
 每次初始化类的新对象时都会触发 `after_initialize` 回调。
 
-NOTE: `find_by_*` 和 `find_by_*!` 方法是为每个属性自动生成的动态查找器。关于动态查找器的更多介绍，请参阅 <<active_record_querying#dynamic-finders>> 一节。
+NOTE: `find_by_*` 和 `find_by_*!` 方法是为每个属性自动生成的动态查找方法。关于动态查找方法的更多介绍，请参阅 <<active_record_querying#dynamic-finders>>。
 
 [[skipping-callbacks]]
 === 跳过回调
@@ -270,21 +268,21 @@ NOTE: `find_by_*` 和 `find_by_*!` 方法是为每个属性自动生成的动态
 * `update_all`
 * `update_counters`
 
-请慎重地使用这些方法，因为有些回调包含了重要的业务规则和程序逻辑，在不了解潜在影响的情况下就跳过回调，可能导致无效数据。
+请慎重地使用这些方法，因为有些回调包含了重要的业务规则和应用逻辑，在不了解潜在影响的情况下就跳过回调，可能导致无效数据。
 
 [[halting-execution]]
 === 停止执行
 
 回调在模型中注册后，将被加入队列等待执行。这个队列包含了所有模型的验证、已注册的回调和将要执行的数据库操作。
 
-整个回调链包装在一个事务中。如果任何一个 `before` 回调方法返回 `false` 或引发异常，整个回调链就会停止执行，同时发出 `ROLLBACK` 消息来回滚事务；而 `after` 回调方法只能通过引发异常来达到相同效果。
+整个回调链包装在一个事务中。如果任何一个 `before` 回调方法返回 `false` 或引发异常，整个回调链就会停止执行，同时发出 `ROLLBACK` 消息来回滚事务；而 `after` 回调方法只能通过引发异常来达到相同的效果。
 
-WARNING: 当回调链停止后，Rails 会重新抛出除了 `ActiveRecord::Rollback` 和 `ActiveRecord::RecordInvalid` 之外的其他异常。这可能导致那些预计 `save` 和 `update_attributes` 这类方法（通常返回 `true` 或 `false` ）不会引发异常的代码出错。
+WARNING: 当回调链停止后，Rails 会重新抛出除了 `ActiveRecord::Rollback` 和 `ActiveRecord::RecordInvalid` 之外的其他异常。这可能导致那些预期 `save` 和 `update_attributes` 等方法（通常返回 `true` 或 `false` ）不会引发异常的代码出错。
 
 [[relational-callbacks]]
 === 关联回调
 
-回调不仅可以在模型关联中使用，还可以通过模型关联定义。假设有一个用户在博客上发表了多篇文章，现在我们要删除这个用户，那么这个用户的所有文章也应该删除，为此我们通过 `Article` 模型和 `User` 模型的关联来给 `User` 模型添加一个 `after_destroy` 回调：
+回调不仅可以在模型关联中使用，还可以通过模型关联定义。假设有一个用户在博客中发表了多篇文章，现在我们要删除这个用户，那么这个用户的所有文章也应该删除，为此我们通过 `Article` 模型和 `User` 模型的关联来给 `User` 模型添加一个 `after_destroy` 回调：
 
 [source,ruby]
 ----
@@ -332,7 +330,7 @@ end
 [[using-if-and-unless-with-a-string]]
 ==== 使用字符串作为 `:if` 和 `:unless` 选项的值
 
-还可以使用字符串作为 `:if` 和 `:unless` 选项的值，这个字符串会通过 `eval` 方法执行，因此必须包含合法的 Ruby 代码。当字符串表示的条件非常短时我们才使用这种方式：
+还可以使用字符串作为 `:if` 和 `:unless` 选项的值，这个字符串会通过 `eval` 方法执行，因此必须包含有效的 Ruby 代码。当字符串表示的条件非常短时我们才使用这种方式：
 
 [source,ruby]
 ----
@@ -416,14 +414,14 @@ class PictureFile < ApplicationRecord
 end
 ----
 
-我们可以根据需要在回调类中声明任意多的回调。
+我们可以根据需要在回调类中声明任意多个回调。
 
 [[transaction-callbacks]]
 === 事务回调
 
 `after_commit` 和 `after_rollback` 这两个回调会在数据库事务完成时触发。它们和 `after_save` 回调非常相似，区别在于它们在数据库变更已经提交或回滚后才会执行，常用于 Active Record 模型需要和数据库事务之外的系统交互的场景。
 
-例如，在前面的例子中，`PictureFile` 模型中的记录删除后，还要删除相应的文件。如果 `after_destroy` 回调执行后程序引发异常，事务就会回滚，文件会被删除，模型会保持不一致的状态。例如，假设在下面的代码中，`picture_file_2` 对象是不合法的，那么调用 `save!` 方法会引发错误：
+例如，在前面的例子中，`PictureFile` 模型中的记录删除后，还要删除相应的文件。如果 `after_destroy` 回调执行后应用引发异常，事务就会回滚，文件会被删除，模型会保持不一致的状态。例如，假设在下面的代码中，`picture_file_2` 对象是无效的，那么调用 `save!` 方法会引发错误：
 
 [source,ruby]
 ----
