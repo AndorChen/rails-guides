@@ -21,7 +21,7 @@ module Persie
     def fix_link
       base = File.join @book.builds_dir, 'html', 'multiple'
       index_file = File.join base, 'index.html'
-      index_root = ::Nokogiri::HTML File.read(index_file)
+      index_root = ::Nokogiri::HTML.fragment File.read(index_file)
 
       # delete secondary toc
       index_root.css('li[data-type="chapter"] > ol').unlink
@@ -31,7 +31,9 @@ module Persie
         part.first_element_child.replace("<span class=\"part-title\">#{part.first_element_child.text}</span>")
       end
 
-      File.write index_file, index_root.to_xhtml
+      text = index_root.to_s.sub('permalink: /book/toc.html', 'permalink: /book/index.html')
+
+      File.write index_file, text
     end
   end
 end
