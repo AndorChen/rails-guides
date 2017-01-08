@@ -5,17 +5,17 @@
 --
 本文介绍 Active Record 的关联功能。
 
-读完后，您将学会：
+读完本文后，您将学到：
 
 * 如何声明 Active Record 模型间的关联；
 * 怎么理解不同的 Active Record 关联类型；
-* 如何使用关联为模型添加的方法；
+* 如何使用关联为模型添加的方法。
 --
 
 [[why-associations]]
 === 为什么使用关联
 
-在 Rails 中，关联在两个 Active Record 之间建立联系。模型之间为什么要有关联？因为关联能让常规操作变得更简单。例如，在一个简单的 Rails 应用中，有一个作者模型和一个图书模型。每位作者可以著有多本图书。不用关联的话，模型可以像下面这样定义：
+在 Rails 中，关联在两个 Active Record 模型之间建立联系。模型之间为什么要有关联？因为关联能让常规操作变得更简单。例如，在一个简单的 Rails 应用中，有一个作者模型和一个图书模型。每位作者可以著有多本图书。不用关联的话，模型可以像下面这样定义：
 
 [source,ruby]
 ----
@@ -324,8 +324,6 @@ class AccountHistory < ApplicationRecord
 end
 ----
 
-image::has_one_through.png[]
-
 相应的迁移如下：
 
 [source,ruby]
@@ -351,6 +349,8 @@ class CreateAccountHistories < ActiveRecord::Migration[5.0]
   end
 end
 ----
+
+image::has_one_through.png[]
 
 [[the-has-and-belongs-to-many-association]]
 ==== `has_and_belongs_to_many` 关联
@@ -436,7 +436,7 @@ end
 
 [NOTE]
 ====
-`t.integer :supplier_id` 更明确地表明了外键的名字。在目前的 Rails 版本中，可以抽象实现的细节，使用 `t.references :supplier` 代替。
+`t.integer :supplier_id` 更明确地表明了外键的名称。在目前的 Rails 版本中，可以抽象实现的细节，使用 `t.references :supplier` 代替。
 ====
 
 [[choosing-between-has-many-through-and-has-and-belongs-to-many]]
@@ -605,7 +605,7 @@ author.books.reload.empty?   # 丢掉缓存的图书副本
 [[avoiding-name-collisions]]
 ==== 避免命名冲突
 
-关联的名字并不能随意使用。因为创建关联时，会向模型添加同名方法，所以关联的名字不能和 `ActiveRecord::Base` 中的实例方法同名。如果同名，关联方法会覆盖 `ActiveRecord::Base` 中的实例方法，导致错误。例如，关联的名字不能为 `attributes` 或 `connection`。
+关联的名称并不能随意使用。因为创建关联时，会向模型添加同名方法，所以关联的名字不能和 `ActiveRecord::Base` 中的实例方法同名。如果同名，关联方法会覆盖 `ActiveRecord::Base` 中的实例方法，导致错误。例如，关联的名字不能为 `attributes` 或 `connection`。
 
 [[updating-the-schema]]
 ==== 更新模式
@@ -646,14 +646,14 @@ end
 [[creating-join-tables-for-has-and-belongs-to-many-associations]]
 ===== 创建 `has_and_belongs_to_many` 关联所需的联结表
 
-创建 `has_and_belongs_to_many` 关联后，必须手动创建联结表。除非使用 `:join_table` 选项指定了联结表的名字，否则 Active Record 会按照类名出现在字典中的顺序为表起名字。因此，作者和图书模型使用的联结表默认名为“authors_books”，因为在字典中，“a”在“b”前面。
+创建 `has_and_belongs_to_many` 关联后，必须手动创建联结表。除非使用 `:join_table` 选项指定了联结表的名称，否则 Active Record 会按照类名出现在字典中的顺序为表起名。因此，作者和图书模型使用的联结表默认名为“authors_books”，因为在字典中，“a”在“b”前面。
 
 [WARNING]
 ====
 模型名的顺序使用字符串的 `+<=>+` 运算符确定。所以，如果两个字符串的长度不同，比较最短长度时，两个字符串是相等的，那么长字符串的排序比短字符串靠前。例如，你可能以为“+paper_boxes+”和“papers”这两个表生成的联结表名为“+papers_paper_boxes+”，因为“+paper_boxes+”比“papers”长，但其实生成的联结表名为“+paper_boxes_papers+”，因为在一般的编码方式中，“+_+”比“s”靠前。
 ====
 
-不管名字是什么，你都要在迁移中手动创建联结表。例如下面的关联：
+不管名称是什么，你都要在迁移中手动创建联结表。例如下面的关联：
 
 [source,ruby]
 ----
@@ -799,7 +799,7 @@ class Book < ApplicationRecord
 end
 ----
 
-这么修改之后，Active Record 只会加载一个作者对象，从而避免数据的不一致性，提高程序的执行效率：
+这么修改之后，Active Record 只会加载一个作者对象，从而避免数据的不一致性，提高应用的执行效率：
 
 [source,ruby]
 ----
@@ -817,7 +817,7 @@ a.first_name == b.author.first_name # => true
 * 不支持 `:as` 选项；
 * `belongs_to` 关联会忽略 `has_many` 关联的 `inverse_of` 选项；
 
-每种关联都会尝试自动找到关联的另一端，并且设置 `:inverse_of` 选项（根据关联的名字）。使用标准名称的关联都有这种功能。但是，如果在关联中设置了下面这些选项，将无法自动设置 `:inverse_of`：
+每种关联都会尝试自动找到关联的另一端，并且设置 `:inverse_of` 选项（根据关联的名称）。使用标准名称的关联都有这种功能。但是，如果在关联中设置了下面这些选项，将无法自动设置 `:inverse_of`：
 
 * `:conditions`
 * `:through`
@@ -905,7 +905,7 @@ create_author!
 [source,ruby]
 ----
 @author = @book.build_author(author_number: 123,
-                                  author_name: "John Doe")
+                             author_name: "John Doe")
 ----
 
 [[methods-added-by-belongs-to-create-association-attributes]]
@@ -959,7 +959,7 @@ end
 [[options-for-belongs-to-class-name]]
 ====== `:class_name`
 
-如果另一个模型无法从关联的名字获取，可以使用 `:class_name` 选项指定模型名。例如，如果一本书属于一位作者，但是表示作者的模型是 `Patron`，就可以这样声明关联：
+如果另一个模型无法从关联的名称获取，可以使用 `:class_name` 选项指定模型名。例如，如果一本书属于一位作者，但是表示作者的模型是 `Patron`，就可以这样声明关联：
 
 [source,ruby]
 ----
@@ -1031,7 +1031,7 @@ end
 
 [WARNING]
 ====
-在 `belongs_to` 关联和 `has_many` 关联配对时，不应该设置这个选项，否则会导致数据库中出现孤儿记录。
+在 `belongs_to` 关联和 `has_many` 关联配对时，不应该设置这个选项，否则会导致数据库中出现无主记录。
 ====
 
 [[options-for-belongs-to-foreign-key]]
@@ -1137,7 +1137,7 @@ end
 ----
 class Book < ApplicationRecord
   belongs_to :author, -> { where active: true },
-                        dependent: :destroy
+                      dependent: :destroy
 end
 ----
 
@@ -1356,7 +1356,7 @@ end
 [[options-for-has-one-class-name]]
 ====== `:class_name`
 
-如果另一个模型无法从关联的名字获取，可以使用 `:class_name` 选项指定模型名。例如，供应商有一个账户，但表示账户的模型是 `Billing`，那么就可以这样声明关联：
+如果另一个模型无法从关联的名称获取，可以使用 `:class_name` 选项指定模型名。例如，供应商有一个账户，但表示账户的模型是 `Billing`，那么就可以这样声明关联：
 
 [source,ruby]
 ----
@@ -1366,7 +1366,7 @@ end
 ----
 
 [[options-for-has-one-dependent]]
-======= `:dependent`
+====== `:dependent`
 
 控制属主销毁后怎么处理关联的对象：
 
@@ -1726,7 +1726,7 @@ WARNING: 如果设为 `dependent: :destroy`，对象会被删除，这与 `depen
 [source,ruby]
 ----
 @book = @author.books.build(published_at: Time.now,
-                                book_number: "A12345")
+                            book_number: "A12345")
 
 @books = @author.books.build([
   { published_at: Time.now, book_number: "A12346" },
@@ -1742,7 +1742,7 @@ WARNING: 如果设为 `dependent: :destroy`，对象会被删除，这与 `depen
 [source,ruby]
 ----
 @book = @author.books.create(published_at: Time.now,
-                                 book_number: "A12345")
+                             book_number: "A12345")
 
 @books = @author.books.create([
   { published_at: Time.now, book_number: "A12346" },
@@ -1812,7 +1812,7 @@ end
 [[dependent]]
 ====== `:dependent`
 
-设置销毁属主时要怎么处理关联的对象：
+设置销毁属主时怎么处理关联的对象：
 
 * `:destroy`：也销毁所有关联的对象；
 * `:delete_all`：直接把所有关联的对象从数据库中删除（不执行回调）；
@@ -1920,21 +1920,21 @@ end
 ----
 class Author < ApplicationRecord
   has_many :confirmed_books, -> { where "confirmed = 1" },
-    class_name: "Book"
+                             class_name: "Book"
 end
 ----
 
-条件还可以使用 Hash 指定：
+条件还可以使用散列指定：
 
 [source,ruby]
 ----
 class Author < ApplicationRecord
   has_many :confirmed_books, -> { where confirmed: true },
-                              class_name: "Book"
+                             class_name: "Book"
 end
 ----
 
-如果 `where` 使用 Hash 形式，通过这个关联创建的记录会自动使用 Hash 中的作用域。针对上面的例子，使用 `@author.confirmed_books.create` 或 `@author.confirmed_books.build` 创建图书时，会自动把 `confirmed` 列的值设为 `true`。
+如果 `where` 使用散列形式，通过这个关联创建的记录会自动使用散列中的作用域。针对上面的例子，使用 `@author.confirmed_books.create` 或 `@author.confirmed_books.build` 创建图书时，会自动把 `confirmed` 列的值设为 `true`。
 
 [[scopes-for-has-many-extending]]
 ====== `extending`
@@ -2010,7 +2010,7 @@ end
 [[scopes-for-has-many-offset]]
 ====== `offset`
 
-`offset` 方法指定通过关联获取对象时的偏移量。例如，`-> { offset(11) }` 会跳过前 11 个记录。
+`offset` 方法指定通过关联获取对象时的偏移量。例如，`pass:[-> { offset(11) }]` 会跳过前 11 个记录。
 
 [[scopes-for-has-many-order]]
 ====== `order`
@@ -2034,7 +2034,7 @@ end
 
 `select` 方法用于覆盖检索关联对象数据的 SQL `SELECT` 子句。默认情况下，Rails 会检索所有列。
 
-WARNING: 如果设置了 `select`，记得要包含主键和关联模型的外键。否则，Rails 会抛出异常。
+WARNING: 如果设置 `select` 选项，记得要包含主键和关联模型的外键。否则，Rails 会抛出异常。
 
 [[scopes-for-has-many-distinct]]
 ====== `distinct`
@@ -2281,7 +2281,7 @@ WARNING: 这个方法不会触发联结记录上的回调。
 [[methods-added-by-has-and-belongs-to-many-collection-where]]
 ====== `collection.where(...)`
 
-`collection.where` 方法根据指定的条件在集合中查找对象，但对象时惰性加载的，访问对象时才执行查询。此外还限制对象必须在集合中。
+`collection.where` 方法根据指定的条件在集合中查找对象，但对象是惰性加载的，访问对象时才执行查询。此外还限制对象必须在集合中。
 
 [source,ruby]
 ----
@@ -2440,7 +2440,7 @@ class Parts < ApplicationRecord
 end
 ----
 
-条件还可以使用 Hash 指定：
+条件还可以使用散列指定：
 
 [source,ruby]
 ----
@@ -2450,7 +2450,7 @@ class Parts < ApplicationRecord
 end
 ----
 
-如果 `where` 使用 Hash 形式，通过这个关联创建的记录会自动使用 Hash 中的作用域。针对上面的例子，使用 `@parts.assemblies.create` 或 `@parts.assemblies.build` 创建订单时，会自动把 `factory` 字段的值设为 `"Seattle"`。
+如果 `where` 使用散列形式，通过这个关联创建的记录会自动使用散列中的作用域。针对上面的例子，使用 `@parts.assemblies.create` 或 `@parts.assemblies.build` 创建订单时，会自动把 `factory` 字段的值设为 `"Seattle"`。
 
 [[scopes-for-has-and-belongs-to-many-extending]]
 ====== `extending`
@@ -2490,7 +2490,7 @@ end
 [[scopes-for-has-and-belongs-to-many-offset]]
 ====== `offset`
 
-`offset` 方法指定通过关联获取对象时的偏移量。例如，`-> { offset(11) }` 会跳过前 11 个记录。
+`offset` 方法指定通过关联获取对象时的偏移量。例如，`pass:[-> { offset(11) }]` 会跳过前 11 个记录。
 
 [[scopes-for-has-and-belongs-to-many-order]]
 ====== `order`
