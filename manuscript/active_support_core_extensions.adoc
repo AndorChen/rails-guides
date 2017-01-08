@@ -4021,7 +4021,7 @@ DateTime.new(1582, 10, 4, 23) + 1.hour
 [[extensions-to-time]]
 === `Time` 的扩展
 
-[[calculations]]
+[[extensions-to-time-calculations]]
 ==== 计算
 
 NOTE: 本节的方法都在 `active_support/core_ext/time/calculations.rb` 文件中定义。
