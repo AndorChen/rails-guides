@@ -10,7 +10,7 @@
 - Active Record 模型的行为；
 - 回调和数据验证的工作方式；
 - 序列化程序的工作方式；
-- Active Model 与 Rails 国际化（i18n）框架的集成；
+- Active Model 与 Rails 国际化（i18n）框架的集成。
 --
 
 NOTE: 本文原文尚未完工！
@@ -56,7 +56,7 @@ person.age_highest?  # => false
 [[callbacks]]
 ==== 回调
 
-`ActiveModel::Callbacks` 模块为 Active Record 提供回调，在某个时刻运行。定义回调之后，可以使用前置、后置和围绕方法包装。
+`ActiveModel::Callbacks` 模块为 Active Record 提供回调，在某个时刻运行。定义回调之后，可以使用前置、后置和环绕方法包装。
 
 [source,ruby]
 ----
