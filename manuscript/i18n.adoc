@@ -1,2 +1,2 @@
 [[rails-internationalization-api]]
-== Rails Internationalization API
+== Rails 国际化 API

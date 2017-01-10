@@ -1,24 +1,24 @@
 [[action-view-overview]]
 == Action View 概述
-:imagesdir: ../images
-:numbered:
 
 [.chapter-abstract]
 --
-读完本文后，你将学会：
+读完本文后，您将学到：
 
-* Action View 是什么，如何在 Rails 中使用 Action View。
-* 模板、局部视图和布局的最佳使用方法。
-* Action View 提供了哪些帮助方法，如何编写自己的帮助方法。
+* Action View 是什么，如何在 Rails 中使用 Action View；
+* 模板、局部视图和布局的最佳使用方法；
+* Action View 提供了哪些辅助方法，如何自己编写辅助方法；
 * 如何使用本地化视图。
 --
+
+NOTE: 本文原文尚未完工！
 
 [[what-is-action-view]]
 === Action View 是什么
 
-在Rails中，Web 请求由 Action Controller（请参阅 <<action_controller_overview>>）和 Action View 处理。通常，Action Controller 参与和数据库的通信，并在需要时执行 CRUD 操作，然后由 Action View 负责编译响应。
+在 Rails 中，Web 请求由 Action Controller（请参阅<<action_controller_overview#action-controller-overview>>）和 Action View 处理。通常，Action Controller 参与和数据库的通信，并在需要时执行 CRUD 操作，然后由 Action View 负责编译响应。
 
-Action View 模板使用混合了 HTML 标签的嵌入式 Ruby 语言编写。为了避免样板代码把模板弄乱，Action View 提供了许多帮助方法，用于创建表单、日期和字符串等常用组件。随着开发的深入，为程序添加新的帮助方法也很容易。
+Action View 模板使用混合了 HTML 标签的嵌入式 Ruby 语言编写。为了避免样板代码把模板弄乱，Action View 提供了许多辅助方法，用于创建表单、日期和字符串等常用组件。随着开发的深入，为应用添加新的辅助方法也很容易。
 
 NOTE: Action View 的某些特性与 Active Record 有关，但这并不意味着 Action View 依赖 Active Record。Action View 是独立的软件包，可以和任何类型的 Ruby 库一起使用。
 
@@ -27,8 +27,9 @@ NOTE: Action View 的某些特性与 Active Record 有关，但这并不意味�
 
 在 `app/views` 文件夹中，每个控制器都有一个对应的文件夹，其中保存了控制器对应视图的模板文件。这些模板文件用于显示每个控制器动作产生的视图。
 
-在 Rails 中使用脚手架生成器来新建资源时，默认会执行下面的操作：
+在 Rails 中使用脚手架生成器新建资源时，默认会执行下面的操作：
 
+[source,sh]
 ----
 $ bin/rails generate scaffold article
       [...]
@@ -44,7 +45,7 @@ $ bin/rails generate scaffold article
       [...]
 ----
 
-在上面的输出结果中我们可以看到 Rails 中视图的命名约定。通常，视图和对应的控制器动作共享名称。例如，`articles_controller.rb` 控制器文件中的 `index` 动作对应 `app/views/articles` 文件夹中的 `index.html.erb` 视图文件。返回客户端的完整 HTML 由 ERB 视图文件和包装它的布局文件，以及视图可能引用的所有局部视图文件组成。后文会详细介绍这三种文件。
+在上面的输出结果中我们可以看到 Rails 中视图的命名约定。通常，视图和对应的控制器动作共享名称。例如，`articles_controller.rb` 控制器文件中的 `index` 动作对应 `app/views/articles` 文件夹中的 `index.html.erb` 视图文件。返回客户端的完整 HTML 由 ERB 视图文件和包装它的布局文件，以及视图可能引用的所有局部视图文件组成。后文会详细说明这三种文件。
 
 [[templates-partials-and-layouts]]
 === 模板、局部视图和布局
@@ -65,7 +66,7 @@ Rails 支持多种模板系统，并使用文件扩展名加以区分。例如�
 
 下面是一个循环输出名称的例子：
 
-[source,irb]
+[source,erb]
 ----
 <h1>Names of all the people</h1>
 <% @people.each do |person| %>
@@ -75,7 +76,7 @@ Rails 支持多种模板系统，并使用文件扩展名加以区分。例如�
 
 在上面的代码中，使用普通嵌入标签（`<% %>`）建立循环，使用输出嵌入标签（`<%= %>`）插入名称。请注意，这种用法不仅仅是建议用法（而是必须这样使用），因为在 ERB 模板中，普通的输出方法，例如 `print` 和 `puts` 方法，无法正常渲染。因此，下面的代码是错误的：
 
-[source,irb]
+[source,erb]
 ----
 <%# WRONG %>
 Hi, Mr. <% puts "Frodo" %>
@@ -159,7 +160,7 @@ end
 
 link:https://github.com/rails/jbuilder[Jbuilder] 是由 Rails 团队维护并默认包含在 Rails Gemfile 中的 gem。它类似 Builder，但用于生成 JSON，而不是 XML。
 
-如果你的程序中没有 Jbuilder 这个 gem，可以把下面的代码添加到 Gemfile：
+如果你的应用中没有 Jbuilder 这个 gem，可以把下面的代码添加到 Gemfile：
 
 [source,ruby]
 ----
@@ -196,7 +197,7 @@ json.email("alex@example.com")
 [[partials]]
 ==== 局部视图
 
-局部视图模板，通常直接称为“局部视图”，会把渲染过程分成多个更容易管理的部分。局部视图从模板中提取代码片断并保存在独立的文件中，然后在模板中重用这些代码片断。
+局部视图模板，通常直接称为“局部视图”，作用是把渲染过程分成多个更容易管理的部分。局部视图从模板中提取代码片断并保存在独立的文件中，然后在模板中重用。
 
 [[naming-partials]]
 ===== 局部视图的名称
@@ -208,7 +209,7 @@ json.email("alex@example.com")
 <%= render "menu" %>
 ----
 
-在渲染视图的过程中，上面的代码会渲染 `_menu.html.erb` 局部视图文件。请注意前导的下划线：局部视图的文件名总是以下划线开头，以便和普通视图文件区分开来，但在引用局部视图时不写下划线。从其他文件夹中加载局部视图文件时同样遵守这一规则：
+在渲染视图的过程中，上面的代码会渲染 `_menu.html.erb` 局部视图文件。请注意开头的下划线：局部视图的文件名总是以下划线开头，以便和普通视图文件区分开来，但在引用局部视图时不写下划线。从其他文件夹中加载局部视图文件时同样遵守这一规则：
 
 [source,erb]
 ----
@@ -220,7 +221,7 @@ json.email("alex@example.com")
 [[using-partials-to-simplify-views]]
 ===== 使用局部视图来简化视图
 
-使用局部视图的一种方式是把它们看作子程序，也就是把细节内容从视图中移出来，这样会使视图更容易理解。例如：
+使用局部视图的一种方式是把它们看作子程序（subroutine），也就是把细节内容从视图中移出来，这样会使视图更容易理解。例如：
 
 [source,erb]
 ----
@@ -301,9 +302,9 @@ json.email("alex@example.com")
 ----
 
 [[rendering-collections]]
-===== 集合的渲染
+===== 渲染集合
 
-模板经常需要遍历集合并使用集合的每个元素分别渲染子模板。在 Rails 中我们只需一行代码就可以完成这项工作。例如，下面这段渲染产品局部视图的代码：
+模板经常需要遍历集合并使用集合中的每个元素分别渲染子模板。在 Rails 中我们只需一行代码就可以完成这项工作。例如，下面这段渲染产品局部视图的代码：
 
 [source,erb]
 ----
@@ -321,7 +322,7 @@ json.email("alex@example.com")
 
 当使用集合来渲染局部视图时，在每个局部视图实例中，都可以使用和局部视图同名的局部变量来访问集合中的元素。在本例中，局部视图是 `_product`，在这个局部视图中我们可以通过 `product` 局部变量来访问用于渲染局部视图的集合中的元素。
 
-渲染集合还有一个简易写法。假设 `@products` 是 `Product` 的实例的集合，上面的代码可以改写为：
+渲染集合还有一个简易写法。假设 `@products` 是 `Product` 实例的集合，上面的代码可以改写为：
 
 [source,erb]
 ----
@@ -345,14 +346,14 @@ Rails 会根据集合中的模型名来确定应该使用哪个局部视图，�
 [[layouts]]
 ==== 布局
 
-布局是渲染 Rails 控制器返回结果时使用的公共视图模板。通常，Rails 程序中会包含多个视图用于渲染不同页面。例如，网站中用户登录后页面的布局，营销或销售页面的布局。用户登录后页面的布局可以包含在多个控制器动作中出现的顶级导航。SaaS 程序的销售页面布局可以包含指向“定价”和“联系我们”页面的顶级导航。不同布局可以有不同的外观和感觉。关于布局的更多介绍，请参阅 <<layouts_and_rendering>> 一文。
+布局是渲染 Rails 控制器返回结果时使用的公共视图模板。通常，Rails 应用中会包含多个视图用于渲染不同页面。例如，网站中用户登录后页面的布局，营销或销售页面的布局。用户登录后页面的布局可以包含在多个控制器动作中出现的顶级导航。SaaS 应用的销售页面布局可以包含指向“定价”和“联系我们”页面的顶级导航。不同布局可以有不同的外观和感官。关于布局的更多介绍，请参阅<<layouts_and_rendering#layouts-and-rendering-in-rails>>。
 
 [[partial-layout]]
 === 局部布局
 
 应用于局部视图的布局称为局部布局。局部布局和应用于控制器动作的全局布局不一样，但两者的工作方式类似。
 
-比如说我们想在页面上显示文章，并使用 `div` 标签包装文章。首先，我们新建一个 `Article` 的实例：
+比如说我们想在页面中显示文章，并把文章放在 `div` 标签里。首先，我们新建一个 `Article` 实例：
 
 [source,ruby]
 ----
@@ -361,16 +362,16 @@ Article.create(body: 'Partial Layouts are cool!')
 
 在 `show` 模板中，我们要在 `box` 布局中渲染 `_article` 局部视图：
 
-`articles/show.html.erb`
+**`articles/show.html.erb`**
 
 [source,erb]
 ----
 <%= render partial: 'article', layout: 'box', locals: { article: @article } %>
 ----
 
-`box` 布局只是把 `_article` 局部视图包装在 `div` 标签中：
+`box` 布局只是把 `_article` 局部视图放在 `div` 标签里：
 
-`articles/_box.html.erb`
+**`articles/_box.html.erb`**
 
 [source,erb]
 ----
@@ -379,7 +380,7 @@ Article.create(body: 'Partial Layouts are cool!')
 </div>
 ----
 
-请注意，局部布局可以访问传递给 `render` 方法的 `article` 本地变量。不过，和全局部局不同，局部布局的文件名使用下划线前缀。
+请注意，局部布局可以访问传递给 `render` 方法的局部变量 `article`。不过，和全局部局不同，局部布局的文件名以下划线开头。
 
 我们还可以直接渲染代码块而不调用 `yield` 方法。例如，如果不使用 `_article` 局部视图，我们可以像下面这样编写代码：
 
@@ -394,7 +395,7 @@ Article.create(body: 'Partial Layouts are cool!')
 <% end %>
 ----
 
-假设我们使用的 `_box` 局部布局和前面例子一样，那么本例中模板的渲染结果也会和前面的例子一样。
+假设我们使用的 `_box` 局部布局和前面一样，那么这里模板的渲染结果也会和前面一样。
 
 [[view-paths]]
 === 视图路径
@@ -428,18 +429,18 @@ append_view_path "app/views/direct"
 上面的代码会在查找路径的末尾添加 `app/views/direct` 文件夹。
 
 [[overview-of-helpers-provided-by-action-view]]
-=== Action View 提供的帮助方法概述
+=== Action View 提供的辅助方法概述
 
-NOTE: 本节内容仍在完善中，目前并没有列出所有帮助方法。关于帮助方法的完整列表，请参阅 link:http://api.rubyonrails.org/classes/ActionView/Helpers.html[API文档]。
+NOTE: 本节内容仍在完善中，目前并没有列出所有辅助方法。关于辅助方法的完整列表，请参阅 link:http://api.rubyonrails.org/classes/ActionView/Helpers.html[API 文档]。
 
-本节内容只是对 Action View 中可用帮助方法的简要概述。在阅读本节内容之后，推荐查看 link:http://api.rubyonrails.org/classes/ActionView/Helpers.html[API文档]，该文档详细介绍了所有帮助方法。
+本节内容只是对 Action View 中可用辅助方法的简要概述。在阅读本节内容之后，推荐查看 link:http://api.rubyonrails.org/classes/ActionView/Helpers.html[API 文档]，文档详细介绍了所有辅助方法。
 
 [[assettaghelper]]
 ==== `AssetTagHelper` 模块
 
-`AssetTagHelper` 模块提供的方法用于生成链接静态资源文件的 HTML 代码，例如链接图片、JavaScript 文件和订阅的 HTML 代码。
+`AssetTagHelper` 模块提供的方法用于生成链接静态资源文件的 HTML 代码，例如链接图像、JavaScript 文件和订阅源的 HTML 代码。
 
-默认情况下，Rails 会链接当前主机 `public` 文件夹中的静态资源文件。要想链接专用的静态资源文件服务器上的文件，可以设置 Rails 程序配置文件（通常是 `config/environments/production.rb` 文件）中的 `config.action_controller.asset_host` 选项。例如，假设静态资源文件服务器的域名是 `assets.example.com`，我们可以像下面这样进行设置：
+默认情况下，Rails 会链接当前主机 `public` 文件夹中的静态资源文件。要想链接专用的静态资源文件服务器上的文件，可以设置 Rails 应用配置文件（通常是 `config/environments/production.rb` 文件）中的 `config.action_controller.asset_host` 选项。假如静态资源文件服务器的域名是 `assets.example.com`，我们可以像下面这样设置：
 
 [source,ruby]
 ----
@@ -450,24 +451,25 @@ image_tag("rails.png") # => <img src="http://assets.example.com/images/rails.png
 [[auto-discovery-link-tag]]
 ===== `auto_discovery_link_tag` 方法
 
-`auto_discovery_link_tag` 方法用于返回链接标签，使浏览器和订阅阅读器可以自动检测 RSS 或 Atom 订阅。
+`auto_discovery_link_tag` 方法用于返回链接标签，使浏览器和订阅阅读器可以自动检测 RSS 或 Atom 订阅源。
 
 [source,ruby]
 ----
-auto_discovery_link_tag(:rss, "http://www.example.com/feed.rss", { title: "RSS Feed" }) # =>
-  <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="http://www.example.com/feed.rss" />
+auto_discovery_link_tag(:rss, "http://www.example.com/feed.rss", { title: "RSS Feed" })
+# => <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="http://www.example.com/feed.rss" />
 ----
 
 [[image-path]]
 ===== `image_path` 方法
 
-`image_path` 方法用于计算 `app/assets/images` 文件夹中图片资源的路径，得到的路径是从根目录开始的完整路径（也就是绝对路径）。`image_tag` 方法在内部使用 `image_path` 方法生成图片标签。
+`image_path` 方法用于计算 `app/assets/images` 文件夹中图像资源的路径，得到的路径是从根目录开始的完整路径（也就是绝对路径）。`image_tag` 方法在内部使用 `image_path` 方法生成图像路径。
 
 [source,ruby]
 ----
 image_path("edit.png") # => /assets/edit.png
 ----
-当 `config.assets.digest` 选项设置为 `true` 时，Rails 会为图片资源的文件名添加指纹。
+
+当 `config.assets.digest` 选项设置为 `true` 时，Rails 会为图像资源的文件名添加指纹。
 
 [source,ruby]
 ----
@@ -477,7 +479,7 @@ image_path("edit.png") # => /assets/edit-2d1a2db63fc738690021fedb5a65b68e.png
 [[image-url]]
 ===== `image_url` 方法
 
-`image_url` 方法用于计算 `app/assets/images` 文件夹中图片资源的 URL 地址。`image_url` 方法在内部调用了 `image_path` 方法，并把得到的图片资源路径和当前主机或静态资源文件服务器的 URL 地址合并。
+`image_url` 方法用于计算 `app/assets/images` 文件夹中图像资源的 URL 地址。`image_url` 方法在内部调用了 `image_path` 方法，并把得到的图像资源路径和当前主机或静态资源文件服务器的 URL 地址合并。
 
 [source,ruby]
 ----
@@ -487,7 +489,7 @@ image_url("edit.png") # => http://www.example.com/assets/edit.png
 [[image-tag]]
 ===== `image_tag` 方法
 
-`image_tag` 方法用于返回 HTML 图片标签。此方法接受图片的完整路径或 `app/assets/images` 文件夹中图片的文件名作为参数。
+`image_tag` 方法用于返回 HTML 图像标签。此方法接受图像的完整路径或 `app/assets/images` 文件夹中图像的文件名作为参数。
 
 [source,ruby]
 ----
@@ -504,7 +506,7 @@ image_tag("icon.png") # => <img src="/assets/icon.png" alt="Icon" />
 javascript_include_tag "common" # => <script src="/assets/common.js"></script>
 ----
 
-如果 Rails 程序不使用 Asset Pipeline，就需要向 `javascript_include_tag` 方法传递 `:defaults` 参数来包含 jQuery JavaScript 库。此时，如果 `app/assets/javascripts` 文件夹中存在 `application.js` 文件，那么这个文件也会包含到页面中。
+如果 Rails 应用不使用 Asset Pipeline，就需要向 `javascript_include_tag` 方法传递 `:defaults` 参数来包含 jQuery JavaScript 库。此时，如果 `app/assets/javascripts` 文件夹中存在 `application.js` 文件，那么这个文件也会包含到页面中。
 
 [source,ruby]
 ----
@@ -522,14 +524,14 @@ javascript_include_tag :all
 
 [source,ruby]
 ----
-javascript_include_tag :all, cache: true # =>
-  <script src="/javascripts/all.js"></script>
+javascript_include_tag :all, cache: true
+# => <script src="/javascripts/all.js"></script>
 ----
 
 [[javascript-path]]
 ===== `javascript_path` 方法
 
-`javascript_path` 方法用于计算 `app/assets/javascripts` 文件夹中 JavaScript 资源的路径。如果没有指定文件的扩展名，Rails 会自动添加 `.js` 扩展名。`javascript_path` 方法返回 JavaScript 资源的完整路径（绝对路径）。`javascript_include_tag` 方法在内部使用 `javascript_path` 方法生成脚本标签。
+`javascript_path` 方法用于计算 `app/assets/javascripts` 文件夹中 JavaScript 资源的路径。如果没有指定文件的扩展名，Rails 会自动添加 `.js`。`javascript_path` 方法返回 JavaScript 资源的完整路径（绝对路径）。`javascript_include_tag` 方法在内部使用 `javascript_path` 方法生成脚本路径。
 
 [source,ruby]
 ----
@@ -549,11 +551,12 @@ javascript_url "common" # => http://www.example.com/assets/common.js
 [[stylesheet-link-tag]]
 ===== `stylesheet_link_tag` 方法
 
-`stylesheet_link_tag` 方法用于返回样式表链接标签。如果没有指定文件的扩展名，Rails 会自动添加 `.css` 扩展名。
+`stylesheet_link_tag` 方法用于返回样式表链接标签。如果没有指定文件的扩展名，Rails 会自动添加 `.css`。
 
 [source,ruby]
 ----
-stylesheet_link_tag "application" # => <link href="/assets/application.css" media="screen" rel="stylesheet" />
+stylesheet_link_tag "application"
+# => <link href="/assets/application.css" media="screen" rel="stylesheet" />
 ----
 
 通过向 `stylesheet_link_tag` 方法传递 `:all` 参数，可以把样式表文件夹中的所有样式表包含到页面中。
@@ -574,7 +577,7 @@ stylesheet_link_tag :all, cache: true
 [[stylesheet-path]]
 ===== `stylesheet_path` 方法
 
-`stylesheet_path` 方法用于计算 `app/assets/stylesheets` 文件夹中样式表资源的路径。如果没有指定文件的扩展名，Rails 会自动添加 `.css` 扩展名。`stylesheet_path` 方法返回样式表资源的完整路径（绝对路径）。`stylesheet_link_tag` 方法在内部使用 `stylesheet_path` 方法生成样式表链接标签。
+`stylesheet_path` 方法用于计算 `app/assets/stylesheets` 文件夹中样式表资源的路径。如果没有指定文件的扩展名，Rails 会自动添加 `.css`。`stylesheet_path` 方法返回样式表资源的完整路径（绝对路径）。`stylesheet_link_tag` 方法在内部使用 `stylesheet_path` 方法生成样式表路径。
 
 [source,ruby]
 ----
@@ -597,7 +600,7 @@ stylesheet_url "application" # => http://www.example.com/assets/application.css
 [[atom-feed]]
 ===== `atom_feed` 方法
 
-通过 `atom_feed` 帮助方法我们可以轻松创建 Atom 订阅。下面是一个完整的示例：
+通过 `atom_feed` 辅助方法我们可以轻松创建 Atom 订阅源。下面是一个完整的示例：
 
 `config/routes.rb`
 
@@ -707,7 +710,7 @@ end
 
 `content_for` 方法以块的方式把模板内容保存在标识符中，然后我们可以在模板或布局中把这个标识符传递给 `yield` 方法作为参数来调用所保存的内容。
 
-例如，假设程序拥有标准布局，同时拥有一个特殊页面，这个特殊页面需要包含其他页面都不需要的 JavaScript 脚本。为此我们可以在这个特殊页面中使用 `content_for` 方法来包含所需的 JavaScript 脚本，而不必增加其他页面的体积。
+假如应用拥有标准布局，同时拥有一个特殊页面，这个特殊页面需要包含其他页面都不需要的 JavaScript 脚本。为此我们可以在这个特殊页面中使用 `content_for` 方法来包含所需的 JavaScript 脚本，而不必增加其他页面的体积。
 
 `app/views/layouts/application.html.erb`
 
@@ -776,10 +779,10 @@ distance_of_time_in_words(Time.now, Time.now + 15.seconds, include_seconds: true
 
 [source,ruby]
 ----
-# Generates a date select that defaults to the date provided (six days after today)
+# 生成一个日期选择列表，默认选中指定的日期（六天以后）
 select_date(Time.today + 6.days)
 
-# Generates a date select that defaults to today (no specified date)
+# 生成一个日期选择列表，默认选中今天（未指定日期）
 select_date()
 ----
 
@@ -790,24 +793,24 @@ select_date()
 
 [source,ruby]
 ----
-# Generates a datetime select that defaults to the datetime provided (four days after today)
+# 生成一个日期时间选择列表，默认选中指定的日期时间（四天以后）
 select_datetime(Time.now + 4.days)
 
-# Generates a datetime select that defaults to today (no specified datetime)
+# 生成一个日期时间选择列表，默认选中今天（未指定日期时间）
 select_datetime()
 ----
 
 [[select-day]]
 ===== `select_day` 方法
 
-`select_day` 方法返回当月全部天数的选择列表标签，如 1 到 31，并把当日设置为默认值。
+`select_day` 方法返回当月全部日子的选择列表标签，如 1 到 31，并把当日设置为默认值。
 
 [source,ruby]
 ----
-# Generates a select field for days that defaults to the day for the date provided
+# 生成一个日子选择列表，默认选中指定的日子
 select_day(Time.today + 2.days)
 
-# Generates a select field for days that defaults to the number given
+# 生成一个日子选择列表，默认选中指定数字对应的日子
 select_day(5)
 ----
 
@@ -818,7 +821,7 @@ select_day(5)
 
 [source,ruby]
 ----
-# Generates a select field for hours that defaults to the hours for the time provided
+# 生成一个小时选择列表，默认选中指定的小时
 select_hour(Time.now + 6.hours)
 ----
 
@@ -829,7 +832,7 @@ select_hour(Time.now + 6.hours)
 
 [source,ruby]
 ----
-# Generates a select field for minutes that defaults to the minutes for the time provided.
+# 生成一个分钟选择列表，默认选中指定的分钟
 select_minute(Time.now + 10.minutes)
 ----
 
@@ -840,7 +843,7 @@ select_minute(Time.now + 10.minutes)
 
 [source,ruby]
 ----
-# Generates a select field for months that defaults to the current month
+# 生成一个月份选择列表，默认选中当前月份
 select_month(Date.today)
 ----
 
@@ -851,7 +854,7 @@ select_month(Date.today)
 
 [source,ruby]
 ----
-# Generates a select field for seconds that defaults to the seconds for the time provided
+# 生成一个秒数选择列表，默认选中指定的秒数
 select_second(Time.now + 16.seconds)
 ----
 
@@ -862,7 +865,7 @@ select_second(Time.now + 16.seconds)
 
 [source,ruby]
 ----
-# Generates a time select that defaults to the time provided
+# 生成一个时间选择列表，默认选中指定的时间
 select_time(Time.now)
 ----
 
@@ -873,17 +876,17 @@ select_time(Time.now)
 
 [source,ruby]
 ----
-# Generates a select field for five years on either side of Date.today that defaults to the current year
+# 选择今天所在年份前后五年的年份选择列表，默认选中当年
 select_year(Date.today)
 
-# Generates a select field from 1900 to 2009 that defaults to the current year
+# 选择一个从 1900 年到 20009 年的年份选择列表，默认选中当年
 select_year(Date.today, start_year: 1900, end_year: 2009)
 ----
 
 [[time-ago-in-words]]
 ===== `time_ago_in_words` 方法
 
-`time_ago_in_words` 方法和 `distance_of_time_in_words` 方法类似，区别在于 `time_ago_in_words` 方法计算的是指定时间到 `Time.now` 给出的当前时间的时间间隔。
+`time_ago_in_words` 方法和 `distance_of_time_in_words` 方法类似，区别在于 `time_ago_in_words` 方法计算的是指定时间到 `Time.now` 对应的当前时间的时间间隔。
 
 [source,ruby]
 ----
@@ -897,14 +900,14 @@ time_ago_in_words(3.minutes.from_now)  # => 3 minutes
 
 [source,ruby]
 ----
-# Creates a time select tag that, when POSTed, will be stored in the order variable in the submitted attribute
+# 生成一个时间选择标签，通过 POST 发送后存储在提交的属性中的 order 变量中
 time_select("order", "submitted")
 ----
 
 [[debughelper]]
 ==== `DebugHelper` 模块
 
-`debug` 方法用于返回用 `pre` 标签包装的 YAML 格式的对象内容。这种检查对象的方式可读性很好。
+`debug` 方法返回放在 `pre` 标签里的 YAML 格式的对象内容。这种审查对象的方式可读性很好。
 
 [source,ruby]
 ----
@@ -927,15 +930,15 @@ third:
 [[formhelper]]
 ==== `FormHelper` 模块
 
-和仅使用标准 HTML 元素相比，表单帮助方法提供了一组基于模型创建表单的方法，可以大大简化模型处理过程。表单帮助方法生成表单的 HTML 代码，并提供了用于生成各种输入组件（如文本框、密码框、选择列表等）的 HTML 代码的帮助方法。在提交表单时（用户点击提交按钮或通过 JavaScript 调用 `form.submit`），表单输入会绑定到 `params` 对象上并回传给控制器。
+和仅使用标准 HTML 元素相比，表单辅助方法提供了一组基于模型创建表单的方法，可以大大简化模型的处理过程。表单辅助方法生成表单的 HTML 代码，并提供了用于生成各种输入组件（如文本框、密码框、选择列表等）的 HTML 代码的辅助方法。在提交表单时（用户点击提交按钮或通过 JavaScript 调用 `form.submit`），表单输入会绑定到 `params` 对象上并回传给控制器。
 
-表单帮助方法分为两类：一类专门用于处理模型属性，另一类不处理模型属性。本节中介绍的帮助方法都属于前者，后者的例子可参阅 `ActionView::Helpers::FormTagHelper` 模块的文档。
+表单辅助方法分为两类：一类专门用于处理模型属性，另一类不处理模型属性。本节中介绍的辅助方法都属于前者，后者的例子可参阅 `ActionView::Helpers::FormTagHelper` 模块的文档。
 
-`form_for` 帮助方法是 `FormHelper` 模块中最核心的方法，用于创建处理模型实例的表单。例如，假设我们想为 `Person` 模型创建实例：
+`form_for` 辅助方法是 `FormHelper` 模块中最核心的方法，用于创建处理模型实例的表单。例如，假设我们想为 `Person` 模型创建实例：
 
 [source,erb]
 ----
-# Note: a @person variable will have been created in the controller (e.g. @person = Person.new)
+# 注意：要在控制器中创建 @person 变量（例如 @person = Person.new）
 <%= form_for @person, url: { action: "create" } do |f| %>
   <%= f.text_field :first_name %>
   <%= f.text_field :last_name %>
@@ -961,7 +964,7 @@ third:
 { "action" => "create", "controller" => "people", "person" => { "first_name" => "William", "last_name" => "Smith" } }
 ----
 
-`params` Hash 包含了嵌套的 `person` 值，这个值可以在控制器中通过 `params[:person]` 访问。
+`params` 散列包含了嵌套的 `person` 值，这个值可以在控制器中通过 `params[:person]` 访问。
 
 [[check-box]]
 ===== `check_box` 方法
@@ -970,7 +973,7 @@ third:
 
 [source,ruby]
 ----
-# Let's say that @article.validated? is 1:
+# 假设 @article.validated? 的值是 1
 check_box("article", "validated")
 # => <input type="checkbox" id="article_validated" name="article[validated]" value="1" />
 #    <input name="article[validated]" type="hidden" value="0" />
@@ -979,7 +982,7 @@ check_box("article", "validated")
 [[fields-for]]
 ===== `fields_for` 方法
 
-和 `form_for` 方法类似，`fields_for` 方法创建用于处理指定模型对象的作用域，区别在于 `fields_for` 方法不会创建表单标签。`fields_for` 方法适用于在同一个表单中说明附加的模型对象。
+和 `form_for` 方法类似，`fields_for` 方法创建用于处理指定模型对象的作用域，区别在于 `fields_for` 方法不会创建 `form` 标签。`fields_for` 方法适用于在同一个表单中指明附加的模型对象。
 
 [source,erb]
 ----
@@ -1059,7 +1062,7 @@ password_field(:login, :pass)
 
 [source,ruby]
 ----
-# Let's say that @article.category returns "rails":
+# 假设 @article.category 的值是“rails”
 radio_button("article", "category", "rails")
 radio_button("article", "category", "java")
 # => <input type="radio" id="article_category_rails" name="article[category]" value="rails" checked="checked" />
@@ -1282,12 +1285,12 @@ option_groups_from_collection_for_select(@continents, :countries, :name, :id, :n
 </optgroup>
 ----
 
-注意：`option_groups_from_collection_for_select` 方法只返回 `optgroup` 和 `option` 标签，我们需要用 `select` 标签来包装这些 `optgroup` 和 `option` 标签。
+注意：`option_groups_from_collection_for_select` 方法只返回 `optgroup` 和 `option` 标签，我们要把这些 `optgroup` 和 `option` 标签放在 `select` 标签里。
 
 [[options-for-select]]
 ===== `options_for_select` 方法
 
-`options_for_select` 方法接受容器（如Hash、数组、可枚举对象、自定义类型）作为参数，并返回一组选项标签。
+`options_for_select` 方法接受容器（如散列、数组、可枚举对象、自定义类型）作为参数，返回一组选项标签。
 
 [source,ruby]
 ----
@@ -1295,7 +1298,7 @@ options_for_select([ "VISA", "MasterCard" ])
 # => <option>VISA</option> <option>MasterCard</option>
 ----
 
-注意：`options_for_select` 方法只返回 `option` 标签，我们需要用 `select` 标签来包装这些 `option` 标签。
+注意：`options_for_select` 方法只返回 `option` 标签，我们要把这些 `option` 标签放在 `select` 标签里。
 
 [[options-from-collection-for-select]]
 ===== `options_from_collection_for_select` 方法
@@ -1315,7 +1318,7 @@ options_from_collection_for_select(@project.people, "id", "name")
 # => <option value="#{person.id}">#{person.name}</option>
 ----
 
-注意：`options_from_collection_for_select` 方法只返回 `option` 标签，我们需要用 `select` 标签来包装这些 `option` 标签。
+注意：`options_from_collection_for_select` 方法只返回 `option` 标签，我们要把这些 `option` 标签放在 `select` 标签里。
 
 [[select]]
 ===== `select` 方法
@@ -1385,8 +1388,9 @@ check_box_tag 'accept'
 [[field-set-tag]]
 ===== `field_set_tag` 方法
 
-`field_set_tag` 方法用于创建字段集标签。
+`field_set_tag` 方法用于创建 `fieldset` 标签。
 
+[source,erb]
 ----
 <%= field_set_tag do %>
   <p><%= text_field_tag 'name' %></p>
@@ -1420,6 +1424,7 @@ file_field_tag 'attachment'
 
 `form_tag` 方法用于创建表单标签。和 `ActionController::Base#url_for` 方法类似，`form_tag` 方法的第一个参数是 `url_for_options` 选项，用于说明提交表单的 URL。
 
+[source,erb]
 ----
 <%= form_tag '/articles' do %>
   <div><%= submit_tag 'Save' %></div>
@@ -1441,7 +1446,7 @@ hidden_field_tag 'token', 'VUBJKB23UIVI1UU1VOBVI@'
 [[image-submit-tag]]
 ===== `image_submit_tag` 方法
 
-`image_submit_tag` 方法会显示一张图片，点击这张图片会提交表单。
+`image_submit_tag` 方法会显示一张图像，点击这张图像会提交表单。
 
 [source,ruby]
 ----
@@ -1567,12 +1572,12 @@ date_field_tag "dob"
 [[escape-javascript]]
 ===== `escape_javascript` 方法
 
-`escape_javascript` 方法转义 JavaScript 代码中的回车、单引号和双引号。
+`escape_javascript` 方法转义 JavaScript 代码中的回车符、单引号和双引号。
 
 [[javascript-tag]]
 ===== `javascript_tag` 方法
 
-`javascript_tag` 方法返回用 `script` 标签包装的 JavaScript 代码。
+`javascript_tag` 方法返回放在 `script` 标签里的 JavaScript 代码。
 
 [source,ruby]
 ----
@@ -1677,7 +1682,7 @@ sanitize @article.body
 sanitize @article.body, tags: %w(table tr td), attributes: %w(id class style)
 ----
 
-要想修改 `sanitize` 方法的默认选项，例如把表格标签设置为允许的属性，可以按下面的方式进行设置：
+要想修改 `sanitize` 方法的默认选项，例如把表格标签设置为允许的属性，可以按下面的方式设置：
 
 [source,ruby]
 ----
@@ -1717,7 +1722,7 @@ strip_links('Blog: <a href="http://myblog.com/">Visit</a>.')
 [[strip-tags-html]]
 ===== `strip_tags(html)` 方法
 
-`strip_tags(html)` 方法用于清除包括注释在内的所有 HTML 标签。此方法使用 html-scanner 来解析 HTML，因此其 HTML 解析能力受到 html-scanner 的限制。
+`strip_tags(html)` 方法用于清除包括注释在内的所有 HTML 标签。此方法使用 html-scanner 解析 HTML，因此其 HTML 解析能力受到 html-scanner 的限制。
 
 [source,ruby]
 ----
@@ -1743,16 +1748,16 @@ strip_tags("<b>Bold</b> no more!  <a href='more.html'>See more</a>")
 <%= csrf_meta_tags %>
 ----
 
-NOTE: 普通表单生成隐藏字段，因此不使用这些标签。关于这个问题的更多介绍，请参阅 <<security#cross-site-request-forgery-csrf>> 一节。
+NOTE: 普通表单生成隐藏字段，因此不使用这些标签。关于这个问题的更多介绍，请参阅 <<security#cross-site-request-forgery-csrf>>。
 
 [[localized-views]]
 === 本地化视图
 
 Action View 可以根据当前的本地化设置渲染不同的模板。
 
-例如，假设 `ArticlesController` 控制器具有 `show` 动作。默认情况下，调用 `show` 动作会渲染 `app/views/articles/show.html.erb` 模板。如果我们设置了 `I18n.locale = :de`，那么调用 `show` 动作会渲染 `app/views/articles/show.de.html.erb` 模板。如果对应的本地化模板不存在，就会使用对应的默认模板。这意味着我们不需要为所有情况提供本地化视图，但如果本地化视图可用就会优先使用。
+假如 `ArticlesController` 控制器中有 `show` 动作。默认情况下，调用 `show` 动作会渲染 `app/views/articles/show.html.erb` 模板。如果我们设置了 `I18n.locale = :de`，那么调用 `show` 动作会渲染 `app/views/articles/show.de.html.erb` 模板。如果对应的本地化模板不存在，就会使用对应的默认模板。这意味着我们不需要为所有情况提供本地化视图，但如果本地化视图可用就会优先使用。
 
-我们可以使用相同的技术来本地化公共目录中的救援文件。例如，通过设置 `I18n.locale = :de` 并创建 `public/500.de.html` 和 `public/404.de.html` 文件，我们就拥有了本地化的求援文件。
+我们可以使用相同的技术来本地化公共目录中的错误文件。例如，通过设置 `I18n.locale = :de` 并创建 `public/500.de.html` 和 `public/404.de.html` 文件，我们就拥有了本地化的错误文件。
 
 由于 Rails 不会限制用于设置 `I18n.locale` 的符号，我们可以利用本地化视图根据我们喜欢的任何东西来显示不同的内容。例如，假设专家用户应该看到和普通用户不同的页面，我们可以在 `app/controllers/application.rb` 配置文件中进行如下设置：
 
@@ -1767,4 +1772,4 @@ end
 
 然后创建 `app/views/articles/show.expert.html.erb` 这样的显示给专家用户看的特殊视图。
 
-关于 Rails 国际化的更多介绍，请参阅 <<i18n>> 一文。
+关于 Rails 国际化的更多介绍，请参阅<<i18n#rails-internationalization-api>>。
