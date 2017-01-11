@@ -5,12 +5,12 @@
 --
 本文介绍 Action Controller 和 Action View 的基本布局功能。
 
-读完后，您将学会：
+读完本文后，您将学到：
 
 * 如何使用 Rails 内置的各种渲染方法；
 * 如果创建具有多个内容区域的布局；
 * 如何使用局部视图去除重复；
-* 如何使用嵌套布局（子模板）；
+* 如何使用嵌套布局（子模板）。
 --
 
 [[overview-how-the-pieces-fit-together]]
@@ -162,7 +162,7 @@ render template: "products/show"
 [[rendering-an-arbitrary-file]]
 ===== 渲染任意文件
 
-`render` 方法还可渲染程序之外的视图：
+`render` 方法还可渲染应用之外的视图：
 
 [source,ruby]
 ----
@@ -330,7 +330,7 @@ render file: filename, content_type: "application/rss"
 
 `render` 方法的大多数选项渲染得到的结果都会作为当前布局的一部分显示。后文会详细介绍布局。
 
-`:layout` 选告诉 Rails，在当前动作中使用指定的文件作为布局：
+`:layout` 选项告诉 Rails，在当前动作中使用指定的文件作为布局：
 
 [source,ruby]
 ----
@@ -698,7 +698,7 @@ redirect_to photos_path, status: 301
 [[the-difference-between-render-and-redirect-to]]
 ===== `render` 和 `redirect_to` 的区别
 
-有些经验不足的开发者会认为 `redirect_to` 方法是一种 `goto` 命令，把代码从一处转到别处。这么理解是*不对*的。执行到 `redirect_to` 方法时，代码会停止运行，等待浏览器发起新请求。你需要告诉浏览器下一个请求是什么，并返回 302 状态码。
+有些经验不足的开发者会认为 `redirect_to` 方法是一种 `goto` 命令，把代码从一处转到别处。这么理解是不对的。执行到 `redirect_to` 方法时，代码会停止运行，等待浏览器发起新请求。你需要告诉浏览器下一个请求是什么，并返回 302 状态码。
 
 下面通过实例说明。
 
@@ -759,7 +759,7 @@ end
 [[using-head-to-build-header-only-responses]]
 ==== 使用 `head` 构建只有首部的响应
 
-`head` 方法只把首部发送给浏览器，它的参数是 HTTP 状态码数字或符号形式（参见<<table-the-status-option,前面的表格>>），选项是一个 Hash，指定首部的名称和对应的值。例如，可以只返回一个错误首部：
+`head` 方法只把首部发送给浏览器，它的参数是 HTTP 状态码数字或符号形式（参见<<table-the-status-option,前面的表格>>），选项是一个散列，指定首部的名称和对应的值。例如，可以只返回一个错误首部：
 
 [source,ruby]
 ----
@@ -830,7 +830,7 @@ WARNING: 静态资源标签辅助方法不会检查指定位置是否存在静�
 [[linking-to-feeds-with-the-auto-discovery-link-tag]]
 ===== 使用 `auto_discovery_link_tag` 链接到订阅源
 
-`auto_discovery_link_tag` 辅助方法生成的 HTML，多数浏览器和订阅源阅读器都能从中自动识别 RSS 或 Atom 订阅源。这个方法的参数包括链接的类型（`:rss` 或 `:atom`）、传递给 `url_for` 的 Hash 选项，以及该标签使用的 Hash 选项：
+`auto_discovery_link_tag` 辅助方法生成的 HTML，多数浏览器和订阅源阅读器都能从中自动识别 RSS 或 Atom 订阅源。这个方法的参数包括链接的类型（`:rss` 或 `:atom`）、传递给 `url_for` 的散列选项，以及该标签使用的散列选项：
 
 [source,erb]
 ----
@@ -951,14 +951,14 @@ WARNING: 注意，必须指定图像的扩展名。
 <%= image_tag "icons/delete.gif" %>
 ----
 
-可以使用 Hash 指定额外的 HTML 属性：
+可以使用散列指定额外的 HTML 属性：
 
 [source,erb]
 ----
 <%= image_tag "icons/delete.gif", {height: 45} %>
 ----
 
-可以指定一个替代文本，在关闭图片的浏览器中显示。如果没指定替代文本，Rails 会使用图片的文件名，去掉扩展名，并把首字母变成大写。例如，下面两个标签会生成相同的代码：
+可以指定一个替代文本，在关闭图像的浏览器中显示。如果没指定替代文本，Rails 会使用图像的文件名，去掉扩展名，并把首字母变成大写。例如，下面两个标签会生成相同的代码：
 
 [source,erb]
 ----
@@ -966,7 +966,7 @@ WARNING: 注意，必须指定图像的扩展名。
 <%= image_tag "home.gif", alt: "Home" %>
 ----
 
-还可指定图片的尺寸，格式为“{width}x{height}”：
+还可指定图像的尺寸，格式为“{width}x{height}”：
 
 [source,erb]
 ----
@@ -1001,7 +1001,7 @@ WARNING: 注意，必须指定图像的扩展名。
 
 与 `image_tag` 类似，视频的地址可以使用绝对路径，或者相对 `public/videos` 文件夹的路径。而且也可以指定 `size: "#{width}x#{height}"` 选项。在 `video_tag` 的末尾还可指定其他 HTML 属性，例如 `id`、`class` 等。
 
-`video_tag` 方法还可使用 Hash 指定所有 `<video>` 标签的属性，包括：
+`video_tag` 方法还可使用散列指定 `<video>` 标签的所有属性，包括：
 
 * `poster: "image_name.png"`：指定视频播放前在视频的位置显示的图片；
 * `autoplay: true`：页面加载后开始播放视频；
@@ -1043,7 +1043,7 @@ WARNING: 注意，必须指定图像的扩展名。
 <%= audio_tag "music/first_song.mp3" %>
 ----
 
-还可使用 Hash 指定其他属性，例如 `:id`、`:class` 等。
+还可使用散列指定其他属性，例如 `:id`、`:class` 等。
 
 与 `video_tag` 类似，`audio_tag` 也有特殊的选项：
 
@@ -1140,7 +1140,7 @@ WARNING: 注意，必须指定图像的扩展名。
 [[using-partials-to-simplify-views]]
 ===== 使用局部视图简化视图
 
-局部视图的一种用法是作为“子程序”（subroutine），把细节提取出来，以便更好地理解整个视图的作用。例如，有如下的视图：
+局部视图的一种用法是作为子程序（subroutine），把细节提取出来，以便更好地理解整个视图的作用。例如，有如下的视图：
 
 [source,erb]
 ----
