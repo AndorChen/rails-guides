@@ -7,24 +7,24 @@
 --
 本文介绍 Rails 路由面向用户的特性。
 
-读完本文后，你将学会：
+读完本文后，您将学到：
 
-* 如何理解 `config/routes.rb` 文件中的代码。
-* 如何使用推荐的资源式风格或 `match` 方法构建路由。
-* 动作应该收到什么参数。
-* 如何使用路由帮助方法自动创建路径和 URL 地址。
+* 如何理解 `config/routes.rb` 文件中的代码；
+* 如何使用推荐的资源式风格或 `match` 方法构建路由；
+* 控制器动作应该收到什么参数；
+* 如何使用路由辅助方法自动创建路径和 URL 地址；
 * 约束和 Rack 端点等高级技术。
 --
 
 [[the-purpose-of-the-rails-router]]
 === Rails 路由的用途
 
-Rails 路由能识别 URL 地址，并把它们分发给控制器动作进行处理。它还能生成路径和 URL 地址，从而避免在视图中硬编码字符串。
+Rails 路由能够识别 URL 地址，并把它们分派给控制器动作进行处理。它还能生成路径和 URL 地址，从而避免在视图中硬编码字符串。
 
 [[connecting-urls-to-code]]
 ==== 把 URL 地址连接到代码
 
-当 Rails 程序收到下面的访问请求时：
+当 Rails 应用收到下面的请求时：
 
 [source,ruby]
 ----
@@ -38,12 +38,12 @@ GET /patients/17
 get '/patients/:id', to: 'patients#show'
 ----
 
-该请求会被分发给 `patients` 控制器的 `show` 动作，同时会传入包含 `{ id: '17' }` 的 `params`。
+该请求会被分派给 `patients` 控制器的 `show` 动作，同时把 `{ id: '17' }` 传入 `params`。
 
 [[generating-paths-and-urls-from-code]]
 ==== 从代码生成路径和 URL 地址
 
-我们还可以生成路径和 URL 地址。如果把上面的路由修改为：
+Rails 路由还可以生成路径和 URL 地址。如果把上面的路由修改为：
 
 [source,ruby]
 ----
@@ -64,7 +64,738 @@ get '/patients/:id', to: 'patients#show', as: 'patient'
 <%= link_to 'Patient Record', patient_path(@patient) %>
 ----
 
-那么路由会生成路径 `/patients/17`。这种做法使视图代码更容易维护和理解。注意，在路由帮助方法中不需要指定 ID。
+那么路由会生成路径 `/patients/17`。这种方式使视图代码更容易维护和理解。注意，在路由辅助方法中不需要指定 ID。
 
 [[resource-routing-the-rails-default]]
-=== 资源路由：Rails 的默认风格
+=== 资源路由（resource routing）：Rails 的默认风格
+
+资源路由允许我们为资源式控制器快速声明所有常见路由。只需一行代码即可完成资源路由的声明，无需为 `index`、`show`、`new`、`edit`、`create`、`update` 和 `destroy` 动作分别声明路由。
+
+[[resources-on-the-web]]
+==== 网络资源
+
+浏览器使用特定的 HTTP 方法向 Rails 应用请求页面，例如 `GET`、`POST`、`PATCH`、`PUT` 和 `DELETE`。每个 HTTP 方法对应对资源的一种操作。资源路由会把多个相关请求映射到单个控制器的不同动作上。
+
+当 Rails 应用收到下面的请求：
+
+----
+DELETE /photos/17
+----
+
+会查询路由，并把请求映射到控制器动作上。如果第一个匹配的路由是：
+
+[source,ruby]
+----
+resources :photos
+----
+
+Rails 会把请求分派给 `photos` 控制器的 `destroy` 动作，并把 `{ id: '17' }` 传入 `params`。
+
+[[crud-verbs-and-actions]]
+==== CRUD、HTTP 方法和控制器动作
+
+在 Rails 中，资源路由把 HTTP 方法和 URL 地址映射到控制器动作上。按照约定，每个控制器动作也会映射到对应的数据库 CRUD 操作上。路由文件中的单行声明，例如：
+
+[source,ruby]
+----
+resources :photos
+----
+
+会在应用中创建 7 个不同的路由，这些路由都会映射到 `Photos` 控制器上。
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |用途
+
+|GET
+|`/photos`
+|`photos#index`
+|显示所有照片的列表
+
+|GET
+|`/photos/new`
+|`photos#new`
+|返回用于新建照片的 HTML 表单
+
+|POST
+|`/photos`
+|`photos#create`
+|新建照片
+
+|GET
+|`/photos/:id`
+|`photos#show`
+|显示指定照片
+
+|GET
+|`/photos/:id/edit`
+|`photos#edit`
+|返回用于修改照片的 HTML 表单
+
+|PATCH/PUT
+|`/photos/:id`
+|`photos#update`
+|更新指定照片
+
+|DELETE
+|`/photos/:id`
+|`photos#destroy`
+|删除指定照片
+|===
+
+NOTE: 因为路由使用 HTTP 方法和 URL 地址来匹配请求，所以 4 个 URL 地址会映射到 7 个不同的控制器动作上。
+
+NOTE: Rails 路由按照声明顺序进行匹配。如果 `resources :photos` 声明在先，`get 'photos/poll'` 声明在后，那么由前者声明的 `show` 动作的路由会先于后者匹配。要想匹配 `get 'photos/poll'`，就必须将其移到 `resources :photos` 之前。
+
+[[path-and-url-helpers]]
+==== 用于生成路径和 URL 地址的辅助方法
+
+在创建资源路由时，会同时创建多个可以在控制器中使用的辅助方法。例如，在创建 `resources :photos` 路由时，会同时创建下面的辅助方法：
+
+* `photos_path` 辅助方法，返回值为 `/photos`
+* `new_photo_path` 辅助方法，返回值为 `/photos/new`
+* `edit_photo_path(:id)` 辅助方法，返回值为 `/photos/:id/edit`（例如，`edit_photo_path(10)` 的返回值为 `/photos/10/edit`）
+* `photo_path(:id)` 辅助方法，返回值为 `/photos/:id`（例如，`photo_path(10)` 的返回值为 `/photos/10`）
+
+这些辅助方法都有对应的 `_url` 形式（例如 `photos_url`）。前者的返回值是路径，后者的返回值是路径加上由当前的主机名、端口和路径前缀组成的前缀。
+
+[[defining-multiple-resources-at-the-same-time]]
+==== 同时定义多个资源
+
+如果我们需要为多个资源创建路由，可以只调用一次 `resources` 方法，节约一点敲键盘的时间。
+
+[source,ruby]
+----
+resources :photos, :books, :videos
+----
+
+上面的代码等价于：
+
+[source,ruby]
+----
+resources :photos
+resources :books
+resources :videos
+----
+
+[[singular-resources]]
+==== 单数资源（singular resources）
+
+有时我们希望不使用 ID 就能查找资源。例如，让 `/profile` 总是显示当前登录用户的个人信息。这种情况下，我们可以使用单数资源来把 `/profile` 而不是 `/profile/:id` 映射到 `show` 动作：
+
+[source,ruby]
+----
+get 'profile', to: 'users#show'
+----
+
+如果 `get` 方法的 `to` 选项的值是字符串，那么这个字符串应该使用 `controller#action` 的格式。如果 `to` 选项的值是表示动作的符号，那么还需要使用 `controller` 选项来指定控制器：
+
+[source,ruby]
+----
+get 'profile', to: :show, controller: 'users'
+----
+
+下面的资源路由：
+
+[source,ruby]
+----
+resource :geocoder
+----
+
+会在应用中创建 6 种不同的路由，这些路由会映射到 `Geocoders` 控制器的动作上：
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |用途
+
+|GET
+|`/geocoder/new`
+|`geocoders#new`
+|返回用于创建 geocoder 的 HTML 表单
+
+|POST
+|`/geocoder`
+|`geocoders#create`
+|新建 geocoder
+
+|GET
+|`/geocoder`
+|`geocoders#show`
+|显示唯一的 geocoder 资源
+
+|GET
+|`/geocoder/edit`
+|`geocoders#edit`
+|返回用于修改 geocoder 的 HTML 表单
+
+|PATCH/PUT
+|`/geocoder`
+|`geocoders#update`
+|更新唯一的 geocoder 资源
+
+|DELETE
+|`/geocoder`
+|`geocoders#destroy`
+|删除 geocoder 资源
+|===
+
+NOTE: 有时我们想要用同一个控制器处理单数路由（如 `/account`）和复数路由（如 `/accounts/45`），也就是把单数资源映射到复数资源对应的控制器上。例如，`resource :photo` 创建的单数路由和 `resources :photos` 创建的复数路由都会映射到相同的 `PhotosController` 控制器上。
+
+在创建单数资源路由时，会同时创建下面的辅助方法：
+
+* `new_geocoder_path` 辅助方法，返回值是 `/geocoder/new`
+* `edit_geocoder_path` 辅助方法，返回值是 `/geocoder/edit`
+* `geocoder_path` 辅助方法，返回值是 `/geocoder`
+
+和创建复数资源路由时一样，上面这些辅助方法都有对应的 `_url` 形式，其返回值也包含了主机名、端口和路径前缀。
+
+WARNING: 有一个长期存在的 BUG 使 `form_for` 辅助方法无法自动处理单数资源。有一个解决方案是直接指定表单 URL，例如：
+
+[source,ruby]
+----
+form_for @geocoder, url: geocoder_path do |f|
+
+# 为了行文简洁，省略以下内容
+----
+
+[[controller-namespaces-and-routing]]
+==== 控制器命名空间和路由
+
+有时我们会把一组控制器放入同一个命名空间中。最常见的例子，是把和管理相关的控制器放入 `Admin::` 命名空间中。为此，我们可以把控制器文件放在 `app/controllers/admin` 文件夹中，然后在路由文件作如下声明：
+
+[source,ruby]
+----
+namespace :admin do
+  resources :articles, :comments
+end
+----
+
+上面的代码会为 `articles` 和 `comments` 控制器分别创建多个路由。对于 `Admin::ArticlesController` 控制器，Rails 会创建下列路由：
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |具名辅助方法
+
+|GET
+|`/admin/articles`
+|`admin/articles#index`
+|`admin_articles_path`
+
+|GET
+|`/admin/articles/new`
+|`admin/articles#new`
+|`new_admin_article_path`
+
+|POST
+|`/admin/articles`
+|`admin/articles#create`
+|`admin_articles_path`
+
+|GET
+|`/admin/articles/:id`
+|`admin/articles#show`
+|`admin_article_path(:id)`
+
+|GET
+|`/admin/articles/:id/edit`
+|`admin/articles#edit`
+|`edit_admin_article_path(:id)`
+
+|PATCH/PUT
+|`/admin/articles/:id`
+|`admin/articles#update`
+|`admin_article_path(:id)`
+
+|DELETE
+|`/admin/articles/:id`
+|`admin/articles#destroy`
+|`admin_article_path(:id)`
+|===
+
+如果想把 `/articles` 路径（不带 `/admin` 前缀） 映射到 `Admin::ArticlesController` 控制器上，可以这样声明：
+
+[source,ruby]
+----
+scope module: 'admin' do
+  resources :articles, :comments
+end
+----
+
+对于单个资源的情况，还可以这样声明：
+
+[source,ruby]
+----
+resources :articles, module: 'admin'
+----
+
+如果想把 `/admin/articles` 路径映射到 `ArticlesController` 控制器上（不带 `Admin::` 前缀），我们可以这样声明：
+
+[source,ruby]
+----
+scope '/admin' do
+  resources :articles, :comments
+end
+----
+
+对于单个资源的情况，还可以这样声明：
+
+[source,ruby]
+----
+resources :articles, path: '/admin/articles'
+----
+
+在上述各个例子中，不管是否使用了 `scope` 方法，具名路由都保持不变。在最后一个例子中，下列路径都会映射到 `ArticlesController` 控制器上：
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |具名辅助方法
+
+|GET
+|`/admin/articles`
+|`articles#index`
+|`articles_path`
+
+|GET
+|`/admin/articles/new`
+|`articles#new`
+|`new_article_path`
+
+|POST
+|`/admin/articles`
+|`articles#create`
+|`articles_path`
+
+|GET
+|`/admin/articles/:id`
+|`articles#show`
+|`article_path(:id)`
+
+|GET
+|`/admin/articles/:id/edit`
+|`articles#edit`
+|`edit_article_path(:id)`
+
+|PATCH/PUT
+|`/admin/articles/:id`
+|`articles#update`
+|`article_path(:id)`
+
+|DELETE
+|`/admin/articles/:id`
+|`articles#destroy`
+|`article_path(:id)`
+|===
+
+NOTE: 如果想在命名空间代码块中使用另一个控制器命名空间，我们可以指定控制器的绝对路径，例如 `get '/foo' => '/foo#index'`。
+
+[[nested-resources]]
+==== 嵌套资源（nested resources）
+
+有的资源是其他资源的子资源，这种情况很常见。例如，假设我们的应用中包含下列模型：
+
+[source,ruby]
+----
+class Magazine < ApplicationRecord
+  has_many :ads
+end
+
+class Ad < ApplicationRecord
+  belongs_to :magazine
+end
+----
+
+通过嵌套路由，我们可以在路由中反映模型关联。在本例中，我们可以这样声明路由：
+
+[source,ruby]
+----
+resources :magazines do
+  resources :ads
+end
+----
+
+上面的代码不仅为 `magazines` 创建了路由，还创建了映射到 `AdsController` 控制器的路由。在 `ad` 的 URL 地址中，需要指定对应的 `magazine` 的ID：
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |用途
+
+|GET
+|`/magazines/:magazine_id/ads`
+|`ads#index`
+|显示指定杂志的所有广告的列表
+
+|GET
+|`/magazines/:magazine_id/ads/new`
+|`ads#new`
+|返回为指定杂志新建广告的 HTML 表单
+
+|POST
+|`/magazines/:magazine_id/ads`
+|`ads#create`
+|为指定杂志新建广告
+
+|GET
+|`/magazines/:magazine_id/ads/:id`
+|`ads#show`
+|显示指定杂志的指定广告
+
+|GET
+|`/magazines/:magazine_id/ads/:id/edit`
+|`ads#edit`
+|返回用于修改指定杂志的广告的 HTML 表单
+
+|PATCH/PUT
+|`/magazines/:magazine_id/ads/:id`
+|`ads#update`
+|更新指定杂志的指定广告
+
+|DELETE
+|`/magazines/:magazine_id/ads/:id`
+|`ads#destroy`
+|删除指定杂志的指定广告
+|===
+
+在创建路由的同时，还会创建 `magazine_ads_url` 和 `edit_magazine_ad_path` 等路由辅助方法。这些辅助方法以 `Magazine` 类的实例作为第一个参数，例如 `magazine_ads_url(@magazine)`。
+
+[[limits-to-nesting]]
+===== 嵌套限制
+
+我们可以在嵌套资源中继续嵌套资源。例如：
+
+[source,ruby]
+----
+resources :publishers do
+  resources :magazines do
+    resources :photos
+  end
+end
+----
+
+随着嵌套层级的增加，嵌套资源的处理会变得很困难。例如，下面这个路径：
+
+[source,ruby]
+----
+/publishers/1/magazines/2/photos/3
+----
+
+对应的路由辅助方法是 `publisher_magazine_photo_url`，需要指定三层对象。这种用法很容易就把人搞糊涂了，为此，Jamis Buck 在link:http://weblog.jamisbuck.org/2007/2/5/nesting-resources[一篇广为流传的文章]中提出了使用嵌套路由的经验法则：
+
+TIP: 嵌套资源的层级不应超过 1 层。
+
+[[shallow-nesting]]
+===== 浅层嵌套（shallow nesting）
+
+如前文所述，避免深层嵌套（deep nesting）的方法之一，是把动作集合放在在父资源中，这样既可以表明层级关系，又不必嵌套成员动作。换句话说，只用最少的信息创建路由，同样可以唯一地标识资源，例如：
+
+[source,ruby]
+----
+resources :articles do
+  resources :comments, only: [:index, :new, :create]
+end
+resources :comments, only: [:show, :edit, :update, :destroy]
+----
+
+这种方式在描述性路由（descriptive routes）和深层嵌套之间取得了平衡。上面的代码还有简易写法，即使用 `:shallow` 选项：
+
+[source,ruby]
+----
+resources :articles do
+  resources :comments, shallow: true
+end
+----
+
+这两种写法创建的路由完全相同。我们还可以在父资源中使用 `:shallow` 选项，这样会在所有嵌套的子资源中应用 `:shallow` 选项：
+
+[source,ruby]
+----
+resources :articles, shallow: true do
+  resources :comments
+  resources :quotes
+  resources :drafts
+end
+----
+
+可以用 `shallow` 方法创建作用域，使其中的所有嵌套都成为浅层嵌套。通过这种方式创建的路由，仍然和上面的例子相同：
+
+[source,ruby]
+----
+shallow do
+  resources :articles do
+    resources :comments
+    resources :quotes
+    resources :drafts
+  end
+end
+----
+
+`scope` 方法有两个选项用于自定义浅层路由。`:shallow_path` 选项会为成员路径添加指定前缀：
+
+[source,ruby]
+----
+scope shallow_path: "sekret" do
+  resources :articles do
+    resources :comments, shallow: true
+  end
+end
+----
+
+上面的代码会为 `comments` 资源生成下列路由：
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |具名辅助方法
+
+|GET
+|`/articles/:article_id/comments(.:format)`
+|`comments#index`
+|`article_comments_path`
+
+|POST
+|`/articles/:article_id/comments(.:format)`
+|`comments#create`
+|`article_comments_path`
+
+|GET
+|`/articles/:article_id/comments/new(.:format)`
+|`comments#new`
+|`new_article_comment_path`
+
+|GET
+|`/sekret/comments/:id/edit(.:format)`
+|`comments#edit`
+|`edit_comment_path`
+
+|GET
+|`/sekret/comments/:id(.:format)`
+|`comments#show`
+|`comment_path`
+
+|PATCH/PUT
+|`/sekret/comments/:id(.:format)`
+|`comments#update`
+|`comment_path`
+
+|DELETE
+|`/sekret/comments/:id(.:format)`
+|`comments#destroy`
+|`comment_path`
+|===
+
+`:shallow_prefix` 选项会为具名辅助方法添加指定前缀：
+
+[source,ruby]
+----
+scope shallow_prefix: "sekret" do
+  resources :articles do
+    resources :comments, shallow: true
+  end
+end
+----
+
+上面的代码会为 `comments` 资源生成下列路由：
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |具名辅助方法
+
+|GET
+|`/articles/:article_id/comments(.:format)`
+|`comments#index`
+|`article_comments_path`
+
+|POST
+|`/articles/:article_id/comments(.:format)`
+|`comments#create`
+|`article_comments_path`
+
+|GET
+|`/articles/:article_id/comments/new(.:format)`
+|`comments#new`
+|`new_article_comment_path`
+
+|GET
+|`/comments/:id/edit(.:format)`
+|`comments#edit`
+|`edit_sekret_comment_path`
+
+|GET
+|`/comments/:id(.:format)`
+|`comments#show`
+|`sekret_comment_path`
+
+|PATCH/PUT
+|`/comments/:id(.:format)`
+|`comments#update`
+|`sekret_comment_path`
+
+|DELETE
+|`/comments/:id(.:format)`
+|`comments#destroy`
+|`sekret_comment_path`
+|===
+
+[[routing-concerns]]
+==== 路由关系（routing concerns）
+
+路由关系用于声明公共路由（common routes），公共路由可以在其他资源和路由中重复使用。定义路由关系的方式如下：
+
+[source,ruby]
+----
+concern :commentable do
+  resources :comments
+end
+
+concern :image_attachable do
+  resources :images, only: :index
+end
+----
+
+我们可以在资源中使用已定义的路由关系，以避免代码重复，并在路由间共享行为：
+
+[source,ruby]
+----
+resources :messages, concerns: :commentable
+
+resources :articles, concerns: [:commentable, :image_attachable]
+----
+
+上面的代码等价于：
+
+[source,ruby]
+----
+resources :messages do
+  resources :comments
+end
+
+resources :articles do
+  resources :comments
+  resources :images, only: :index
+end
+----
+
+我们还可以在各种路由声明中使用已定义的路由关系，例如在作用域或命名空间中：
+
+[source,ruby]
+----
+namespace :articles do
+  concerns :commentable
+end
+----
+
+[[creating-paths-and-urls-from-objects]]
+==== 从对象创建路径和 URL 地址
+
+除了使用路由辅助方法，Rails 还可以从参数数组创建路径和 URL 地址。例如，假设有下面的路由：
+
+[source,ruby]
+----
+resources :magazines do
+  resources :ads
+end
+----
+
+在使用 `magazine_ad_path` 方法时，我们可以传入 `Magazine` 和 `Ad` 的实例，而不是数字 ID：
+
+[source,erb]
+----
+<%= link_to 'Ad details', magazine_ad_path(@magazine, @ad) %>
+----
+
+我们还可以在使用 `url_for` 方法时传入一组对象，Rails 会自动确定对应的路由：
+
+[source,erb]
+----
+<%= link_to 'Ad details', url_for([@magazine, @ad]) %>
+----
+
+在这种情况下，Rails 知道 `@magazine` 是 `Magazine` 的实例，而 `@ad` 是 `Ad` 的实例，因此会使用 `magazine_ad_path` 辅助方法。在使用 `link_to` 等辅助方法时，我们可以只指定对象，而不必完整调用 `url_for` 方法：
+
+[source,erb]
+----
+<%= link_to 'Ad details', [@magazine, @ad] %>
+----
+
+如果想链接到一本杂志，可以直接指定 `Magazine` 的实例：
+
+[source,erb]
+----
+<%= link_to 'Magazine details', @magazine %>
+----
+
+如果想链接到其他控制器动作，只需把动作名称作为第一个元素插入对象数组即可：
+
+[source,erb]
+----
+<%= link_to 'Edit Ad', [:edit, @magazine, @ad] %>
+----
+
+这样，我们就可以把模型实例看作 URL 地址，这是使用资源式风格最关键的优势之一。
+
+[[adding-more-restful-actions]]
+==== 添加更多 REST 式动作
+
+我们可以使用的路由，并不仅限于 REST 式路由默认创建的那 7 个。我们可以根据需要添加其他路由，包括集合路由（collection routes）和成员路由（member routes）。
+
+[[adding-member-routes]]
+===== 添加成员路由
+
+要添加成员路由，只需在 `resource` 块中添加 `member` 块：
+
+[source,ruby]
+----
+resources :photos do
+  member do
+    get 'preview'
+  end
+end
+----
+
+通过上述声明，Rails 路由能够识别 `/photos/1/preview` 路径上的 `GET` 请求，并把请求映射到 `PhotosController` 控制器的 `preview` 动作上，同时把资源 ID 传入 `params[:id]`，并创建 `preview_photo_url` 和 `preview_photo_path` 辅助方法。
+
+在 `member` 块中，每个成员路由都要指定对应的 HTTP 方法，即 `get`、`patch`、`put`、`post` 或 `delete`。如果只有一个成员路由，我们就可以忽略 `member` 块，直接使用成员路由的 `:on` 选项。
+
+[source,ruby]
+----
+resources :photos do
+  get 'preview', on: :member
+end
+----
+
+如果不使用 `:on` 选项，创建的成员路由也是相同的，但资源 ID 就必须通过 `params[:photo_id]` 而不是 `params[:id]` 来获取了。
+
+[[adding-collection-routes]]
+===== 添加集合路由
+
+添加集合路由的方式如下：
+
+[source,ruby]
+----
+resources :photos do
+  collection do
+    get 'search'
+  end
+end
+----
+
+通过上述声明，Rails 路由能够识别 `/photos/search` 路径上的 `GET` 请求，并把请求映射到 `PhotosController` 控制器的 `search` 动作上，同时创建 `search_photos_url` 和 `search_photos_path` 辅助方法。
+
+和成员路由一样，我们可以使用集合路由的 `:on` 选项：
+
+[source,ruby]
+----
+resources :photos do
+  get 'search', on: :collection
+end
+----
+
+[[adding-routes-for-additional-new-actions]]
+===== 为附加的 `new` 动作添加路由
+
+我们可以通过 `:on` 选项，为附加的 `new` 动作添加路由：
+
+[source,ruby]
+----
+resources :comments do
+  get 'preview', on: :new
+end
+----
+
+通过上述声明，Rails 路由能够识别 `/comments/new/preview` 路径上的 `GET` 请求，并把请求映射到 `CommentsController` 控制器的 `preview` 动作上，同时创建 `preview_new_comment_url` 和 `preview_new_comment_path` 辅助方法。
+
+NOTE: 如果我们为资源路由添加了过多动作，就需要考虑一下，是不是应该声明新资源了。
+
+[[non-resourceful-routes]]
+=== 非资源路由（non-resourceful routes）
