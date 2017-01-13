@@ -10,9 +10,9 @@ Active Support 丰富了 Rails 使用的编程语言，目的是便于开发 Rai
 读完本文后，您将学到：
 
 * 核心扩展是什么；
-* 如果加载所有扩展；
+* 如何加载所有扩展；
 * 如何按需加载想用的扩展；
-* Active Support 提供了哪些扩展；
+* Active Support 提供了哪些扩展。
 --
 
 [[how-to-load-core-extensions]]
@@ -107,7 +107,7 @@ require 'active_support/all'
 
 TIP: 判断字符串是否为空使用的是能理解 Unicode 字符的 `[:space:]`，所以 `U+2029`（分段符）会被视为空白。
 
-WARNING: 注意，这里并没有提到数字。特别说明，`0` 和 `0.0` *不是*空值。
+WARNING: 注意，这里并没有提到数字。特别说明，`0` 和 `0.0` 不是空值。
 
 例如，`ActionController::HttpAuthentication::Token::ControllerMethods` 定义的这个方法使用 `blank?` 检查是否有令牌：
 
@@ -537,7 +537,7 @@ NOTE: 在 `active_support/core_ext/object/instance_variables.rb` 文件中定义
 silence_warnings { Object.const_set "RAILS_DEFAULT_LOGGER", logger }
 ----
 
-异常消息也可静默，使用 `suppress` 方法即可。`suppress` 方法可接受任意个的异常类。如果执行代码块的过程中抛出异常，而且异常属于（`kind_of?`）参数指定的类，`suppress` 方法会静默该异常类的消息，否则抛出异常：
+异常消息也可静默，使用 `suppress` 方法即可。`suppress` 方法可接受任意个异常类。如果执行代码块的过程中抛出异常，而且异常属于（`kind_of?`）参数指定的类，`suppress` 方法会静默该异常类的消息，否则抛出异常：
 
 [source,ruby]
 ----
@@ -647,7 +647,7 @@ NOTE: 在 `active_support/core_ext/module/aliasing.rb` 文件中定义。
 
 如果在父类中定义属性，有可能会出现命名冲突。代码库一定要注意这个问题。
 
-Active Support 提供了 `attr_internal_reader`、`attr_internal_writer` 和 `attr_internal_accessor` 三个方法，其行为与 Ruby 内置的 `attr_*` 方法类似，但使用其他方式命名实例变量，减少重名的几率。
+Active Support 提供了 `attr_internal_reader`、`attr_internal_writer` 和 `attr_internal_accessor` 三个方法，其行为与 Ruby 内置的 `attr_*` 方法类似，但使用其他方式命名实例变量，从而减少重名的几率。
 
 `attr_internal` 方法是 `attr_internal_accessor` 方法的别名：
 
@@ -666,7 +666,7 @@ end
 
 在上面的例子中，`:log_level` 可能不属于代码库的公开接口，只在开发过程中使用。开发者并不知道潜在的重名风险，创建了子类，并在子类中定义了 `:log_level`。幸好用了 `attr_internal` 方法才不会出现命名冲突。
 
-默认情况下，内部变量的名字前面有个下划线，上例中的内部变量名为 `@_log_level`。不过可使用 `Module.attr_internal_naming_format` 重新设置，可以传入任何 `sprintf` 方法能理解的格式，开头加上 `@` 符号，并在某处放入 `%s`（代表原变量名）。默认的设置为 `"@_%s"`。
+默认情况下，内部变量的名字前面有个下划线，上例中的内部变量名为 `pass:[@_log_level]`。不过可使用 `Module.attr_internal_naming_format` 重新设置，可以传入任何 `sprintf` 方法能理解的格式，开头加上 `@` 符号，并在某处放入 `%s`（代表原变量名）。默认的设置为 `"@_%s"`。
 
 Rails 的代码很多地方都用到了内部属性，例如，在视图相关的代码中有如下代码：
 
@@ -686,7 +686,7 @@ NOTE: 在 `active_support/core_ext/module/attr_internal.rb` 文件中定义。
 [[module-attributes]]
 ===== 模块属性
 
-方法 `mattr_reader`、`mattr_writer` 和 `mattr_accessor` 类似于为类定义的 `cattr_*` 方法。其实 `cattr_*` 方法就是 `mattr_*` 方法的别名。参见<<class-attributes>>。
+方法 `mattr_reader`、`mattr_writer` 和 `mattr_accessor` 类似于为类定义的 `cattr_*` 方法。其实 `cattr_*` 方法就是 `mattr_*` 方法的别名。参见 <<class-attributes>>。
 
 例如，依赖机制就用到了这些方法：
 
@@ -789,7 +789,7 @@ NOTE: 在 `active_support/core_ext/module/introspection.rb` 文件中定义。
 
 常规的 `const_defined?`、`const_get` 和 `const_set` 方法接受裸常量名。Active Support 扩展了这个 API，可以传入相对限定的常量名。
 
-新定义的方法是 `qualified_const_defined?`、qualified_const_get` 和 `qualified_const_set`。它们的参数应该是相对接收者的限定常量名：
+新定义的方法是 `qualified_const_defined?`、`qualified_const_get` 和 `qualified_const_set`。它们的参数应该是相对接收者的限定常量名：
 
 [source,ruby]
 ----
@@ -833,7 +833,7 @@ N.qualified_const_defined?("C::X")        # => true
 
 如上例所示，第二个参数的默认值为 `true`，跟 `const_defined?` 一样。
 
-为了与内置方法保持连贯，只接受相对路径。完全限定常量名，如 `::Math::PI `，会抛出 `NameError` 异常。
+为了与内置方法保持连贯，只接受相对路径。完全限定常量名，如 `::Math::PI`，会抛出 `NameError` 异常。
 
 NOTE: 在 `active_support/core_ext/module/qualified_const.rb` 文件中定义。
 
@@ -1014,7 +1014,7 @@ delegate :size, to: :attachment, prefix: :avatar
 
 在这个示例中，生成的方法是 `avatar_size`，而不是 `size`。
 
-NOTE: 在 `active_support/core_ext/module/delegation.rb 文件中定义。
+NOTE: 在 `active_support/core_ext/module/delegation.rb` 文件中定义。
 
 [[redefining-methods]]
 ==== 重新定义方法
@@ -1127,13 +1127,13 @@ NOTE: 在 `active_support/core_ext/class/attribute.rb` 文件中定义。
 [source,ruby]
 ----
 class MysqlAdapter < AbstractAdapter
-  # 生成访问  @@emulate_booleans 的类方法
+  # 生成访问 @@emulate_booleans 的类方法
   cattr_accessor :emulate_booleans
   self.emulate_booleans = true
 end
 ----
 
-为了方法，也会生成实例方法，这些实例方法只是类属性的代理。因此，实例可以修改类属性，但是不能覆盖——这与 `class_attribute` 不同（参见上文）。例如：
+为了方便，也会生成实例方法，这些实例方法只是类属性的代理。因此，实例可以修改类属性，但是不能覆盖——这与 `class_attribute` 不同（参见上文）。例如：
 
 [source,ruby]
 ----
@@ -1157,7 +1157,7 @@ class MysqlAdapter < AbstractAdapter
 end
 ----
 
-把 `:instance_reader` 设为 `false`，不生成实例读值方法，把 `:instance_writer` 设为 `false`，不生成实例读值方法，把 `:instance_accessor` 设为 `false`，实例读值和设置方法都不生成。此时，这三个选项的值都必须是 `false`，而不能是假值。
+把 `:instance_reader` 设为 `false`，不生成实例读值方法，把 `:instance_writer` 设为 `false`，不生成实例设值方法，把 `:instance_accessor` 设为 `false`，实例读值和设置方法都不生成。此时，这三个选项的值都必须是 `false`，而不能是假值。
 
 [source,ruby]
 ----
@@ -1165,7 +1165,7 @@ module A
   class B
     # 不生成实例读值方法 first_name
     cattr_accessor :first_name, instance_reader: false
-    # 不生成实例设值方法No last_name=
+    # 不生成实例设值方法 last_name=
     cattr_accessor :last_name, instance_writer: false
     # 不生成实例读值方法 surname 和实例设值方法 surname=
     cattr_accessor :surname, instance_accessor: false
@@ -1237,7 +1237,7 @@ NOTE: 在 `active_support/core_ext/class/subclasses.rb` 文件中定义。
 [[motivation]]
 ===== 引子
 
-把数据插入 HTML 模板要格外小心。例如，不能原封不动地把 `@review.title` 内插到 HTML 页面中。加入标题是“Flanagan & Matz rules!”，得到的输出格式就不对，因为 & 会转义成“+&amp;+”。更糟的是，如果应用编写不当，这可能留下严重的安全漏洞，因为用户可以注入恶意的 HTML，设定精心编造的标题。关于这个问题的详情，请阅读 <<security#cross-site-scripting-xss>>对跨站脚本的说明。
+把数据插入 HTML 模板要格外小心。例如，不能原封不动地把 `@review.title` 内插到 HTML 页面中。假如标题是“Flanagan & Matz rules!”，得到的输出格式就不对，因为 & 会转义成“+&amp;+”。更糟的是，如果应用编写不当，这可能留下严重的安全漏洞，因为用户可以注入恶意的 HTML，设定精心编造的标题。关于这个问题的详情，请阅读 <<security#cross-site-scripting-xss>>对跨站脚本的说明。
 
 [[safe-strings]]
 ===== 安全字符串
@@ -1411,7 +1411,7 @@ NOTE: 在 `active_support/core_ext/string/filters.rb` 文件中定义。
 [[truncate-words]]
 ==== `truncate_words`
 
-`truncate_words` 方法在指定个单词除截断接收者，返回一个副本：
+`truncate_words` 方法在指定个单词处截断接收者，返回一个副本：
 
 [source,ruby]
 ----
@@ -1491,7 +1491,7 @@ end
 
 用户看到的消息会靠左边对齐。
 
-从技术层面来说，这个方法寻找整个字符串中的最小缩进量，然后把删除那么多的前导空白。
+从技术层面来说，这个方法寻找整个字符串中的最小缩进量，然后删除那么多的前导空白。
 
 NOTE: 在 `active_support/core_ext/string/strip.rb` 文件中定义。
 
@@ -1570,7 +1570,7 @@ NOTE: 在 `active_support/core_ext/string/access.rb` 文件中定义。
 NOTE: 在 `active_support/core_ext/string/access.rb` 文件中定义。
 
 [[to-position]]
-==== `to(position)`
+===== `to(position)`
 
 返回子串，到 `position` 位置为止：
 
@@ -1587,7 +1587,7 @@ NOTE: 在 `active_support/core_ext/string/access.rb` 文件中定义。
 [[first-limit-1]]
 ===== `first(limit = 1)`
 
-如果 `n` > 0,`str.first(n)` 的作用与 `str.to(n-1)` 一样；如果 `n` == 0，返回一个空字符串。
+如果 `n` > 0，`str.first(n)` 的作用与 `str.to(n-1)` 一样；如果 `n` == 0，返回一个空字符串。
 
 NOTE: 在 `active_support/core_ext/string/access.rb` 文件中定义。
 
@@ -1723,7 +1723,7 @@ NOTE: 在 `active_support/core_ext/string/inflections.rb` 文件中定义。
 [[underscore]]
 ===== `underscore`
 
-`underscore` 方法的作用相反，把驼峰式改成蛇底式：
+`underscore` 方法的作用相反，把驼峰式变成蛇底式：
 
 [source,ruby]
 ----
@@ -1836,7 +1836,7 @@ NOTE: 在 `active_support/core_ext/string/inflections.rb` 文件中定义。
 [[deconstantize]]
 ===== `deconstantize`
 
-`deconstantize` 方法返回限定常量引用表达式最右边那一部分，留下常量的容器：
+`deconstantize` 方法去掉限定常量引用表达式的最右侧部分，留下常量的容器：
 
 [source,ruby]
 ----
@@ -2131,7 +2131,7 @@ NOTE: 在 `active_support/core_ext/numeric/bytes.rb` 文件中定义。
 
 用于计算和声明时间，例如 `45.minutes + 2.hours + 4.years`。
 
-使用 `from_now`、`ago` 等精确计算时期，以及增减 `Time` 对象时使用 `Time#advance`。例如：
+使用 `from_now`、`ago` 等精确计算日期，以及增减 `Time` 对象时使用 `Time#advance`。例如：
 
 [source,ruby]
 ----
@@ -2515,7 +2515,7 @@ NOTE: 在 `active_support/core_ext/array/prepend_and_append.rb` 文件中定义�
 User.exists?(email: params[:email])
 ----
 
-Rails 大量使用这种语法糖，以此避免编写大量位置参数，模仿具名参数。Rails 经常在最后一个散列选项上使用这种惯用法。
+Rails 大量使用这种语法糖，以此避免编写大量位置参数，用于模仿具名参数。Rails 经常在最后一个散列选项上使用这种惯用法。
 
 然而，如果方法期待任意个参数，在声明中使用 `*`，那么选项散列就会变成数组中一个元素，失去了应有的作用。
 
@@ -2575,7 +2575,7 @@ NOTE: 在 `active_support/core_ext/array/conversions.rb` 文件中定义。
 
 默认情况下，`to_formatted_s` 的行为与 `to_s` 一样。
 
-然而，如果数组中的元素可以响应 `id` 方法，可以传入参数 `:db`。处理 Active Record 对象集合时经常如此。返回的字符串如下：
+然而，如果数组中的元素能响应 `id` 方法，可以传入参数 `:db`。处理 Active Record 对象集合时经常如此。返回的字符串如下：
 
 [source,ruby]
 ----
@@ -2616,7 +2616,7 @@ Contributor.limit(2).order(:rank).to_xml
 
 为此，它把 `to_xml` 分别发送给每个元素，然后收集结果，放在一个根节点中。所有元素都必须能响应 `to_xml`，否则抛出异常。
 
-默认情况下，根元素的名称是第一个元素的类名的复数形式经过 `underscore` 和 `dasherize` 处理后得到的值——前提是余下的元素属于哪个类型（使用 `is_a?` 检查），而且不是散列。在上例中，根元素是“contributors”。
+默认情况下，根元素的名称是第一个元素的类名的复数形式经过 `underscore` 和 `dasherize` 处理后得到的值——前提是余下的元素属于那个类型（使用 `is_a?` 检查），而且不是散列。在上例中，根元素是“contributors”。
 
 只要有不属于那个类型的元素，根元素就使用“objects”：
 
@@ -2733,7 +2733,7 @@ Array(foo: :bar)      # => [[:foo, :bar]]
 [*object]
 ----
 
-在 Ruby 1.8 中，如果参数是 `nil`，返回 `[nil]`，否则调用 ` Array(object)`。（如果你知道在 Ruby 1.9 中的行为，请联系 fxn。）
+在 Ruby 1.8 中，如果参数是 `nil`，返回 `[nil]`，否则调用 `Array(object)`。（如果你知道在 Ruby 1.9 中的行为，请联系 fxn。）
 
 因此，参数为 `nil` 时二者的行为不同，前文对 `Kernel#Array` 的说明适用于其他对象。
 
@@ -2770,7 +2770,7 @@ NOTE: 在 `active_support/core_ext/object/deep_dup.rb` 文件中定义。
 
 如果有块，把各分组拽入块中：
 
-[source,ruby]
+[source,erb]
 ----
 <% sample.in_groups_of(3) do |a, b, c| %>
   <tr>
@@ -2795,7 +2795,7 @@ NOTE: 在 `active_support/core_ext/object/deep_dup.rb` 文件中定义。
 [1, 2, 3].in_groups_of(2, false) # => [[1, 2], [3]]
 ----
 
-因此，`false` 不能最为填充值使用。
+因此，`false` 不能作为填充值使用。
 
 NOTE: 在 `active_support/core_ext/array/grouping.rb` 文件中定义。
 
@@ -2845,7 +2845,7 @@ NOTE: 在 `active_support/core_ext/array/grouping.rb` 文件中定义。
 [[split-value-nil]]
 ===== `split(value = nil)`
 
-`split` 方法在指定的分隔符处拆分数组，返回得到的片段：
+`split` 方法在指定的分隔符处拆分数组，返回得到的片段。
 
 如果有块，使用块中表达式返回 `true` 的元素作为分隔符：
 
@@ -2876,7 +2876,7 @@ NOTE: 在 `active_support/core_ext/array/grouping.rb` 文件中定义。
 [[conversions-to-xml]]
 ===== `to_xml`
 
-`to_xml` 方法接收者的 XML 表述（字符串）：
+`to_xml` 方法返回接收者的 XML 表述（字符串）：
 
 [source,ruby]
 ----
@@ -2889,7 +2889,7 @@ NOTE: 在 `active_support/core_ext/array/grouping.rb` 文件中定义。
 # </hash>
 ----
 
-为此，这个方法迭代各个键值对，根据值构建节点。加入键值对是 `key, value`：
+为此，这个方法迭代各个键值对，根据值构建节点。假如键值对是 `key, value`：
 
 * 如果 `value` 是一个散列，递归调用，此时 `key` 作为 `:root`。
 
@@ -2959,7 +2959,7 @@ options = options.reverse_merge(length: 30, omission: "...")
 options.reverse_merge!(length: 30, omission: "...")
 ----
 
-WARNING: `reverse_merge!` 方法会就地修改调用发，这可能不是个好主意。
+WARNING: `reverse_merge!` 方法会就地修改调用方，这可能不是个好主意。
 
 NOTE: 在 `active_support/core_ext/hash/reverse_merge.rb` 文件中定义。
 
@@ -3166,7 +3166,7 @@ end
 
 也有爆炸版本，`symbolize_keys!`，直接把接收者的键变成符号。
 
-此外，可以使用 `deep_symbolize_keys` 和 `deep_symbolize_keys!` 把指定散列及其中嵌套的散列的键全都转换成富豪。例如：
+此外，可以使用 `deep_symbolize_keys` 和 `deep_symbolize_keys!` 把指定散列及其中嵌套的散列的键全都转换成符号。例如：
 
 [source,ruby]
 ----
@@ -3658,7 +3658,7 @@ date.advance(months: 2, days: -2) # => Wed, 04 Aug 2010
 
 如上例所示，增量可以是负数。
 
-这个方法做计算时，先增加年，然后是月和周，最后是日。这个顺序是重要的，想一个月的末尾流动。假如我们在 2010 年 2 月的最后一天，我们想向前移动一个月和一天。
+这个方法做计算时，先增加年，然后是月和周，最后是日。这个顺序是重要的，向一个月的末尾流动。假如我们在 2010 年 2 月的最后一天，我们想向前移动一个月和一天。
 
 此时，`advance` 先向前移动一个月，然后移动一天，结果是：
 
@@ -3890,7 +3890,7 @@ Active Support 定义的 `DateTime.current` 方法类似于 `Time.now.to_datetim
 [[seconds-since-midnight]]
 ====== `seconds_since_midnight`
 
-`seconds_since_midnight` 方法返回自午夜的秒数：
+`seconds_since_midnight` 方法返回自午夜起的秒数：
 
 [source,ruby]
 ----
@@ -3961,7 +3961,7 @@ WARNING: 因为 `DateTime` 不支持夏令时，所以可能得到不存在的�
 [[extensions-to-datetime-calculations-changing-components]]
 ===== 修改日期时间组成部分
 
-`change` 方法在接收者的基础上修改日期时间，修改的值由选项指定，可以包括 :year`、`:month`、`:day`、`:hour`、`:min`、`:sec`、`:offset` 和 `:start`：
+`change` 方法在接收者的基础上修改日期时间，修改的值由选项指定，可以包括 `:year`、`:month`、`:day`、`:hour`、`:min`、`:sec`、`:offset` 和 `:start`：
 
 [source,ruby]
 ----
@@ -4091,7 +4091,7 @@ t.advance(seconds: 1)
 [[time-current]]
 ===== `Time.current`
 
-Active Support 定义的 Time.current 方法表示当前时区中的今天。其作用类似于 Time.now，不过会考虑用户设定的时区（如果定义了时区的话）。Active Support 还定义了与 `Time.current` 有关的实例判断方法 `past?`、today?` 和 `future?`。
+Active Support 定义的 `Time.current` 方法表示当前时区中的今天。其作用类似于 `Time.now`，不过会考虑用户设定的时区（如果定义了时区的话）。Active Support 还定义了与 `Time.current` 有关的实例判断方法 `past?`、`today?` 和 `future?`。
 
 比较时间时，如果要考虑用户设定的时区，应该使用 `Time.current`，而不是 `Time.now`。与系统的时区（`Time.now` 默认采用）相比，用户设定的时区可能超前，这意味着，`Time.now.to_date` 可能等于 `Date.yesterday`。
 
