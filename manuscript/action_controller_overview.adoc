@@ -5,7 +5,7 @@
 --
 本文介绍控制器的工作原理，以及控制器在应用请求周期中扮演的角色。
 
-读完后，您将学会：
+读完本文后，您将学到：
 
 * 请求如何进入控制器；
 * 如何限制传入控制器的参数；
@@ -14,7 +14,7 @@
 * 如何使用 Action Controller 内置的 HTTP 身份验证功能；
 * 如何把数据流直接发送给用户的浏览器；
 * 如何过滤敏感信息，不写入应用的日志；
-* 如何处理请求过程中可能出现的异常；
+* 如何处理请求过程中可能出现的异常。
 --
 
 [[what-does-a-controller-do-questionmark]]
@@ -31,9 +31,9 @@ NOTE: 路由的处理细节参阅<<routing#rails-routing-from-the-outside-in>>�
 [[controller-name-convention]]
 === 控制器命名约定
 
-Rails 控制器的命名阅读是，最后一个单词使用复数形式，但也有例外，比如 `ApplicationController`。例如：用 `ClientsController`，而不是 `ClientController`；用 `SiteAdminsController`，而不是 `SiteAdminController` 或 `SitesAdminsController`。
+Rails 控制器的命名约定是，最后一个单词使用复数形式，但也有例外，比如 `ApplicationController`。例如：用 `ClientsController`，而不是 `ClientController`；用 `SiteAdminsController`，而不是 `SiteAdminController` 或 `SitesAdminsController`。
 
-遵守这一约定便可享用默认的路由生成器（例如 `resources` 等），无需再指定 `:path` 或 `:controller`，而且 URL 和路径的辅助方法也能保持一致性。详情参阅<<layouts_and_rendering#layouts-and-rendering-in-rails>>。
+遵守这一约定便可享用默认的路由生成器（例如 `resources` 等），无需再指定 `:path` 或 `:controller` 选项，而且 URL 和路径的辅助方法也能保持一致性。详情参阅<<layouts_and_rendering#layouts-and-rendering-in-rails>>。
 
 NOTE: 控制器的命名约定与模型不同，模型的名字习惯使用单数形式。
 
@@ -68,7 +68,7 @@ end
 [[parameters]]
 === 参数
 
-在控制器的动作中，往往需要获取用户发送的数据或其他参数。在 Web 应用中参数分为两类。第一类随 URL 发送，叫做“查询字符串参数”，即 URL 中 `?` 符号后面的部分。第二类经常称为“POST 数据”，一般来自用户填写的表单。之所以叫做“POST 数据”是因为，这类数据只能随 HTTP POST 请求发送。Rails 不区分这两种参数，在控制器中都可通过 `params` 散列获取：
+在控制器的动作中，往往需要获取用户发送的数据或其他参数。在 Web 应用中参数分为两类。第一类随 URL 发送，叫做“查询字符串参数”，即 URL 中 `?` 符号后面的部分。第二类经常称为“POST 数据”，一般来自用户填写的表单。之所以叫做“POST 数据”，是因为这类数据只能随 HTTP POST 请求发送。Rails 不区分这两种参数，在控制器中都可通过 `params` 散列获取：
 
 [source,ruby]
 ----
@@ -115,9 +115,7 @@ NOTE: “[”和“]”这两个符号不允许出现在 URL 中，所以上面�
 
 此时，`params[:ids]` 的值是 `["1", "2", "3"]`。注意，参数的值始终是字符串，Rails 不会尝试转换类型。
 
-NOTE: 默认情况下，基于安全考虑，参数中的 `[nil]` 和 `[nil, nil, ...]` 会替换成 `[]`。
-
-// 在原文中，前一个 NOTE 框引用的内容不存在，因此没翻译。
+NOTE: 默认情况下，基于安全考虑，参数中的 `[nil]` 和 `[nil, nil, ...]` 会替换成 `[]`。详情参见 <<security#unsafe-query-generation>>。
 
 若想发送一个散列，要在方括号内指定键名：
 
@@ -131,7 +129,7 @@ NOTE: 默认情况下，基于安全考虑，参数中的 `[nil]` 和 `[nil, nil
 </form>
 ----
 
-提交这个表单后，`params[:client]` 的值是 `{ "name" => "Acme", "phone" => "12345", "address" => { "postcode" => "12345", "city" => "Carrot City" } }`。注意 `params[:client][:address]` 是个嵌套散列。
+提交这个表单后，`params[:client]` 的值是 `pass:[{ "name" => "Acme", "phone" => "12345", "address" => { "postcode" => "12345", "city" => "Carrot City" } }]`。注意 `params[:client][:address]` 是个嵌套散列。
 
 `params` 对象的行为类似于散列，但是键可以混用符号和字符串。
 
@@ -147,7 +145,7 @@ NOTE: 默认情况下，基于安全考虑，参数中的 `[nil]` 和 `[nil, nil
 { "company": { "name": "acme", "address": "123 Carrot Street" } }
 ----
 
-控制器收到的 `params[:company]` 是 `{ "name" => "acme", "address" => "123 Carrot Street" }`。
+控制器收到的 `params[:company]` 是 `pass:[{ "name" => "acme", "address" => "123 Carrot Street" }]`。
 
 如果在初始化脚本中开启了 `config.wrap_parameters` 选项，或者在控制器中调用了 `wrap_parameters` 方法，可以放心地省去 JSON 参数中的根元素。此时，Rails 会以控制器名新建一个键，复制参数，将其存入这个键名下。因此，上面的参数可以写成：
 
@@ -195,7 +193,7 @@ end
 
 这个方法定义的只是预设参数，可以被 `url_for` 方法的参数覆盖。
 
-如果像上面的代码那样在 `ApplicationController` 中定义 `default_url_options`，设定的默认参数会用于生成的所有 URL。`default_url_options` 也可以在具体的控制器中定义，此时只影响与该控制器有关的 URL。
+如果像上面的代码那样在 `ApplicationController` 中定义 `default_url_options`，设定的默认参数会用于生成所有的 URL。`default_url_options` 也可以在具体的控制器中定义，此时只影响与该控制器有关的 URL。
 
 其实，不是生成的每个 URL 都会调用这个方法。为了提高性能，返回的散列会缓存，因此一次请求至少会调用一次。
 
@@ -210,7 +208,7 @@ end
 ----
 class PeopleController < ActionController::Base
   # 这会导致 ActiveModel::ForbiddenAttributes 异常抛出
-  # 因为没有明显指明允许赋值的属性就批量更新了
+  # 因为没有明确指明允许赋值的属性就批量更新了
   def create
     Person.create(params[:person])
   end
@@ -276,7 +274,7 @@ params.permit(:name, { emails: [] },
                          { family: [ :name ], hobbies: [] }])
 ----
 
-此时，允许传入 `name`，`emails` 和 `friends` 属性。其中，`emails` 是标量数组；`friends` 是一个由资源组成的数组：应该有个 `name` 属性（任何允许使用的标量值），有个 `hobbies` 属性，其值是标量数组，以及一个 `family` 属性，其值只能包含 `name` 属性（也是任何允许使用的标量值）。
+此时，允许传入 `name`、`emails` 和 `friends` 属性。其中，`emails` 是标量数组；`friends` 是一个由资源组成的数组：应该有个 `name` 属性（任何允许使用的标量值），有个 `hobbies` 属性，其值是标量数组，以及一个 `family` 属性，其值只能包含 `name` 属性（也是任何允许使用的标量值）。
 
 [[more-examples]]
 ===== 更多示例
@@ -315,7 +313,7 @@ params.require(:book).permit(:title, chapters_attributes: [:title])
 
 健壮参数的目的是为了解决常见问题，不是万用良药。不过，你可以很方便地与自己的代码结合，解决复杂需求。
 
-假设有个参数包含产品名字和一个由任意数据组成的产品附加信息散列，你想过滤产品名称和整个附加数据散列。健壮参数不能过滤由任意键组成的嵌套散列，不过可以使用嵌套散列的键定义过滤规则：
+假设有个参数包含产品名称和一个由任意数据组成的产品附加信息散列，你想过滤产品名称和整个附加数据散列。健壮参数不能过滤由任意键组成的嵌套散列，不过可以使用嵌套散列的键定义过滤规则：
 
 [source,ruby]
 ----
@@ -767,9 +765,9 @@ end
 [[request-forgery-protection]]
 === 请求伪造防护
 
-跨站请求伪造（Cross-Site Request Forgery，CSRF）是一种攻击方式，A 网站的用户伪装成 B 网站的用户发送请求，在 B 站中添加、修改或删除数据，而 B 站的用户绝然不知。
+跨站请求伪造（Cross-Site Request Forgery，CSRF）是一种攻击方式，A 网站的用户伪装成 B 网站的用户发送请求，在 B 站中添加、修改或删除数据，而 B 站的用户浑然不知。
 
-防止这种攻击的第一步是，确保所有破坏性动作（`create`，`update` 和 `destroy`）只能通过 GET 之外的请求方法访问。如果遵从 REST 架构，已经做了这一步。不过，恶意网站还是可以轻易地发起非 GET 请求，这时就要用到其他跨站攻击防护措施了。
+防止这种攻击的第一步是，确保所有破坏性动作（`create`、`update` 和 `destroy`）只能通过 GET 之外的请求方法访问。如果遵从 REST 架构，已经做了这一步。不过，恶意网站还是可以轻易地发起非 GET 请求，这时就要用到其他跨站攻击防护措施了。
 
 防止跨站攻击的方式是，在各个请求中添加一个只有服务器才知道的难以猜测的令牌。如果请求中没有正确的令牌，服务器会拒绝访问。
 
@@ -795,11 +793,11 @@ end
 </form>
 ----
 
-使用<<form_helpers#form-helpers,表单辅助方法>>生成的所有表单都有这样一个令牌，因此多数时候你都无需担心。如果想自己编写表单，或者基于其他原因想添加令牌，可以使用 `form_authenticity_token` 方法。
+使用<<form_helpers#action-view-form-helpers,表单辅助方法>>生成的所有表单都有这样一个令牌，因此多数时候你都无需担心。如果想自己编写表单，或者基于其他原因想添加令牌，可以使用 `form_authenticity_token` 方法。
 
 `form_authenticity_token` 会生成一个有效的令牌。在 Rails 没有自动添加令牌的地方（例如 Ajax）可以使用这个方法。
 
-<<security#ruby-on-rails-security-guide>>更深入的介绍了请求伪造防护措施，还有一些开发 Web 应用需要知道的其他安全隐患。
+<<security#ruby-on-rails-security-guide>>将更为深入地说明请求伪造防护措施，还有一些开发 Web 应用需要知道的其他安全隐患。
 
 [[the-request-and-response-objects]]
 === 请求和响应对象
@@ -904,7 +902,7 @@ class AdminsController < ApplicationController
 end
 ----
 
-如上面的代码所示，`authenticate_or_request_with_http_digest` 方法的块只接受一个参数，用户名，返回值是密码。如果 `authenticate_or_request_with_http_digest` 返回 `false` 或 `nil`，表明认证失败。
+如上面的代码所示，`authenticate_or_request_with_http_digest` 方法的块只接受一个参数，用户名，返回值是密码。如果 `authenticate_or_request_with_http_digest` 返回 `false` 或 `nil`，表明身份验证失败。
 
 [[streaming-and-file-downloads]]
 === 数据流和文件下载
@@ -917,8 +915,8 @@ end
 ----
 require "prawn"
 class ClientsController < ApplicationController
-  # 使用客户信息生成一份 PDF 文档，然后返回文档
-  # 用户会下载这份文档
+  # 使用客户信息生成一份 PDF 文档
+  # 然后返回文档，让用户下载
   def download_pdf
     client = Client.find(params[:id])
     send_data generate_pdf(client),
@@ -938,7 +936,7 @@ class ClientsController < ApplicationController
 end
 ----
 
-在上面的代码中，`download_pdf` 动作调用一个私有方法，生成 PDF 文档，然后返回字符串形式。返回的字符串会以数据流的形式发送给客户端，并为用户推荐一个文件名。有时发送文件流时，并不希望用户下载这个文件，比如嵌在 HTML 页面中的图片。若想告诉浏览器文件不是用来下载的，可以把 `:disposition` 选项设为 `"inline"`。这个选项的另外一个值，也是默认值，是 `"attachment"`。
+在上面的代码中，`download_pdf` 动作调用一个私有方法，生成 PDF 文档，然后返回字符串形式。返回的字符串会以数据流的形式发送给客户端，并为用户推荐一个文件名。有时发送文件流时，并不希望用户下载这个文件，比如嵌在 HTML 页面中的图像。若想告诉浏览器文件不是用来下载的，可以把 `:disposition` 选项设为 `"inline"`。这个选项的另外一个值，也是默认值，是 `"attachment"`。
 
 [[sending-files]]
 ==== 发送文件
@@ -962,7 +960,7 @@ end
 
 如果没有指定 `:type` 选项，Rails 会根据 `:filename` 的文件扩展名猜测。如果没有注册扩展名对应的文件类型，则使用 `application/octet-stream`。
 
-WARNING: 要谨慎处理用户提交数据（参数，cookies 等）中的文件路径，这有安全隐患，可能导致不该下载的文件被下载了。
+WARNING: 要谨慎处理用户提交数据（参数、cookies 等）中的文件路径，这有安全隐患，可能导致不该下载的文件被下载了。
 
 TIP: 不建议通过 Rails 以数据流的方式发送静态文件，你可以把静态文件放在服务器的公共文件夹中。使用 Apache 或其他 Web 服务器下载效率更高，因为不用经由整个 Rails 栈处理。
 
@@ -1111,12 +1109,12 @@ config.filter_redirect.concat ['s3.amazonaws.com', /private_path/]
 
 应用很有可能出错，错误发生时会抛出异常，这些异常是需要处理的。例如，如果用户访问一个链接，但数据库中已经没有对应的资源了，此时 Active Record 会抛出 `ActiveRecord::RecordNotFound` 异常。
 
-在 Rails 中，异常的默认处理方式是显示“500 Server Error”消息。如果应用在本地运行，出错后会显示一个精美的调用跟踪，以及其他附加信息，让开发者快速找到出错的地方，然后修正。如果应用已经上线，Rails 则会简单的显示“500 Server Error”消息；如果是路由错误或记录不存在，则显示“404 Not Found”。有时你可能想换种方式捕获错误，以不同的方式显示报错信息。在 Rails 中，有很多层异常处理，详解如下。
+在 Rails 中，异常的默认处理方式是显示“500 Server Error”消息。如果应用在本地运行，出错后会显示一个精美的调用跟踪，以及其他附加信息，让开发者快速找到出错的地方，然后修正。如果应用已经上线，Rails 则会简单地显示“500 Server Error”消息；如果是路由错误或记录不存在，则显示“404 Not Found”。有时你可能想换种方式捕获错误，以不同的方式显示报错信息。在 Rails 中，有很多层异常处理，详解如下。
 
 [[the-default-500-and-404-templates]]
 ==== 默认的 500 和 404 模板
 
-默认情况下，生成环境中的应用出错时会显示 404 或 500 错误消息，在开发环境中则抛出未捕获的异常。错误消息在 `public` 文件夹里的静态 HTML 文件中，分别是 `404.html` 和 `500.html`。你可以修改这两个文件，添加其他信息和样式，不过要记住，这两个是静态文件，不能使用 ERB、SCSS、CoffeeScript 或布局。
+默认情况下，生产环境中的应用出错时会显示 404 或 500 错误消息，在开发环境中则抛出未捕获的异常。错误消息在 `public` 文件夹里的静态 HTML 文件中，分别是 `404.html` 和 `500.html`。你可以修改这两个文件，添加其他信息和样式，不过要记住，这两个是静态文件，不能使用 ERB、SCSS、CoffeeScript 或布局。
 
 [[rescue-form]]
 ==== `rescue_from`
@@ -1173,7 +1171,7 @@ class ClientsController < ApplicationController
 end
 ----
 
-WARNING: 如果没有特别的原因，不要使用 `rescue_from Exception` 或 rescue_from StandardError`，因为这会导致严重的副作用（例如，在开发环境中看不到异常详情和调用跟踪）。
+WARNING: 如果没有特别的原因，不要使用 `rescue_from Exception` 或 `rescue_from StandardError`，因为这会导致严重的副作用（例如，在开发环境中看不到异常详情和调用跟踪）。
 
 NOTE: 在生产环境中，所有 `ActiveRecord::RecordNotFound` 异常都会导致渲染 404 错误页面。如果不想定制这一行为，无需处理这个异常。
 
