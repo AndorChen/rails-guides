@@ -38,7 +38,7 @@
 | Using Rails for API-only Applications | ✔️ | |
 | Action Cable Overview | | |
 | The Basics of Creating Rails Plugins| ✔️ | |
-| Rails on Rack | | |
+| Rails on Rack | ✔️ | |
 | Creating and Customizing Rails Generators | ✔️ | |
 | Getting Started with Engines | | |
 | Contributing to Ruby on Rails | ✔️ | |
