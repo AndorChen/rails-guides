@@ -178,7 +178,7 @@ resources :videos
 ----
 
 [[singular-resources]]
-==== 单数资源（singular resources）
+==== 单数资源（singular resource）
 
 有时我们希望不使用 ID 就能查找资源。例如，让 `/profile` 总是显示当前登录用户的个人信息。这种情况下，我们可以使用单数资源来把 `/profile` 而不是 `/profile/:id` 映射到 `show` 动作：
 
@@ -385,7 +385,7 @@ resources :articles, path: '/admin/articles'
 NOTE: 如果想在命名空间代码块中使用另一个控制器命名空间，我们可以指定控制器的绝对路径，例如 `get '/foo' => '/foo#index'`。
 
 [[nested-resources]]
-==== 嵌套资源（nested resources）
+==== 嵌套资源（nested resource）
 
 有的资源是其他资源的子资源，这种情况很常见。例如，假设我们的应用中包含下列模型：
 
@@ -490,7 +490,7 @@ end
 resources :comments, only: [:show, :edit, :update, :destroy]
 ----
 
-这种方式在描述性路由（descriptive routes）和深层嵌套之间取得了平衡。上面的代码还有简易写法，即使用 `:shallow` 选项：
+这种方式在描述性路由（descriptive route）和深层嵌套之间取得了平衡。上面的代码还有简易写法，即使用 `:shallow` 选项：
 
 [source,ruby]
 ----
@@ -628,9 +628,9 @@ end
 |===
 
 [[routing-concerns]]
-==== 路由关系（routing concerns）
+==== 路由关系（routing concern）
 
-路由关系用于声明公共路由（common routes），公共路由可以在其他资源和路由中重复使用。定义路由关系的方式如下：
+路由关系用于声明公共路由（common route），公共路由可以在其他资源和路由中重复使用。定义路由关系的方式如下：
 
 [source,ruby]
 ----
@@ -727,7 +727,7 @@ end
 [[adding-more-restful-actions]]
 ==== 添加更多 REST 式动作
 
-我们可以使用的路由，并不仅限于 REST 式路由默认创建的那 7 个。我们可以根据需要添加其他路由，包括集合路由（collection routes）和成员路由（member routes）。
+我们可以使用的路由，并不仅限于 REST 式路由默认创建的那 7 个。我们可以根据需要添加其他路由，包括集合路由（collection route）和成员路由（member route）。
 
 [[adding-member-routes]]
 ===== 添加成员路由
@@ -798,4 +798,373 @@ end
 NOTE: 如果我们为资源路由添加了过多动作，就需要考虑一下，是不是应该声明新资源了。
 
 [[non-resourceful-routes]]
-=== 非资源路由（non-resourceful routes）
+=== 非资源路由（non-resourceful route）
+
+除了资源路由之外，对于把任意 URL 地址映射到控制器动作的路由，Rails 也提供了强大的支持。和资源路由自动生成一系列路由不同，这时我们需要分别声明各个路由。
+
+尽管我们通常会使用资源路由，但在一些情况下，使用简单路由（simple routing）更为合适。对于不适合使用资源路由的情况，我们也不必强迫自己使用资源路由。
+
+对于把旧系统的 URL 地址映射到新 Rails 应用上的情况，简单路由特别适用。
+
+[[bound-parameters]]
+==== 绑定参数（bound parameter）
+
+在声明普通路由（regular route）时，我们可以使用符号，将其作为 HTTP 请求的一部分。其中有两个特殊符号：`:controller` 会被映射到控制器的名称上，`:action` 会被映射到控制器动作的名称上。例如，下面的路由：
+
+[source,ruby]
+----
+get ':controller(/:action(/:id))'
+----
+
+在处理 `/photos/show/1` 请求时（假设这个路由是第一个匹配的路由），会把请求映射到 `PhotosController` 控制器的 `show` 动作上，并把参数 1 传入 `params[:id]`。而 `/photos` 请求，也会被这个路由映射到 `PhotosController#index` 上，因为 `:action` 和 `:id` 都在括号中，是可选参数。
+
+[[dynamic-segments]]
+==== 动态片段（dynamic segment）
+
+在声明普通路由时，我们可以根据需要使用多个动态片段。除了 `:controller` 和 `:action`，其他动态片段都会传入 `params`，以便在控制器动作中使用。例如，对于下面的路由：
+
+[source,ruby]
+----
+get ':controller/:action/:id/:user_id'
+----
+
+`/photos/show/1/2` 路径会被映射到 `PhotosController` 控制器的 `show` 动作上。此时，`params[:id]` 的值是 `"1"`，`params[:user_id]` 的值是 `"2"`。
+
+NOTE: `:namespace` 或 `:module` 不能用作动态片段。如果需要这一功能，可以通过为控制器添加约束，来匹配所需的命名空间。例如：
+
+[source,ruby]
+----
+get ':controller(/:action(/:id))', controller: /admin\/[^\/]+/
+----
+
+TIP: 默认情况下，在动态片段中不能使用小圆点（`.`），因为小圆点是格式化路由（formatted route）的分隔符。如果想在动态片段中使用小圆点，可以通过添加约束来实现相同效果，例如，`id: /[^\/]+/` 可以匹配除斜线外的任何字符（串）。
+
+[[static-segments]]
+==== 静态片段（static segment）
+
+在创建路由时，我们可以用不带冒号的片段来指定静态片段：
+
+[source,ruby]
+----
+get ':controller/:action/:id/with_user/:user_id'
+----
+
+这个路由可以响应像 `/photos/show/1/with_user/2` 这样的路径，此时，`params` 的值为 `{ controller: 'photos', action: 'show', id: '1', user_id: '2' }`。
+
+[[the-query-string]]
+==== 查询字符串
+
+`params` 也包含了查询字符串中的所有参数。例如，对于下面的路由：
+
+[source,ruby]
+----
+get ':controller/:action/:id'
+----
+
+`/photos/show/1?user_id=2` 路径会被映射到 `Photos` 控制器的 `show` 动作上，此时，`params` 的值是 `{ controller: 'photos', action: 'show', id: '1', user_id: '2' }`。
+
+[[defining-defaults]]
+==== 定义默认值
+
+通过定义默认值，我们可以避免在路由声明中显式使用 `:controller` 和 `:action` 符号：
+
+[source,ruby]
+----
+get 'photos/:id', to: 'photos#show'
+----
+
+这个路由会把 `/photos/12` 路径映射到 `PhotosController` 控制器的 `show` 动作上。
+
+在路由声明中，我们还可以使用 `:defaults` 选项（其值为散列）定义更多默认值。对于未声明为动态片段的参数，也可以使用 `:defaults` 选项。例如：
+
+[source,ruby]
+----
+get 'photos/:id', to: 'photos#show', defaults: { format: 'jpg' }
+----
+
+这个路由会把 `photos/12` 路径映射到 `PhotosController` 控制器的 `show` 动作上，并把 `params[:format]` 的值设置为 `"jpg"`。
+
+NOTE: 出于安全考虑，Rails 不允许用查询参数来覆盖默认值。只有一种情况下可以覆盖默认值，即通过 URL 路径替换来覆盖动态片段。
+
+[[naming-routes]]
+==== 为路由命名
+
+通过 `:as` 选项，我们可以为路由命名：
+
+[source,ruby]
+----
+get 'exit', to: 'sessions#destroy', as: :logout
+----
+
+这个路由声明会创建 `logout_path` 和 `logout_url` 具名辅助方法。其中，`logout_path` 辅助方法的返回值是 `/exit`。
+
+通过为路由命名，我们还可以覆盖由资源路由定义的路由辅助方法，例如：
+
+[source,ruby]
+----
+get ':username', to: 'users#show', as: :user
+----
+
+这个路由声明会定义 `user_path` 辅助方法，此方法可以在控制器、辅助方法和视图中使用，其返回值类似 `/bob`。在 `UsersController` 控制器的 `show` 动作中，`params[:username]` 的值是用户名。如果不想使用 `:username` 作为参数名，可以在路由声明中把 `:username` 改为其他名字。
+
+[[http-verb-constraints]]
+==== HTTP 方法约束（HTTP verb constraint）
+
+通常，我们应该使用 `get`、`post`、`put`、`patch` 和 `delete` 方法来约束路由可以匹配的 HTTP 方法。通过使用 `match` 方法和 `:via` 选项，我们可以一次匹配多个 HTTP 方法：
+
+[source,ruby]
+----
+match 'photos', to: 'photos#show', via: [:get, :post]
+----
+
+通过 `via: :all` 选项，路由可以匹配所有 HTTP 方法：
+
+[source,ruby]
+----
+match 'photos', to: 'photos#show', via: :all
+----
+
+NOTE: 把 `GET` 和 `POST` 请求映射到同一个控制器动作上会带来安全隐患。通常，除非有足够的理由，我们应该避免把使用不同 HTTP 方法的所有请求映射到同一个控制器动作上。
+
+NOTE: Rails 在处理 `GET` 请求时不会检查 CSRF 令牌。在处理 `GET` 请求时绝对不可以对数据库进行写操作，更多介绍请参阅 <<http://guides.rubyonrails.org/security.html#csrf-countermeasures>> 一节。
+
+[[segment-constraints]]
+==== 片段约束（segment constraint）
+
+我们可以使用 `:constraints` 选项来约束动态片段的格式：
+
+[source,ruby]
+----
+get 'photos/:id', to: 'photos#show', constraints: { id: /[A-Z]\d{5}/ }
+----
+
+这个路由会匹配 `/photos/A12345` 路径，但不会匹配 `/photos/893` 路径。此路由还可以简写为：
+
+[source,ruby]
+----
+get 'photos/:id', to: 'photos#show', id: /[A-Z]\d{5}/
+----
+
+`:constraints` 选项的值可以是正则表达式，但不能使用 `^` 符号。例如，下面的路由写法是错误的：
+
+[source,ruby]
+----
+get '/:id', to: 'articles#show', constraints: { id: /^\d/ }
+----
+
+其实，使用 `^` 符号也完全没有必要，因为路由总是从头开始匹配。
+
+例如，对于下面的路由，`/1-hello-world` 路径会被映射到 `articles#show` 上，而 `/david` 路径会被映射到 `users#show` 上：
+
+[source,ruby]
+----
+get '/:id', to: 'articles#show', constraints: { id: /\d.+/ }
+get '/:username', to: 'users#show'
+----
+
+[[request-based-constraints]]
+==== 请求约束（request-based constraint）
+
+如果在 <<http://guides.rubyonrails.org/action_controller_overview.html#the-request-object,请求对象>> 上调用某个方法的返回值是字符串，我们就可以用这个方法来约束路由。
+
+请求约束和片段约束的用法相同：
+
+[source,ruby]
+----
+get 'photos', to: 'photos#index', constraints: { subdomain: 'admin' }
+----
+
+我们还可以用块来指定约束：
+
+[source,ruby]
+----
+namespace :admin do
+  constraints subdomain: 'admin' do
+    resources :photos
+  end
+end
+----
+
+NOTE: 请求约束（request constraint）的工作原理，是在 <<http://guides.rubyonrails.org/action_controller_overview.html#the-request-object,请求对象>> 上调用和约束条件中散列的键同名的方法，然后比较返回值和散列的值。因此，约束中散列的值和调用方法返回的值的类型应当相同。例如，`constraints: { subdomain: 'api' }` 会匹配 `api` 子域名，但是 `constraints: { subdomain: :api }` 不会匹配 `api` 子域名，因为后者散列的值是符号，而 `request.subdomain` 方法的返回值 `'api'` 是字符串。
+
+NOTE: 格式约束（format constraint）是一个例外：尽管格式约束是在请求对象上调用的方法，但同时也是路径的隐式可选参数（implicit optional parameter）。片段约束的优先级高于格式约束，而格式约束在通过散列指定时仅作为隐式可选参数。例如，`get 'foo', constraints: { format: 'json' }` 路由会匹配 `GET  /foo` 请求，因为默认情况下格式约束是可选的。尽管如此，我们可以 <<http://guides.rubyonrails.org/routing.html#advanced-constraints,使用 lambda>>，例如，`get 'foo', constraints: lambda { |req| req.format == :json }` 路由只匹配显式 JSON 请求。
+
+[[advanced-constraints]]
+==== 高级约束（advanced constraint）
+
+如果需要更复杂的约束，我们可以使用能够响应 `matches?` 方法的对象作为约束。假设我们想把所有黑名单用户映射到 `BlacklistController` 控制器，可以这么做：
+
+[source,ruby]
+----
+class BlacklistConstraint
+  def initialize
+    @ips = Blacklist.retrieve_ips
+  end
+
+  def matches?(request)
+    @ips.include?(request.remote_ip)
+  end
+end
+
+Rails.application.routes.draw do
+  get '*path', to: 'blacklist#index',
+    constraints: BlacklistConstraint.new
+end
+----
+
+我们还可以用 lambda 来指定约束：
+
+[source,ruby]
+----
+Rails.application.routes.draw do
+  get '*path', to: 'blacklist#index',
+    constraints: lambda { |request| Blacklist.retrieve_ips.include?(request.remote_ip) }
+end
+----
+
+在上面两段代码中，`matches?` 方法和 lambda 都是把请求对象作为参数。
+
+[[route-globbing-and-wildcard-segments]]
+==== 路由通配符（route globbing）和通配符片段（wildcard segment）
+
+路由通配符用于指定特殊参数，这一参数会匹配路由的所有剩余部分。例如：
+
+[source,ruby]
+----
+get 'photos/*other', to: 'photos#unknown'
+----
+
+这个路由会匹配 `photos/12` 和 `/photos/long/path/to/12` 路径，并把 `params[:other]` 分别设置为 `"12"` 和 `"long/path/to/12"`。像 `*other` 这样以星号开头的片段，被称作“通配符片段”。
+
+通配符片段可以出现在路由中的任何位置。例如：
+
+[source,ruby]
+----
+get 'books/*section/:title', to: 'books#show'
+----
+
+这个路由会匹配 `books/some/section/last-words-a-memoir` 路径，此时，`params[:section]` 的值是 `'some/section'`，`params[:title]` 的值是 `'last-words-a-memoir'`。
+
+严格来说，路由中甚至可以有多个通配符片段，其匹配方式也非常直观。例如：
+
+[source,ruby]
+----
+get '*a/foo/*b', to: 'test#index'
+----
+
+会匹配 `zoo/woo/foo/bar/baz` 路径，此时，`params[:a]` 的值是 `'zoo/woo'`，`params[:b]` 的值是 `'bar/baz'`。
+
+NOTE: `get '*pages', to: 'pages#show'` 路由在处理 `'/foo/bar.json'` 请求时，`params[:pages]` 的值是 `'foo/bar'`，请求格式（request format）是 `JSON`。如果想让 Rails 按 `3.0.x` 版本的方式进行匹配，可以使用 `format: false` 选项，例如：
+
+[source,ruby]
+----
+get '*pages', to: 'pages#show', format: false
+----
+
+NOTE: 如果想强制使用格式约束，或者说让格式约束不再是可选的，我们可以使用 `format: true` 选项，例如：
+
+[source,ruby]
+----
+get '*pages', to: 'pages#show', format: true
+----
+
+[[redirection]]
+==== 重定向
+
+在路由中，通过 `redirect` 辅助方法，我们可以把一个路径重定向到另一个路径：
+
+[source,ruby]
+----
+get '/stories', to: redirect('/articles')
+----
+
+在重定向的目标路径中，我们可以使用源路径中的动态片段：
+
+[source,ruby]
+----
+get '/stories/:name', to: redirect('/articles/%{name}')
+----
+
+我们还可以重定向到块，这个块可以接受符号化的路径参数和请求对象：
+
+[source,ruby]
+----
+get '/stories/:name', to: redirect { |path_params, req| "/articles/#{path_params[:name].pluralize}" }
+get '/stories', to: redirect { |path_params, req| "/articles/#{req.subdomain}" }
+----
+
+请注意，`redirect` 重定向默认是 301 永久重定向，有些浏览器或代理服务器会缓存这种类型的重定向，从而导致无法访问重定向前的网页。为了避免这种情况，我们可以使用 `:status` 选项来修改响应状态（response status）：
+
+[source,ruby]
+----
+get '/stories/:name', to: redirect('/articles/%{name}', status: 302)
+----
+
+在重定向时，如果不指定主机（例如 pass:[http://www.example.com]），Rails 会使用当前请求的主机。
+
+[[routing-to-rack-applications]]
+==== 映射到 Rack 应用的路由
+
+在声明路由时，我们不仅可以使用字符串，例如映射到 `ArticlesController` 控制器的 `index` 动作的 `'articles#index'`，还可以使用 <<http://guides.rubyonrails.org/rails_on_rack.html,Rack 应用>>：
+
+[source,ruby]
+----
+match '/application.js', to: MyRackApp, via: :all
+----
+
+只要 `MyRackApp` 应用能够响应 `call` 方法并返回 `[status, headers, body]` 数组，对于路由来说，Rack 应用和控制器动作就没有区别。`via: :all` 选项使 Rack 应用可以处理所有 HTTP 方法。
+
+NOTE: 实际上，`'articles#index'` 会被展开为 `ArticlesController.action(:index)`，其返回值正是一个 Rack 应用。
+
+记住，路由所匹配的路径，就是Rack 应用接收的路径。例如，对于下面的路由，Rack 应用接收的路径是 `/admin`：
+
+[source,ruby]
+----
+match '/admin', to: AdminApp, via: :all
+----
+
+如果想让 Rack 应用接收根路径上的请求，可以使用 `mount` 方法：
+
+[source,ruby]
+----
+mount AdminApp, at: '/admin'
+----
+
+[[using-root]]
+==== 使用 `root` 方法
+
+`root` 方法用于说明，如何处理根路径（`/`）上的请求：
+
+[source,ruby]
+----
+root to: 'pages#main'
+root 'pages#main' # 上一行代码的简易写法
+----
+
+`root` 路由应该放在路由文件的顶部，因为最常用的路由应该首先匹配。
+
+NOTE: `root` 路由只处理 `GET` 请求。
+
+我们还可以在命名空间和作用域中使用 `root` 方法，例如：
+
+[source,ruby]
+----
+namespace :admin do
+  root to: "admin#index"
+end
+
+root to: "home#index"
+----
+
+[[unicode-character-routes]]
+==== Unicode 字符路由（Unicode character routes）
+
+在声明路由时，可以直接使用 Unicode 字符，例如：
+
+[source,ruby]
+----
+get 'こんにちは', to: 'welcome#index'
+----
+
+[[customizing-resourceful-routes]]
+=== 定制资源路由
