@@ -3,14 +3,14 @@
 
 [.chapter-abstract]
 --
-本文全面介绍如何在应用中收发邮件，Action Mailer 的内部机理，以及如何测试邮件程序（mailer）。
+本文全面介绍如何在应用中收发邮件、Action Mailer 的内部机理，以及如何测试邮件程序（mailer）。
 
 读完本文后，您将学到：
 
 * 如何在 Rails 应用中收发邮件；
 * 如何生成及编辑 Action Mailer 类和邮件视图；
 * 如何配置 Action Mailer；
-* 如何测试 Action Mailer 类；
+* 如何测试 Action Mailer 类。
 --
 
 [[introduction]]
@@ -56,7 +56,7 @@ class UserMailer < ApplicationMailer
 end
 ----
 
-如上所示，生成邮件程序的方法与使用其他生成器一样。邮件程序在某种程度上就是控制器。执行上述命令后，生成了一个邮件程序，一个视图文件夹和一个测试文件。
+如上所示，生成邮件程序的方法与使用其他生成器一样。邮件程序在某种程度上就是控制器。执行上述命令后，生成了一个邮件程序、一个视图文件夹和一个测试文件。
 
 如果不想使用生成器，可以手动在 `app/mailers` 文件夹中新建文件，但要确保继承自 `ActionMailer::Base`：
 
@@ -273,7 +273,7 @@ end
 <%= image_tag attachments['image.jpg'].url %>
 ----
 
-* 因为我们只是简单的调用了 `image_tag` 方法，所以和其他图片一样，在附件地址之后，还可以传入选项散列：
+* 因为我们只是简单地调用了 `image_tag` 方法，所以和其他图像一样，在附件地址之后，还可以传入选项散列：
 +
 [source,erb]
 ----
@@ -391,7 +391,7 @@ config.action_mailer.perform_caching = true
 [source,ruby]
 ----
 class UserMailer < ApplicationMailer
-  layout 'awesome' # use awesome.(html|text).erb as the layout
+  layout 'awesome' # 使用 awesome.(html|text).erb 做布局
 end
 ----
 
@@ -655,6 +655,7 @@ Action Mailer 继承自 `AbstractController`，因此为控制器定义的辅助
 
 下述配置选项最好在环境相关的文件（`environment.rb`、`production.rb`，等等）中设置。
 
+[cols="4 6"]
 |===
 | 配置项         | 说明
 

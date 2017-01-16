@@ -21,7 +21,7 @@
 | Rails Routing from the Outside In | WIP | |
 | Active Support Core Extensions | ✔️ | ✔️ |
 | Rails Internationalization API | | |
-| Action Mailer Basics | ✔️ | |
+| Action Mailer Basics | ✔️ | ✔️ |
 | Active Job Basics | | |
 | Testing Rails Applications | ✔️ | |
 | Securing Rails Applications | | |
