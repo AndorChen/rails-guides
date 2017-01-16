@@ -3,6 +3,8 @@
 [[active-record-basics]]
 == Active Record 基础
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文简介 Active Record。

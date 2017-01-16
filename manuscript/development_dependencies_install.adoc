@@ -1,6 +1,8 @@
 [[development-dependencies-install]]
 == 安装开发依赖
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文说明如何搭建 Ruby on Rails 核心开发环境。

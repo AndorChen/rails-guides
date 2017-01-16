@@ -1,6 +1,8 @@
 [[working-with-javascript-in-rails]]
 == 在 Rails 中使用 JavaScript
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文介绍 Rails 内建对 Ajax 和 JavaScript 等的支持，使用这些功能可以轻易地开发强大的 Ajax 动态应用。

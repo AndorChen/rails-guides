@@ -1,6 +1,8 @@
 [[active-jobs-basics]]
 == Active Job 基础
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文全面说明创建、入队和执行后台作业的基础知识。

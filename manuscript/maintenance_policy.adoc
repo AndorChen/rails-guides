@@ -1,6 +1,8 @@
 [[maintenance-policy-for-ruby-on-rails]]
 == Ruby on Rails 的维护方针
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 对 Rails 框架的支持分为四种：新功能、缺陷修正、安全问题和严重安全问题。各自的处理方式如下，所有版本号都是用 `X.Y.Z` 格式。

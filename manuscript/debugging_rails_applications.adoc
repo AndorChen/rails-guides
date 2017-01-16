@@ -1,6 +1,8 @@
 [[debugging-rails-applications]]
 == 调试 Rails 应用
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文介绍如何调试 Rails 应用。

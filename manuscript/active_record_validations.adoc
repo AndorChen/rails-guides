@@ -1,6 +1,8 @@
 [[active-record-validations]]
 == Active Record 数据验证
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文介绍如何使用 Active Record 提供的数据验证功能，在数据存入数据库之前验证对象的状态。

@@ -1,6 +1,8 @@
 [[using-rails-for-api-only-applications]]
 == 使用 Rails 开发只提供 API 的应用
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 在本文中您将学到：

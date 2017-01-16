@@ -1,6 +1,8 @@
 [[ruby-on-rails-5-0-release-notes]]
 == Ruby on Rails 5.0 发布记
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 Rails 5.0 的重要变化：

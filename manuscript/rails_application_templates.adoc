@@ -1,6 +1,8 @@
 [[rails-application-templates]]
 == Rails 应用模板
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 应用模板是包含 DSL 的 Ruby 文件，作用是为新建的或现有的 Rails 项目添加 gem 和初始化程序等。

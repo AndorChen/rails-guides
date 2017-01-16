@@ -1,6 +1,8 @@
 [[a-guide-to-testing-rails-applications]]
 == Rails 应用测试指南
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文介绍 Rails 内建对测试的支持。

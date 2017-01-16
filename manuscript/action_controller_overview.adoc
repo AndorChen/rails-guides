@@ -1,6 +1,8 @@
 [[action-controller-overview]]
 == Action Controller 概览
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文介绍控制器的工作原理，以及控制器在应用请求周期中扮演的角色。

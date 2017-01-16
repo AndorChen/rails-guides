@@ -1,6 +1,8 @@
 [[ruby-on-rails-guides-guidelines]]
 == Ruby on Rails 指南指导方针
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文说明编写 Ruby on Rails 指南的指导方针。本文也遵守这一方针，本身就是个示例。
@@ -30,10 +32,10 @@
 ----
 Guide Title
 ===========
- 
+
 Section
 -------
- 
+
 ### Sub Section
 ----
 

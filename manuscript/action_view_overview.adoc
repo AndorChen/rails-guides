@@ -1,6 +1,8 @@
 [[action-view-overview]]
 == Action View 概述
 
+// chinakr 翻译
+
 [.chapter-abstract]
 --
 读完本文后，您将学到：

@@ -1,6 +1,8 @@
 [[api-documentation-guidelines]]
 == API 文档指导方针
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文说明 Ruby on Rails 的 API 文档指导方针。

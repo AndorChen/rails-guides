@@ -1,6 +1,8 @@
 [[action-mailer-basics]]
 == Action Mailer 基础
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文全面介绍如何在应用中收发邮件、Action Mailer 的内部机理，以及如何测试邮件程序（mailer）。

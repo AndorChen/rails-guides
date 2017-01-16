@@ -1,6 +1,8 @@
 [[active-record-callbacks]]
 == Active Record 回调
 
+// chinakr 翻译
+
 [.chapter-abstract]
 --
 本文介绍如何介入 Active Record 对象的生命周期。

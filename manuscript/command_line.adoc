@@ -1,6 +1,8 @@
 [[the-rails-command-line]]
 == Rails 命令行
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 读完本文后，您将学到：

@@ -1,6 +1,8 @@
 [[rails-on-rack]]
 == Rails on Rack
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文简介 Rails 与 Rack 的集成，以及与其他 Rack 组件的配合。

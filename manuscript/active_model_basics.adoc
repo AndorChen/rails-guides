@@ -1,6 +1,8 @@
 [[active-model-basics]]
 == Active Model 基础
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文简述模型类。Active Model 允许使用 Action Pack 辅助方法与普通的 Ruby 类交互。Active Model 还协助构建自定义的 ORM，可在 Rails 框架外部使用。

@@ -3,6 +3,8 @@
 [[getting-started-with-rails]]
 == Rails 入门
 
+// chinakr 翻译
+
 [.chapter-abstract]
 --
 本文介绍如何开始使用 Ruby on Rails。

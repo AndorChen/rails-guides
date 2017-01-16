@@ -1,6 +1,8 @@
 [[a-guide-for-upgrading-ruby-on-rails]]
 == Ruby on Rails 升级指南
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文说明把 Ruby on Rails 升级到新版本的步骤。各个版本的发布记中也有升级步骤。

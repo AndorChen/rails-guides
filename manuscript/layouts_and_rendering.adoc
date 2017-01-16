@@ -1,6 +1,8 @@
 [[layouts-and-rendering-in-rails]]
 == Rails 布局和视图渲染
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文介绍 Action Controller 和 Action View 的基本布局功能。

@@ -1,6 +1,8 @@
 [[active-support-instrumentation]]
 == Active Support 监测程序
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 Active Support 是 Rails 核心的一部分，提供 Ruby 语言扩展、实用方法等。其中包括一份监测 API，在应用中可以用它衡量 Ruby 代码（如 Rails 应用或框架自身）中的特定操作。不过，这个 API 不限于只能在 Rails 中使用，如果愿意，也可以在其他 Ruby 脚本中使用。

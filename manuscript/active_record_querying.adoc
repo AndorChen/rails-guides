@@ -1,6 +1,8 @@
 [[active-record-query-interface]]
 == Active Record 查询接口
 
+// chinakr 翻译
+
 [.chapter-abstract]
 --
 本文介绍使用 Active Record 从数据库中检索数据的不同方法。

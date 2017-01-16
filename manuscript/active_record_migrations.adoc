@@ -3,6 +3,8 @@
 [[active-record-migrations]]
 == Active Record 迁移
 
+// chinakr 翻译
+
 [.chapter-abstract]
 --
 迁移是 Active Record 的一个特性，允许我们按时间顺序管理数据库模式。有了迁移，就不必再用纯 SQL 来修改数据库模式，而是可以使用简单的 Ruby DSL 来描述对数据表的修改。

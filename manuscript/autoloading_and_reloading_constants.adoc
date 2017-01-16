@@ -1,6 +1,8 @@
 [[autoloading-and-reloading-constants]]
 == 自动加载和重新加载常量
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文说明常量自动加载和重新加载机制。

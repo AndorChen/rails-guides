@@ -1,6 +1,8 @@
 [[creating-and-customizing-rails-generators-and-templates]]
 == 创建及定制 Rails 生成器和模板
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 如果你打算改进自己的工作流程，Rails 生成器是必备工具。本文教你创建及定制生成器的方式。

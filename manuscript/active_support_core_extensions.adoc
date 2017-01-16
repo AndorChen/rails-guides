@@ -1,6 +1,8 @@
 [[active-support-core-extensions]]
 == Active Support 核心扩展
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 Active Support 是 Ruby on Rails 的一个组件，扩展了 Ruby 语言，提供了一些实用功能。

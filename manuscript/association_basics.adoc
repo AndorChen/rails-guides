@@ -1,6 +1,8 @@
 [[active-record-associations]]
 == Active Record 关联
 
+// 安道翻译
+
 [.chapter-abstract]
 --
 本文介绍 Active Record 的关联功能。
