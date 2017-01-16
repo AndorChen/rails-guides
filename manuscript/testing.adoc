@@ -7,11 +7,11 @@
 --
 本文介绍 Rails 内建对测试的支持。
 
-读完本文后，您将学会：
+读完本文后，您将学到：
 
 * Rails 测试术语；
 * 如何为应用编写单元测试、功能测试和集成测试；
-* 其他常用的测试方法和插件；
+* 其他常用的测试方法和插件。
 --
 
 [[why-write-tests-for-your-rails-applications-questionmark]]
@@ -29,7 +29,7 @@ Rails 测试还可以模拟浏览器请求，无需打开浏览器就能测试�
 测试是 Rails 应用的重要组成部分，不是为了尝鲜和好奇而编写的。
 
 [[rails-sets-up-for-testing-from-the-word-go]]
-==== Rails 对测试的内建支持
+==== Rails 内建对测试的支持
 
 使用 `rails new application_name` 命令创建一个 Rails 项目时，Rails 会生成 `test` 目录。如果列出这个目录里的内容，你会看到下述目录和文件：
 
@@ -143,7 +143,7 @@ assert true
 * 一行代码是否抛出异常
 * 用户的密码长度是否超过 5 个字符
 
-一个测试中可以有一个或多个断言，对断言的数量没有限制。只有所有断言都成功，测试才能通过。
+一个测试中可以有一个或多个断言，对断言的数量没有限制。只有全部断言都成功，测试才能通过。
 
 [[your-first-failing-test]]
 ===== 第一个失败测试
@@ -300,7 +300,7 @@ end
 [[available-assertions]]
 ==== 可用的断言
 
-我们大致了解了几个可用的断言。断言是测试的核心所在，是真正执行检查，确保功能复合预期的执行者。
+我们大致了解了几个可用的断言。断言是测试的核心所在，是真正执行检查、确保功能符合预期的执行者。
 
 下面摘录部分可以在 https://github.com/seattlerb/minitest[Minitest]（Rails 默认使用的测试库）中使用的断言。`[msg]` 参数是可选的消息字符串，能让测试失败消息更明确。
 
@@ -334,15 +334,15 @@ end
 | `assert_not_respond_to( obj, symbol, [msg] )` | 确保 `obj` 不能响应 `symbol` 对应的方法。
 | `assert_operator( obj1, operator, [obj2], [msg] )` | 确保 `obj1.operator(obj2)` 成立。
 | `assert_not_operator( obj1, operator, [obj2], [msg] )` | 确保 `obj1.operator(obj2)` 不成立。
-| `assert_predicate ( obj, predicate, [msg] )` | 确保 `obj.predicate` 为真，例如 `assert_predicate str, :empty?`。
-| `assert_not_predicate ( obj, predicate, [msg] )` | 确保 `obj.predicate` 为假，例如 `assert_not_predicate str, :empty?`。
+| `assert_predicate( obj, predicate, [msg] )` | 确保 `obj.predicate` 为真，例如 `assert_predicate str, :empty?`。
+| `assert_not_predicate( obj, predicate, [msg] )` | 确保 `obj.predicate` 为假，例如 `assert_not_predicate str, :empty?`。
 | `assert_send( array, [msg] )` | 确保能在 `array[0]` 对应的对象上调用 `array[1]` 对应的方法，并且传入 `array[2]` 之后的值作为参数，例如 `assert_send [@user, :full_name, 'Sam Smith']`。很独特吧？
 | `flunk( [msg] )` | 确保失败。可以用这个断言明确标记未完成的测试。
 |===
 
 以上是 Minitest 支持的部分断言，完整且最新的列表参见 http://docs.seattlerb.org/minitest/[Minitest API 文档]，尤其是 http://docs.seattlerb.org/minitest/Minitest/Assertions.html[`Minitest::Assertions` 模块的文档]。
 
-Minitest 这个测试框架时模块化的，因此还可以自己创建断言。事实上，Rails 就这么做了。Rails 提供了一些专门的断言，能简化测试。
+Minitest 这个测试框架是模块化的，因此还可以自己创建断言。事实上，Rails 就这么做了。Rails 提供了一些专门的断言，能简化测试。
 
 [NOTE]
 ====
@@ -498,7 +498,7 @@ Rails options:
 [[what-are-fixtures-questionmark]]
 ===== 固件是什么？
 
-固件代指示例数据，在运行测试之前，使用预先定义好的数据填充测试数据库。固件与所用的数据库没有关系，是使用 YAML 格式编写。一个模型有一个固件文件。
+固件代指示例数据，在运行测试之前，使用预先定义好的数据填充测试数据库。固件与所用的数据库没有关系，使用 YAML 格式编写。一个模型有一个固件文件。
 
 [NOTE]
 ====
@@ -577,7 +577,7 @@ user_<%= n %>:
 
 [TIP]
 ====
-为了从数据库中删除现有数据，Rails 会尝试禁用引用完整性触发器（如外键和约束检查）。运行测试时，如果见到烦人的权限错误，确保数据库用于有权在测试环境中禁用这些触发器。（对 PostgreSQL 来说，只有超级用户能禁用全部触发器。关于 PostgreSQL 权限的详细说明参阅link:http://blog.endpoint.com/2012/10/postgres-system-triggers-error.html[这篇文章]。）
+为了从数据库中删除现有数据，Rails 会尝试禁用引用完整性触发器（如外键和约束检查）。运行测试时，如果见到烦人的权限错误，确保数据库用户有权在测试环境中禁用这些触发器。（对 PostgreSQL 来说，只有超级用户能禁用全部触发器。关于 PostgreSQL 权限的详细说明参阅link:http://blog.endpoint.com/2012/10/postgres-system-triggers-error.html[这篇文章]。）
 ====
 
 [[fixtures-are-active-record-objects]]
@@ -656,9 +656,9 @@ end
 
 除了标准的测试辅助方法之外，由于集成测试继承自 `ActionDispatch::IntegrationTest`，因此在集成测试中还可使用一些额外的辅助方法。下面简要介绍三类辅助方法。
 
-集成测试运行程序的说明参阅 ActionDispatch::Integration::Runner[`ActionDispatch::Integration::Runner` 模块的文档]。
+集成测试运行程序的说明参阅 http://api.rubyonrails.org/classes/ActionDispatch/Integration/Runner.html[`ActionDispatch::Integration::Runner` 模块的文档]。
 
-执行请求的方法参见 http://api.rubyonrails.org/classes/ActionDispatch/Integration/RequestHelpers.html[`ActionDispatch::Integration::RequestHelpers` 模块模块的文档]。
+执行请求的方法参见 http://api.rubyonrails.org/classes/ActionDispatch/Integration/RequestHelpers.html[`ActionDispatch::Integration::RequestHelpers` 模块的文档]。
 
 如果需要修改会话或集成测试的状态，参阅 http://api.rubyonrails.org/classes/ActionDispatch/Integration/Session.html[`ActionDispatch::Integration::Session` 类的文档]。
 
@@ -777,7 +777,7 @@ create    test/controllers/articles_controller_test.rb
 ...
 ----
 
-上述命令回味 `Articles` 资源生成控制器和测试。你可以看一下 `test/controllers` 目录中的 `articles_controller_test.rb` 文件。
+上述命令会为 `Articles` 资源生成控制器和测试。你可以看一下 `test/controllers` 目录中的 `articles_controller_test.rb` 文件。
 
 如果已经有了控制器，只想为默认的七个动作生成测试代码的话，可以使用下述命令：
 
@@ -807,11 +807,11 @@ end
 
 `get` 方法发起请求，并把结果传入响应中。这个方法可接受 6 个参数：
 
-* 所请求控制器的动作，可使用字符串或符号；
-* `params`：一个选项散列，指定传入动作的请求参数（例如，查询字符串参数或文章变量）；
-* `headers`：设定随请求发送的首部；
-* `env`：按需定制请求环境；
-* `xhr`：指明是不是 Ajax 请求；设为 `true` 表示是 Ajax 请求；
+* 所请求控制器的动作，可使用字符串或符号。
+* `params`：一个选项散列，指定传入动作的请求参数（例如，查询字符串参数或文章变量）。
+* `headers`：设定随请求发送的首部。
+* `env`：按需定制请求环境。
+* `xhr`：指明是不是 Ajax 请求；设为 `true` 表示是 Ajax 请求。
 * `as`：使用其他内容类型编码请求；默认支持 `:json`。
 
 所有关键字参数都是可选的。
@@ -873,7 +873,7 @@ end
 [[testing-xhr-ajax-requests]]
 ==== 测试 XHR（Ajax）请求
 
-如果想测试 Ajax 请求，要在 `get`、`post`、`patch`、`put` 和 `delete` 方法中设定 `xhr: true` 选项。例如：
+如果想测试 Ajax 请求，要在 `get`、`post`、`patch`、`put` 或 `delete` 方法中设定 `xhr: true` 选项。例如：
 
 [source,ruby]
 ----
@@ -916,7 +916,7 @@ cookies["are_good_for_u"]     cookies[:are_good_for_u]
 [[setting-headers-and-cgi-variables]]
 ==== 设定首部和 CGI 变量
 
-[HTTP 首部](http://tools.ietf.org/search/rfc2616#section-5.3) 和 [CGI 变量](http://tools.ietf.org/search/rfc3875#section-4.1)可以通过 `headers` 参数传入：
+http://tools.ietf.org/search/rfc2616#section-5.3[HTTP 首部] 和 http://tools.ietf.org/search/rfc3875#section-4.1[CGI 变量]可以通过 `headers` 参数传入：
 
 [source,ruby]
 ----
@@ -930,7 +930,7 @@ get articles_url, headers: "HTTP_REFERER" => "http://example.com/home" # 模拟�
 [[testing-flash-notices]]
 ==== 测试闪现消息
 
-你可能还记得，早功能测试中可用的三个散列中有一个是 `flash`。
+你可能还记得，在功能测试中可用的三个散列中有一个是 `flash`。
 
 我们想在这个博客应用中添加一个闪现消息，在成功发布新文章之后显示。
 
@@ -988,7 +988,7 @@ def create
 end
 ----
 
-在运行测试，应该能通过：
+再运行测试，应该能通过：
 
 [source,sh]
 ----
@@ -1150,7 +1150,7 @@ end
 [[testing-views]]
 === 测试视图
 
-测试请求的响应中是否出现关键的 HTML 元素和相应的内容是测试应用视图的一种常见方式。与路由测试一样，视图测试放在 `test/controllers/` 目录中，或者与直接写在控制器测试中。`assert_select` 方法用于查询响应中的 HTML 元素，其句法简单而强大。
+测试请求的响应中是否出现关键的 HTML 元素和相应的内容是测试应用视图的一种常见方式。与路由测试一样，视图测试放在 `test/controllers/` 目录中，或者直接写在控制器测试中。`assert_select` 方法用于查询响应中的 HTML 元素，其句法简单而强大。
 
 `assert_select` 有两种形式。
 
@@ -1264,7 +1264,7 @@ end
 
 * 确保处理了电子邮件（创建及发送）
 * 确保邮件内容正确（主题、发件人、正文等）
-* 确保在正确的时间发送正确的邮件；
+* 确保在正确的时间发送正确的邮件
 
 [[from-all-sides]]
 ===== 要全面测试
@@ -1294,16 +1294,16 @@ require 'test_helper'
 
 class UserMailerTest < ActionMailer::TestCase
   test "invite" do
-    # Create the email and store it for further assertions
+    # 创建邮件，将其存储起来，供后面的断言使用
     email = UserMailer.create_invite('me@example.com',
                                      'friend@example.com', Time.now)
 
-    # Send the email, then test that it got queued
+    # 发送邮件，测试有没有入队
     assert_emails 1 do
       email.deliver_now
     end
 
-    # Test the body of the sent email contains what we expect it to
+    # 测试发送的邮件中有没有预期的内容
     assert_equal ['me@example.com'], email.from
     assert_equal ['friend@example.com'], email.to
     assert_equal 'You have been invited by me@example.com', email.subject

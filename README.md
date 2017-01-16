@@ -23,7 +23,7 @@
 | Rails Internationalization API | | |
 | Action Mailer Basics | ✔️ | ✔️ |
 | Active Job Basics | ✔️ | ✔️ |
-| Testing Rails Applications | ✔️ | |
+| Testing Rails Applications | ✔️ | ✔️ |
 | Securing Rails Applications | | |
 | Debugging Rails Applications | ✔️ | |
 | Configuring Rails Applications | | |
