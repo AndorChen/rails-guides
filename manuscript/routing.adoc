@@ -106,37 +106,37 @@ resources :photos
 |===
 |HTTP 方法 |路径 |控制器#动作 |用途
 
-|GET
+|`GET`
 |`/photos`
 |`photos#index`
 |显示所有照片的列表
 
-|GET
+|`GET`
 |`/photos/new`
 |`photos#new`
 |返回用于新建照片的 HTML 表单
 
-|POST
+|`POST`
 |`/photos`
 |`photos#create`
 |新建照片
 
-|GET
+|`GET`
 |`/photos/:id`
 |`photos#show`
 |显示指定照片
 
-|GET
+|`GET`
 |`/photos/:id/edit`
 |`photos#edit`
 |返回用于修改照片的 HTML 表单
 
-|PATCH/PUT
+|`PATCH`/`PUT`
 |`/photos/:id`
 |`photos#update`
 |更新指定照片
 
-|DELETE
+|`DELETE`
 |`/photos/:id`
 |`photos#destroy`
 |删除指定照片
@@ -206,38 +206,38 @@ resource :geocoder
 |===
 |HTTP 方法 |路径 |控制器#动作 |用途
 
-|GET
+|`GET`
 |`/geocoder/new`
 |`geocoders#new`
 |返回用于创建 geocoder 的 HTML 表单
 
-|POST
+|`POST`
 |`/geocoder`
 |`geocoders#create`
 |新建 geocoder
 
-|GET
+|`GET`
 |`/geocoder`
 |`geocoders#show`
 |显示唯一的 geocoder 资源
 
-|GET
+|`GET`
 |`/geocoder/edit`
 |`geocoders#edit`
 |返回用于修改 geocoder 的 HTML 表单
 
-|PATCH/PUT
+|`PATCH`/`PUT`
 |`/geocoder`
 |`geocoders#update`
 |更新唯一的 geocoder 资源
 
-|DELETE
+|`DELETE`
 |`/geocoder`
 |`geocoders#destroy`
 |删除 geocoder 资源
 |===
 
-NOTE: 有时我们想要用同一个控制器处理单数路由（如 `/account`）和复数路由（如 `/accounts/45`），也就是把单数资源映射到复数资源对应的控制器上。例如，`resource :photo` 创建的单数路由和 `resources :photos` 创建的复数路由都会映射到相同的 `PhotosController` 控制器上。
+NOTE: 有时我们想要用同一个控制器处理单数路由（如 `/account`）和复数路由（如 `/accounts/45`），也就是把单数资源映射到复数资源对应的控制器上。例如，`resource :photo` 创建的单数路由和 `resources :photos` 创建的复数路由都会映射到相同的 `Photos` 控制器上。
 
 在创建单数资源路由时，会同时创建下面的辅助方法：
 
@@ -268,48 +268,48 @@ namespace :admin do
 end
 ----
 
-上面的代码会为 `articles` 和 `comments` 控制器分别创建多个路由。对于 `Admin::ArticlesController` 控制器，Rails 会创建下列路由：
+上面的代码会为 `articles` 和 `comments` 控制器分别创建多个路由。对于 `Admin::Articles` 控制器，Rails 会创建下列路由：
 
 |===
 |HTTP 方法 |路径 |控制器#动作 |具名辅助方法
 
-|GET
+|`GET`
 |`/admin/articles`
 |`admin/articles#index`
 |`admin_articles_path`
 
-|GET
+|`GET`
 |`/admin/articles/new`
 |`admin/articles#new`
 |`new_admin_article_path`
 
-|POST
+|`POST`
 |`/admin/articles`
 |`admin/articles#create`
 |`admin_articles_path`
 
-|GET
+|`GET`
 |`/admin/articles/:id`
 |`admin/articles#show`
 |`admin_article_path(:id)`
 
-|GET
+|`GET`
 |`/admin/articles/:id/edit`
 |`admin/articles#edit`
 |`edit_admin_article_path(:id)`
 
-|PATCH/PUT
+|`PATCH`/`PUT`
 |`/admin/articles/:id`
 |`admin/articles#update`
 |`admin_article_path(:id)`
 
-|DELETE
+|`DELETE`
 |`/admin/articles/:id`
 |`admin/articles#destroy`
 |`admin_article_path(:id)`
 |===
 
-如果想把 `/articles` 路径（不带 `/admin` 前缀） 映射到 `Admin::ArticlesController` 控制器上，可以这样声明：
+如果想把 `/articles` 路径（不带 `/admin` 前缀） 映射到 `Admin::Articles` 控制器上，可以这样声明：
 
 [source,ruby]
 ----
@@ -325,7 +325,7 @@ end
 resources :articles, module: 'admin'
 ----
 
-如果想把 `/admin/articles` 路径映射到 `ArticlesController` 控制器上（不带 `Admin::` 前缀），我们可以这样声明：
+如果想把 `/admin/articles` 路径映射到 `Articles` 控制器上（不带 `Admin::` 前缀），我们可以这样声明：
 
 [source,ruby]
 ----
@@ -341,42 +341,42 @@ end
 resources :articles, path: '/admin/articles'
 ----
 
-在上述各个例子中，不管是否使用了 `scope` 方法，具名路由都保持不变。在最后一个例子中，下列路径都会映射到 `ArticlesController` 控制器上：
+在上述各个例子中，不管是否使用了 `scope` 方法，具名路由都保持不变。在最后一个例子中，下列路径都会映射到 `Articles` 控制器上：
 
 |===
 |HTTP 方法 |路径 |控制器#动作 |具名辅助方法
 
-|GET
+|`GET`
 |`/admin/articles`
 |`articles#index`
 |`articles_path`
 
-|GET
+|`GET`
 |`/admin/articles/new`
 |`articles#new`
 |`new_article_path`
 
-|POST
+|`POST`
 |`/admin/articles`
 |`articles#create`
 |`articles_path`
 
-|GET
+|`GET`
 |`/admin/articles/:id`
 |`articles#show`
 |`article_path(:id)`
 
-|GET
+|`GET`
 |`/admin/articles/:id/edit`
 |`articles#edit`
 |`edit_article_path(:id)`
 
-|PATCH/PUT
+|`PATCH`/`PUT`
 |`/admin/articles/:id`
 |`articles#update`
 |`article_path(:id)`
 
-|DELETE
+|`DELETE`
 |`/admin/articles/:id`
 |`articles#destroy`
 |`article_path(:id)`
@@ -409,42 +409,42 @@ resources :magazines do
 end
 ----
 
-上面的代码不仅为 `magazines` 创建了路由，还创建了映射到 `AdsController` 控制器的路由。在 `ad` 的 URL 地址中，需要指定对应的 `magazine` 的ID：
+上面的代码不仅为 `magazines` 创建了路由，还创建了映射到 `Ads` 控制器的路由。在 `ad` 的 URL 地址中，需要指定对应的 `magazine` 的ID：
 
 |===
 |HTTP 方法 |路径 |控制器#动作 |用途
 
-|GET
+|`GET`
 |`/magazines/:magazine_id/ads`
 |`ads#index`
 |显示指定杂志的所有广告的列表
 
-|GET
+|`GET`
 |`/magazines/:magazine_id/ads/new`
 |`ads#new`
 |返回为指定杂志新建广告的 HTML 表单
 
-|POST
+|`POST`
 |`/magazines/:magazine_id/ads`
 |`ads#create`
 |为指定杂志新建广告
 
-|GET
+|`GET`
 |`/magazines/:magazine_id/ads/:id`
 |`ads#show`
 |显示指定杂志的指定广告
 
-|GET
+|`GET`
 |`/magazines/:magazine_id/ads/:id/edit`
 |`ads#edit`
 |返回用于修改指定杂志的广告的 HTML 表单
 
-|PATCH/PUT
+|`PATCH`/`PUT`
 |`/magazines/:magazine_id/ads/:id`
 |`ads#update`
 |更新指定杂志的指定广告
 
-|DELETE
+|`DELETE`
 |`/magazines/:magazine_id/ads/:id`
 |`ads#destroy`
 |删除指定杂志的指定广告
@@ -539,37 +539,37 @@ end
 |===
 |HTTP 方法 |路径 |控制器#动作 |具名辅助方法
 
-|GET
+|`GET`
 |`/articles/:article_id/comments(.:format)`
 |`comments#index`
 |`article_comments_path`
 
-|POST
+|`POST`
 |`/articles/:article_id/comments(.:format)`
 |`comments#create`
 |`article_comments_path`
 
-|GET
+|`GET`
 |`/articles/:article_id/comments/new(.:format)`
 |`comments#new`
 |`new_article_comment_path`
 
-|GET
+|`GET`
 |`/sekret/comments/:id/edit(.:format)`
 |`comments#edit`
 |`edit_comment_path`
 
-|GET
+|`GET`
 |`/sekret/comments/:id(.:format)`
 |`comments#show`
 |`comment_path`
 
-|PATCH/PUT
+|`PATCH`/`PUT`
 |`/sekret/comments/:id(.:format)`
 |`comments#update`
 |`comment_path`
 
-|DELETE
+|`DELETE`
 |`/sekret/comments/:id(.:format)`
 |`comments#destroy`
 |`comment_path`
@@ -591,37 +591,37 @@ end
 |===
 |HTTP 方法 |路径 |控制器#动作 |具名辅助方法
 
-|GET
+|`GET`
 |`/articles/:article_id/comments(.:format)`
 |`comments#index`
 |`article_comments_path`
 
-|POST
+|`POST`
 |`/articles/:article_id/comments(.:format)`
 |`comments#create`
 |`article_comments_path`
 
-|GET
+|`GET`
 |`/articles/:article_id/comments/new(.:format)`
 |`comments#new`
 |`new_article_comment_path`
 
-|GET
+|`GET`
 |`/comments/:id/edit(.:format)`
 |`comments#edit`
 |`edit_sekret_comment_path`
 
-|GET
+|`GET`
 |`/comments/:id(.:format)`
 |`comments#show`
 |`sekret_comment_path`
 
-|PATCH/PUT
+|`PATCH`/`PUT`
 |`/comments/:id(.:format)`
 |`comments#update`
 |`sekret_comment_path`
 
-|DELETE
+|`DELETE`
 |`/comments/:id(.:format)`
 |`comments#destroy`
 |`sekret_comment_path`
@@ -743,7 +743,7 @@ resources :photos do
 end
 ----
 
-通过上述声明，Rails 路由能够识别 `/photos/1/preview` 路径上的 `GET` 请求，并把请求映射到 `PhotosController` 控制器的 `preview` 动作上，同时把资源 ID 传入 `params[:id]`，并创建 `preview_photo_url` 和 `preview_photo_path` 辅助方法。
+通过上述声明，Rails 路由能够识别 `/photos/1/preview` 路径上的 `GET` 请求，并把请求映射到 `Photos` 控制器的 `preview` 动作上，同时把资源 ID 传入 `params[:id]`，并创建 `preview_photo_url` 和 `preview_photo_path` 辅助方法。
 
 在 `member` 块中，每个成员路由都要指定对应的 HTTP 方法，即 `get`、`patch`、`put`、`post` 或 `delete`。如果只有一个成员路由，我们就可以忽略 `member` 块，直接使用成员路由的 `:on` 选项。
 
@@ -770,7 +770,7 @@ resources :photos do
 end
 ----
 
-通过上述声明，Rails 路由能够识别 `/photos/search` 路径上的 `GET` 请求，并把请求映射到 `PhotosController` 控制器的 `search` 动作上，同时创建 `search_photos_url` 和 `search_photos_path` 辅助方法。
+通过上述声明，Rails 路由能够识别 `/photos/search` 路径上的 `GET` 请求，并把请求映射到 `Photos` 控制器的 `search` 动作上，同时创建 `search_photos_url` 和 `search_photos_path` 辅助方法。
 
 和成员路由一样，我们可以使用集合路由的 `:on` 选项：
 
@@ -793,7 +793,7 @@ resources :comments do
 end
 ----
 
-通过上述声明，Rails 路由能够识别 `/comments/new/preview` 路径上的 `GET` 请求，并把请求映射到 `CommentsController` 控制器的 `preview` 动作上，同时创建 `preview_new_comment_url` 和 `preview_new_comment_path` 辅助方法。
+通过上述声明，Rails 路由能够识别 `/comments/new/preview` 路径上的 `GET` 请求，并把请求映射到 `Comments` 控制器的 `preview` 动作上，同时创建 `preview_new_comment_url` 和 `preview_new_comment_path` 辅助方法。
 
 NOTE: 如果我们为资源路由添加了过多动作，就需要考虑一下，是不是应该声明新资源了。
 
@@ -816,7 +816,7 @@ NOTE: 如果我们为资源路由添加了过多动作，就需要考虑一下�
 get ':controller(/:action(/:id))'
 ----
 
-在处理 `/photos/show/1` 请求时（假设这个路由是第一个匹配的路由），会把请求映射到 `PhotosController` 控制器的 `show` 动作上，并把参数 1 传入 `params[:id]`。而 `/photos` 请求，也会被这个路由映射到 `PhotosController#index` 上，因为 `:action` 和 `:id` 都在括号中，是可选参数。
+在处理 `/photos/show/1` 请求时（假设这个路由是第一个匹配的路由），会把请求映射到 `Photos` 控制器的 `show` 动作上，并把参数 1 传入 `params[:id]`。而 `/photos` 请求，也会被这个路由映射到 `PhotosController#index` 上，因为 `:action` 和 `:id` 都在括号中，是可选参数。
 
 [[dynamic-segments]]
 ==== 动态片段（dynamic segment）
@@ -828,7 +828,7 @@ get ':controller(/:action(/:id))'
 get ':controller/:action/:id/:user_id'
 ----
 
-`/photos/show/1/2` 路径会被映射到 `PhotosController` 控制器的 `show` 动作上。此时，`params[:id]` 的值是 `"1"`，`params[:user_id]` 的值是 `"2"`。
+`/photos/show/1/2` 路径会被映射到 `Photos` 控制器的 `show` 动作上。此时，`params[:id]` 的值是 `"1"`，`params[:user_id]` 的值是 `"2"`。
 
 NOTE: `:namespace` 或 `:module` 不能用作动态片段。如果需要这一功能，可以通过为控制器添加约束，来匹配所需的命名空间。例如：
 
@@ -837,7 +837,7 @@ NOTE: `:namespace` 或 `:module` 不能用作动态片段。如果需要这一�
 get ':controller(/:action(/:id))', controller: /admin\/[^\/]+/
 ----
 
-TIP: 默认情况下，在动态片段中不能使用小圆点（`.`），因为小圆点是格式化路由（formatted route）的分隔符。如果想在动态片段中使用小圆点，可以通过添加约束来实现相同效果，例如，`id: /[^\/]+/` 可以匹配除斜线外的任何字符（串）。
+TIP: 默认情况下，在动态片段中不能使用小圆点（`.`），因为小圆点是格式化路由（formatted route）的分隔符。如果想在动态片段中使用小圆点，可以通过添加约束来实现相同效果，例如，`id: /[^\/]+/` 可以匹配除斜线外的一个或多个字符。
 
 [[static-segments]]
 ==== 静态片段（static segment）
@@ -873,7 +873,7 @@ get ':controller/:action/:id'
 get 'photos/:id', to: 'photos#show'
 ----
 
-这个路由会把 `/photos/12` 路径映射到 `PhotosController` 控制器的 `show` 动作上。
+这个路由会把 `/photos/12` 路径映射到 `Photos` 控制器的 `show` 动作上。
 
 在路由声明中，我们还可以使用 `:defaults` 选项（其值为散列）定义更多默认值。对于未声明为动态片段的参数，也可以使用 `:defaults` 选项。例如：
 
@@ -882,7 +882,7 @@ get 'photos/:id', to: 'photos#show'
 get 'photos/:id', to: 'photos#show', defaults: { format: 'jpg' }
 ----
 
-这个路由会把 `photos/12` 路径映射到 `PhotosController` 控制器的 `show` 动作上，并把 `params[:format]` 的值设置为 `"jpg"`。
+这个路由会把 `photos/12` 路径映射到 `Photos` 控制器的 `show` 动作上，并把 `params[:format]` 的值设置为 `"jpg"`。
 
 NOTE: 出于安全考虑，Rails 不允许用查询参数来覆盖默认值。只有一种情况下可以覆盖默认值，即通过 URL 路径替换来覆盖动态片段。
 
@@ -905,7 +905,7 @@ get 'exit', to: 'sessions#destroy', as: :logout
 get ':username', to: 'users#show', as: :user
 ----
 
-这个路由声明会定义 `user_path` 辅助方法，此方法可以在控制器、辅助方法和视图中使用，其返回值类似 `/bob`。在 `UsersController` 控制器的 `show` 动作中，`params[:username]` 的值是用户名。如果不想使用 `:username` 作为参数名，可以在路由声明中把 `:username` 改为其他名字。
+这个路由声明会定义 `user_path` 辅助方法，此方法可以在控制器、辅助方法和视图中使用，其返回值类似 `/bob`。在 `Users` 控制器的 `show` 动作中，`params[:username]` 的值是用户名。如果不想使用 `:username` 作为参数名，可以在路由声明中把 `:username` 改为其他名字。
 
 [[http-verb-constraints]]
 ==== HTTP 方法约束（HTTP verb constraint）
@@ -992,7 +992,7 @@ NOTE: 格式约束（format constraint）是一个例外：尽管格式约束是
 [[advanced-constraints]]
 ==== 高级约束（advanced constraint）
 
-如果需要更复杂的约束，我们可以使用能够响应 `matches?` 方法的对象作为约束。假设我们想把所有黑名单用户映射到 `BlacklistController` 控制器，可以这么做：
+如果需要更复杂的约束，我们可以使用能够响应 `matches?` 方法的对象作为约束。假设我们想把所有黑名单用户映射到 `Blacklist` 控制器，可以这么做：
 
 [source,ruby]
 ----
@@ -1105,7 +1105,7 @@ get '/stories/:name', to: redirect('/articles/%{name}', status: 302)
 [[routing-to-rack-applications]]
 ==== 映射到 Rack 应用的路由
 
-在声明路由时，我们不仅可以使用字符串，例如映射到 `ArticlesController` 控制器的 `index` 动作的 `'articles#index'`，还可以使用 <<http://guides.rubyonrails.org/rails_on_rack.html,Rack 应用>>：
+在声明路由时，我们不仅可以使用字符串，例如映射到 `Articles` 控制器的 `index` 动作的 `'articles#index'`，还可以使用 <<http://guides.rubyonrails.org/rails_on_rack.html,Rack 应用>>：
 
 [source,ruby]
 ----
@@ -1167,4 +1167,358 @@ get 'こんにちは', to: 'welcome#index'
 ----
 
 [[customizing-resourceful-routes]]
-=== 定制资源路由
+=== 自定义资源路由
+
+尽管 `resources :articles` 默认生成的路由和辅助方法通常都能很好地满足需求，但是也有一些情况下我们需要自定义资源路由。Rails 允许我们通过各种方式自定义资源式辅助方法（resourceful helper）。
+
+[[specifying-a-ontroller-to-use]]
+==== 指定控制器
+
+`:controller` 选项用于显式指定资源使用的控制器，例如：
+
+[source,ruby]
+----
+resources :photos, controller: 'images'
+----
+
+这个路由会把 `/photos` 路径映射到 `Images` 控制器上：
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |具名辅助方法
+
+|`GET`
+|`/photos`
+|`images#index`
+|`photos_path`
+
+|`GET`
+|`/photos/new`
+|`images#new`
+|`new_photo_path`
+
+|`POST`
+|`/photos`
+|`images#create`
+|`photos_path`
+
+|`GET`
+|`/photos/:id`
+|`images#show`
+|`photo_path(:id)`
+
+|`GET`
+|`/photos/:id/edit`
+|`images#edit`
+|`edit_photo_path(:id)`
+
+|`PATCH`/`PUT`
+|`/photos/:id`
+|`images#update`
+|`photo_path(:id)`
+
+|`DELETE`
+|`/photos/:id`
+|`images#destroy`
+|`photo_path(:id)`
+|===
+
+NOTE: 请使用 `photos_path`、`new_photo_path` 等辅助方法为资源生成路径。
+
+对于命名空间中的控制器，我们可以使用目录表示法（directory notation）。例如：
+
+[source,ruby]
+----
+resources :user_permissions, controller: 'admin/user_permissions'
+----
+
+这个路由会映射到 `Admin::UserPermissions` 控制器。
+
+NOTE: 在这种情况下，我们只能使用目录表示法。如果我们使用 Ruby 的常量表示法（constant notation），例如 `controller: 'Admin::UserPermissions'`，有可能导致路由错误，而使 Rails 显示警告信息。
+
+[[specifying-constraints]]
+==== 指定约束
+
+`:constraints` 选项用于指定隐式 ID 必须满足的格式要求。例如：
+
+[source,ruby]
+----
+resources :photos, constraints: { id: /[A-Z][A-Z][0-9]+/ }
+----
+
+这个路由声明使用正则表达式来约束 `:id` 参数。此时，路由将不会匹配 `/photos/1` 路径，但会匹配 `/photos/RR27` 路径。
+
+我们可以通过块把一个约束应用于多个路由：
+
+[source,ruby]
+----
+constraints(id: /[A-Z][A-Z][0-9]+/) do
+  resources :photos
+  resources :accounts
+end
+----
+
+NOTE: 当然，在这种情况下，我们也可以使用非资源路由的高级约束。
+
+TIP: 默认情况下，在 `:id` 参数中不能使用小圆点，因为小圆点是格式化路由的分隔符。如果想在 `:id` 参数中使用小圆点，可以通过添加约束来实现相同效果，例如，`id: /[^\/]+/` 可以匹配除斜线外的一个或多个字符。
+
+[[overriding-the-named-helpers]]
+==== 覆盖具名路由辅助方法
+
+通过 `:as` 选项，我们可以覆盖具名路由辅助方法的默认名称。例如：
+
+[source,ruby]
+----
+resources :photos, as: 'images'
+----
+
+这个路由会把以 `/photos` 开头的路径映射到 `Photos` 控制器上，同时通过 `:as` 选项设置具名辅助方法的名称。
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |具名辅助方法
+
+|`GET`
+|`/photos`
+|`photos#index`
+|`images_path`
+
+|`GET`
+|`/photos/new`
+|`photos#new`
+|`new_image_path`
+
+|`POST`
+|`/photos`
+|`photos#create`
+|`images_path`
+
+|`GET`
+|`/photos/:id`
+|`photos#show`
+|`image_path(:id)`
+
+|`GET`
+|`/photos/:id/edit`
+|`photos#edit`
+|`edit_image_path(:id)`
+
+|`PATCH`/`PUT`
+|`/photos/:id`
+|`photos#update`
+|`image_path(:id)`
+
+|`DELETE`
+|`/photos/:id`
+|`photos#destroy`
+|`image_path(:id)`
+|===
+
+[[overriding-the-new-and-edit-segments]]
+==== 覆盖 `new` 和 `edit` 片段
+
+`:path_names` 选项用于覆盖路径中自动生成的 `new` 和 `edit` 片段，例如：
+
+[source,ruby]
+----
+resources :photos, path_names: { new: 'make', edit: 'change' }
+----
+
+这个路由能够识别下面的路径：
+
+----
+/photos/make
+/photos/1/change
+----
+
+NOTE: `:path_names` 选项不会改变控制器动作的名称，上面这两个路径仍然被分别映射到 `new` 和 `edit` 动作上。
+
+TIP: 通过作用域，我们可以对所有路由应用 `:path_names` 选项。
+
+[source,ruby]
+----
+scope path_names: { new: 'make' } do
+  # rest of your routes
+end
+----
+
+[[prefixing-the-named-route-helpers]]
+==== 为具名路由辅助方法添加前缀
+
+通过 `:as` 选项，我们可以为具名路由辅助方法添加前缀。通过在作用域中使用 `:as` 选项，我们可以解决路由名称冲突的问题。例如：
+
+[source,ruby]
+----
+scope 'admin' do
+  resources :photos, as: 'admin_photos'
+end
+
+resources :photos
+----
+
+上述路由声明会生成 `admin_photos_path`、`new_admin_photo_path` 等辅助方法。
+
+通过在作用域中使用 `:as` 选项，我们可以为一组路由辅助方法添加前缀：
+
+[source,ruby]
+----
+scope 'admin', as: 'admin' do
+  resources :photos, :accounts
+end
+
+resources :photos, :accounts
+----
+
+上述路由会生成 `admin_photos_path`、`admin_accounts_path` 等辅助方法，其返回值分别为 `/admin/photos`、`/admin/accounts` 等。
+
+NOTE: `namespace` 作用域除了添加 `:as` 选项指定的前缀，还会添加 `:module` 和 `:path` 前缀。
+
+我们还可以使用具名参数指定路由前缀，例如：
+
+[source,ruby]
+----
+scope ':username' do
+  resources :articles
+end
+----
+
+这个路由能够识别 `/bob/articles/1` 路径，此时，在控制器、辅助方法和视图中，我们可以使用 `params[:username]` 获取路径中的 `username` 部分，即 `bob`。
+
+[[restricting-the-routes-created]]
+==== 限制所创建的路由
+
+默认情况下，Rails 会为每个 REST 式路由创建 7 个默认动作（`index`、`show`、`new`、`create`、`edit`、`update` 和 `destroy`）。我们可以使用 `:only` 和 `:except` 选项来微调此行为。`:only` 选项用于指定想要生成的路由：
+
+[source,ruby]
+----
+resources :photos, only: [:index, :show]
+----
+
+此时，`/photos` 路径上的 `GET` 请求会成功，而 `POST` 请求会失败，因为后者会被映射到 `create` 动作上。
+
+`:except` 选项用于指定不想生成的路由：
+
+[source,ruby]
+----
+resources :photos, except: :destroy
+----
+
+此时，Rails 会创建除 `destroy` 之外的所有路由，因此 `/photos/:id` 路径上的 `DELETE` 请求会失败。
+
+TIP: 如果应用中有很多资源式路由，通过 `:only` 和 `:except` 选项，我们可以只生成实际需要的路由，这样可以减少内存使用、加速路由处理过程。
+
+[[translated-paths]]
+==== 翻译路径（translated path）
+
+在使用 `scope` 方法时，我们可以修改 `resources` 方法生成的路径名称。例如：
+
+[source,ruby]
+----
+scope(path_names: { new: 'neu', edit: 'bearbeiten' }) do
+  resources :categories, path: 'kategorien'
+end
+----
+
+Rails 会生成下列映射到 `Categories` 控制器的路由：
+
+|===
+|HTTP 方法 |路径 |控制器#动作 |具名辅助方法
+
+|`GET`
+|`/kategorien`
+|`categories#index`
+|`categories_path`
+
+|`GET`
+|`/kategorien/neu`
+|`categories#new`
+|`new_category_path`
+
+|`POST`
+|`/kategorien`
+|`categories#create`
+|`categories_path`
+
+|`GET`
+|`/kategorien/:id`
+|`categories#show`
+|`category_path(:id)`
+
+|`GET`
+|`/kategorien/:id/bearbeiten`
+|`categories#edit`
+|`edit_category_path(:id)`
+
+|`PATCH`/`PUT`
+|`/kategorien/:id`
+|`categories#update`
+|`category_path(:id)`
+
+|`DELETE`
+|`/kategorien/:id`
+|`categories#destroy`
+|`category_path(:id)`
+|===
+
+[[overriding-the-singular-form]]
+==== 定义资源的单数形式
+
+通过为 `Inflector` 添加附加的规则，我们可以定义资源的单数形式。例如：
+
+[source,ruby]
+----
+ActiveSupport::Inflector.inflections do |inflect|
+  inflect.irregular 'tooth', 'teeth'
+end
+----
+
+[[using-as-in-nested-resources]]
+==== 在嵌套资源中使用 `:as` 选项
+
+在嵌套资源中，我们可以使用 `:as` 选项覆盖自动生成的辅助方法名称。例如：
+
+[source,ruby]
+----
+resources :magazines do
+  resources :ads, as: 'periodical_ads'
+end
+----
+
+会生成 `magazine_periodical_ads_url` 和 `edit_magazine_periodical_ad_path` 等辅助方法。
+
+[[overriding-named-route-parameters]]
+==== 覆盖具名路由的参数
+
+`:param` 选项用于覆盖默认的资源标识符 `:id`（用于生成路由的动态片段的名称）。在控制器中，我们可以通过 `params[<:param>]` 访问资源标识符。
+
+[source,ruby]
+----
+resources :videos, param: :identifier
+----
+
+----
+videos GET  /videos(.:format)                  videos#index
+       POST /videos(.:format)                  videos#create
+new_videos GET  /videos/new(.:format)              videos#new
+edit_videos GET  /videos/:identifier/edit(.:format) videos#edit
+----
+
+[source,ruby]
+----
+Video.find_by(identifier: params[:identifier])
+----
+
+通过覆盖相关模型的 `ActiveRecord::Base#to_param` 方法，我们可以构造 URL 地址：
+
+[source,ruby]
+----
+class Video < ApplicationRecord
+  def to_param
+    identifier
+  end
+end
+
+video = Video.find_by(identifier: "Roman-Holiday")
+edit_videos_path(video) # => "/videos/Roman-Holiday"
+----
+
+[[inspecting-and-testing-routes]]
+=== 路由的检查（inspecting）和测试
