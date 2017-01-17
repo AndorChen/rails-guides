@@ -1524,3 +1524,94 @@ edit_videos_path(video) # => "/videos/Roman-Holiday"
 
 [[inspecting-and-testing-routes]]
 === 路由的检查（inspecting）和测试
+
+Rails 提供了路由检查和测试的相关功能。
+
+[[listing-existing-routes]]
+==== 列出现有路由
+
+要想得到应用中现有路由的完整列表，可以在开发环境中运行服务器，并在浏览器中访问 pass:[http://localhost:3000/rails/info/routes]。还可以在终端中执行 `rails routes` 命令，也会得到相同的输出结果。
+
+这两种方式都会按照路由在 `config/routes.rb` 文件中的声明顺序，列出所有路由。每个路由都包含以下信息：
+
+* 路由名称（如果有的话）
+* 所使用的 HTTP 方法（如果路由不响应所有的 HTTP 方法）
+* 所匹配的 URL 模式
+* 路由参数
+
+例如，下面是执行 `rails routes` 命令后，REST 式路由的一部分输出结果：
+
+----
+    users GET    /users(.:format)          users#index
+          POST   /users(.:format)          users#create
+ new_user GET    /users/new(.:format)      users#new
+edit_user GET    /users/:id/edit(.:format) users#edit
+----
+
+可以使用 `grep` 选项（即 `-g`）搜索路由。只要路由的 URL 辅助方法的名称、HTTP 方法或 URL 路径中有部分匹配，该路由就会显示在搜索结果中。
+
+[source,sh]
+----
+$ bin/rails routes -g new_comment
+$ bin/rails routes -g POST
+$ bin/rails routes -g admin
+----
+
+要想查看映射到指定控制器的路由，可以使用 `-c` 选项。
+
+[source,sh]
+----
+$ bin/rails routes -c users
+$ bin/rails routes -c admin/users
+$ bin/rails routes -c Comments
+$ bin/rails routes -c Articles::CommentsController
+----
+
+TIP: 增加终端窗口的宽度，避免输出结果折行，可以增加 `rails routes` 命令输出结果的可读性。
+
+[[testing-routes]]
+==== 路由测试
+
+路由和应用的其他部分一样，也应该包含在测试策略中。为了简化路由测试，Rails 提供了三个 link:$$http://api.rubyonrails.org/classes/ActionDispatch/Assertions/RoutingAssertions.html$$[内置断言]：
+
+* `assert_generates` 断言
+* `assert_recognizes` 断言
+* `assert_routing` 断言
+
+[[the-assert-generates-assertion]]
+===== `assert_generates` 断言
+
+`assert_generates` 断言的功能是断定所指定的一组选项会生成指定路径，它可以用于默认路由或自定义路由。例如：
+
+[source,ruby]
+----
+assert_generates '/photos/1', { controller: 'photos', action: 'show', id: '1' }
+assert_generates '/about', controller: 'pages', action: 'about'
+----
+
+[[the-assert-recognizes-assertion]]
+===== `assert_recognizes` 断言
+
+`assert_recognizes` 断言和 `assert_generates` 断言的功能相反，它断定所提供的路径能够被路由识别并映射到指定控制器动作。例如：
+
+[source,ruby]
+----
+assert_recognizes({ controller: 'photos', action: 'show', id: '1' }, '/photos/1')
+----
+
+我们可以通过 `:method` 参数指定 HTTP 方法：
+
+[source,ruby]
+----
+assert_recognizes（{controller：'photos'，action：'create'}，{path：'photos'，method：：post}）
+----
+
+[[the-assert-routing-assertion]]
+===== `assert_routing` 断言
+
+`assert_routing` 断言会对路由进行双向测试：既测试路径能否生成选项，也测试选项能否生成路径。也就是集 `assert_generates` 和 `assert_recognizes` 这两种断言的功能于一身。
+
+[source,ruby]
+----
+assert_routing({ path: 'photos', method: :post }, { controller: 'photos', action: 'create' })
+----
