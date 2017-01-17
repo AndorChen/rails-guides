@@ -25,7 +25,7 @@
 | Active Job Basics | ✔️ | ✔️ |
 | Testing Rails Applications | ✔️ | ✔️ |
 | Securing Rails Applications | | |
-| Debugging Rails Applications | ✔️ | |
+| Debugging Rails Applications | ✔️ | ✔️ |
 | Configuring Rails Applications | | |
 | Rails Command Line Tools and Rake Tasks | ✔️ | |
 | Asset Pipeline | | |

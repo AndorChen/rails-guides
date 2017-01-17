@@ -12,7 +12,7 @@
 * 调试的目的；
 * 如何追查测试没有发现的问题；
 * 不同的调试方法；
-* 如何分析堆栈跟踪；
+* 如何分析堆栈跟踪。
 --
 
 [[view-helpers-for-debugging]]
@@ -272,7 +272,7 @@ logger.debug {"Person attributes hash: #{@person.attributes.inspect}"}
 $ gem install byebug
 ----
 
-在任何 Rails 应用中都可以使用 `byebug` 方法调出调试器。
+在任何 Rails 应用中都可以使用 `byebug` 方法呼出调试器。
 
 下面举个例子：
 
@@ -289,7 +289,7 @@ end
 [[the-shell]]
 ==== Shell
 
-在应用中调用 `byebug` 方法后，在启动应用的终端窗口中会启用调试器 shell，并显示调试器的提示符 `(byebug)`。提示符前面显示的是即将执行的代码，当前行以“=>”标记，例如：
+在应用中调用 `byebug` 方法后，在启动应用的终端窗口中会启用调试器 shell，并显示调试器的提示符 `(byebug)`。提示符前面显示的是即将执行的代码，当前行以“pass:[=>]”标记，例如：
 
 [source]
 ----
@@ -450,7 +450,7 @@ Processing by ArticlesController#index as HTML
 ...
 ----
 
-当前帧使用 `-->` 标记。在回溯信息中可以执行 `frame n` 命令移动（从而改变上下文），其中 `n` 为帧序号。如果移动了，`byebug` 会显示新的上下文。
+当前帧使用 `pass:[-->]` 标记。在回溯信息中可以执行 `frame n` 命令移动（从而改变上下文），其中 `n` 为帧序号。如果移动了，`byebug` 会显示新的上下文。
 
 [source]
 ----
@@ -682,13 +682,13 @@ Processing by ArticlesController#index as HTML
 [[breakpoints]]
 ==== 断点
 
-断点设置在何处终止执行代码。调试器会在设定断点的行调出。
+断点设置在何处终止执行代码。调试器会在设定断点的行呼出。
 
 断点可以使用 `break` 命令（缩写为 `b`）动态添加。添加断点有三种方式：
 
-* `break n`：在当前源码文件的第 `n` 行设定断点；
-* `break file:n [if expression]`：在文件 `file` 的第 `n` 行设定断点。如果指定了表达式 `expression`，其返回结果必须为 `true` 才会启动调试器；
-* `break class(.|\#)method [if expression]`：在 `class` 类的 `method` 方法中设置断点，`.` 和 `#` 分别表示类和实例方法。表达式 `expression` 的作用与 `file:n` 一样；
+* `break n`：在当前源码文件的第 `n` 行设定断点。
+* `break file:n [if expression]`：在文件 `file` 的第 `n` 行设定断点。如果指定了表达式 `expression`，其返回结果必须为 `true` 才会启动调试器。
+* `break class(.|\#)method [if expression]`：在 `class` 类的 `method` 方法中设置断点，`.` 和 `#` 分别表示类和实例方法。表达式 `expression` 的作用与 `file:n` 中的一样。
 
 例如，在前面的情形下：
 
