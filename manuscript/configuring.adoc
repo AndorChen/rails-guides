@@ -1,2 +1,296 @@
 [[configuring-rails-applications]]
 == 配置 Rails 应用
+
+// 安道翻译
+
+[.chapter-abstract]
+--
+本文涵盖 Rails 应用可用的配置和初始化功能。
+
+读完本文后，您将学到：
+
+- 如何调整 Rails 应用的行为；
+- 如何增加额外代码，在应用启动时运行。
+--
+
+[[locations-for-initialization-code]]
+=== 初始化代码的存放位置
+
+Rails 为初始化代码提供了四个标准位置：
+
+- `config/application.rb`
+- 针对各环境的配置文件
+- 初始化脚本
+- 后置初始化脚本
+
+[[running-code-before-rails]]
+=== 在 Rails 之前运行代码
+
+虽然在加载 Rails 自身之前运行代码很少见，但是如果想这么做，可以把代码添加到 `config/application.rb` 文件中 `require 'rails/all'` 的前面。
+
+[[configuring-rails-components]]
+=== 配置 Rails 组件
+
+一般来说，配置 Rails 的意思是配置 Rails 的组件和 Rails 自身。传给各个组件的设置在 `config/application.rb` 配置文件或者针对各环境的配置文件（如 `config/environments/production.rb`）中指定。
+
+例如，`config/application.rb` 文件中有下述设置：
+
+[source,ruby]
+----
+config.time_zone = 'Central Time (US & Canada)'
+----
+
+这是针对 Rails 自身的设置。如果想把设置传给某个 Rails 组件，依然是在 `config/application.rb` 文件中通过 `config` 对象去做：
+
+[source,ruby]
+----
+config.active_record.schema_format = :ruby
+----
+
+Rails 会使用这个设置配置 Active Record。
+
+[[rails-general-configuration]]
+==== Rails 的一般性配置
+
+这些配置方法在 `Rails::Railtie` 对象上调用，例如 `Rails::Engine` 或 `Rails::Application` 的子类。
+
+- `config.after_initialize` 接受一个块，在 Rails 初始化应用之后运行。初始化过程包括初始化框架自身、引擎和 `config/initializers` 目录中的全部初始化脚本。注意，这个块会被 Rake 任务运行。可用于配置其他初始化脚本设定的值：
++
+[source,ruby]
+----
+config.after_initialize do
+  ActionView::Base.sanitized_allowed_tags.delete 'div'
+end
+----
+
+- `config.asset_host` 设定静态资源文件的主机名。使用 CDN 贮存静态资源文件，或者想绕开浏览器对同一域名的并发连接数的限制时可以使用这个选项。这是 `config.action_controller.asset_host` 的简短版本。
+
+- `config.autoload_once_paths` 接受一个路径数组，告诉 Rails 自动加载常量后不在每次请求中都清空。如果 `config.cache_classes` 的值为 `false`（开发环境的默认值），这个选项有影响。否则，都只自动加载一次。这个数组的全部元素都要在 `autoload_paths` 中。默认值为一个空数组。
+
+- `config.autoload_paths` 接受一个路径数组，让 Rails 自动加载里面的常量。默认值是 `app` 目录中的全部子目录。
+
+- `config.cache_classes` 控制每次请求是否重新加载应用的类和模块。在开发环境中默认为 `false`，在测试和生产环境中默认为 `true`。
+
+- `config.action_view.cache_template_loading` 控制每次请求是否重新加载模板。默认值为 `config.cache_classes` 的值。
+
+- `config.beginning_of_week` 设定一周从周几开始。可接受的值是有效的周几符号（如 `:monday`）。
+
+- `config.cache_store` 配置 Rails 缓存使用哪个存储器。可用的选项有：`:memory_store`、`:file_store`、`:mem_cache_store`、`:null_store`，或者实现了缓存 API 的对象。如果存在 `tmp/cache` 目录，默认值为 `:file_store`，否则为 `:memory_store`。
+
+- `config.colorize_logging` 指定在日志中记录信息时是否使用 ANSI 颜色代码。默认值为 `true`。
+
+- `config.consider_all_requests_local` 是一个旗标。如果设为 `true`，发生任何错误都会把详细的调试信息转储到 HTTP 响应中，而且 `Rails::Info` 控制器会在 `/rails/info/properties` 中显示应用的运行时上下文。开发和测试环境中默认为 `true`，生产环境默认为 `false`。如果想精细控制，把这个选项设为 `false`，然后在控制器中实现 `local_request?` 方法，指定哪些请求应该在出错时显示调试信息。
+
+- `config.console` 设定 `rails console` 命令所用的控制台类。最好在 `console` 块中运行：
++
+[source,ruby]
+----
+console do
+  # 这个块只在运行控制台时运行
+  # 因此可以安全引入 pry
+  require "pry"
+  config.console = Pry
+end
+----
+
+- `config.eager_load` 设为 `true` 时，及早加载注册的全部 `config.eager_load_namespaces`。包括应用、引擎、Rails 框架和其他注册的命名空间。
+
+- `config.eager_load_namespaces` 注册命名空间，当 `config.eager_load` 为 `true` 时及早加载。这里列出的所有命名空间都必须响应 `eager_load!` 方法。
+
+- `config.eager_load_paths` 接受一个路径数组，如果启用类缓存，启动 Rails 时会及早加载。默认值为 `app` 目录中的全部子目录。
+
+- `config.enable_dependency_loading` 设为 `true` 时，即便应用及早加载了，而且把 `config.cache_classes` 设为 `true`，也自动加载。默认值为 `false`。
+
+- `config.encoding` 设定应用全局编码。默认为 UTF-8。
+
+- `config.exceptions_app` 设定出现异常时 ShowException 中间件调用的异常应用。默认为 `ActionDispatch::PublicExceptions.new(Rails.public_path)`。
+
+- `config.debug_exception_response_format` 设定开发环境中出错时响应的格式。只提供 API 的应用默认值为 `:api`，常规应用的默认值为 `:default`。
+
+- `config.file_watcher` 指定一个类，当 `config.reload_classes_only_on_change` 设为 `true` 时用于检测文件系统中文件的变动。Rails 提供了 `ActiveSupport::FileUpdateChecker`（默认）和 `ActiveSupport::EventedFileUpdateChecker`（依赖 https://github.com/guard/listen[listen] gem）。自定义的类必须符合 `ActiveSupport::FileUpdateChecker` API。
+
+- `config.filter_parameters` 用于过滤不想记录到日志中的参数，例如密码或信用卡卡号。默认，Rails 把 `Rails.application.config.filter_parameters += [:password]` 添加到 `config/initializers/filter_parameter_logging.rb` 文件中，过滤密码。过滤的参数部分匹配正则表达式。
+
+- `config.force_ssl` 强制所有请求经由 `ActionDispatch::SSL` 中间件处理，即通过 HTTPS 伺服，而且把 `config.action_mailer.default_url_options` 设为 `{ protocol: 'https' }`。SSL 通过设定 `config.ssl_options` 选项配置，详情参见 http://edgeapi.rubyonrails.org/classes/ActionDispatch/SSL.html[ActionDispatch::SSL 的文档]。
+
+- `config.log_formatter` 定义 Rails 日志记录器的格式化程序。这个选项的默认值在开发和测试环境中是 `ActiveSupport::Logger::SimpleFormatter` 的实例，在生产环境中是 `Logger::Formatter`。如果为 `config.logger` 设定了值，必须在包装到 `ActiveSupport::TaggedLogging` 实例中之前手动把格式化程序的值传给日志记录器，Rails 不会为你代劳。
+
+- `config.log_level` 定义 Rails 日志记录器的详细程度。在所有环境中，这个选项的默认值都是 `:debug`。可用的日志等级有 `:debug`、`:info、`:warn`、`:error`、`:fatal` 和 `:unknown`。
+
+- `config.log_tags` 的值可以是一组 `request` 对象响应的方法，可以是一个接受 `request` 对象的 `Proc`，也可以是能响应 `to_s` 方法的对象。这样便于为包含调试信息的日志行添加标记，例如二级域名和请求 ID——二者对调试多用户应用十分有用。
+
+- `config.logger` 指定 `Rails.logger` 和与 Rails 有关的其他日志（`ActiveRecord::Base.logger`）所用的日志记录器。默认值为 `ActiveSupport::TaggedLogging` 实例，包装 `ActiveSupport::Logger` 实例，把日志存储在 `log/` 目录中。你可以提供自定义的日志记录器，但是为了完全兼容，必须遵照下述指导方针：
++
+** 为了支持格式化程序，必须手动把 `config.log_formatter` 指定的格式化程序赋值给日志记录器。
+** 为了支持日志标记，日志实例必须使用 `ActiveSupport::TaggedLogging` 包装。
+** 为了支持静默，日志记录器必须引入 `LoggerSilence` 和 `ActiveSupport::LoggerThreadSafeLevel` 模块。`ActiveSupport::Logger` 类已经引入这两个模块。
++
+[source,ruby]
+----
+class MyLogger < ::Logger
+  include ActiveSupport::LoggerThreadSafeLevel
+  include LoggerSilence
+end
+
+mylogger           = MyLogger.new(STDOUT)
+mylogger.formatter = config.log_formatter
+config.logger = ActiveSupport::TaggedLogging.new(mylogger)
+----
+
+- `config.middleware` 用于配置应用的中间件。详情参见 <<configuring-middleware>>。
+
+- `config.reload_classes_only_on_change` 设定仅在跟踪的文件有变化时是否重新加载类。默认跟踪自动加载路径中的一切文件，这个选项的值为 `true`。如果把 `config.cache_classes` 设为 `true`，这个选项将被忽略。
+
+- `secrets.secret_key_base` 用于指定一个密钥，检查应用的会话，防止篡改。`secrets.secret_key_base` 的值一开始是个随机的字符串，存储在 `config/secrets.yml` 文件中。
+
+- `config.public_file_server.enabled` 配置 Rails 从 public 目录中伺服静态文件。这个选项的默认值是 `false`，但在生产环境中设为 `false`，因为应该使用运行应用的服务器软件（如 NGINX 或 Apache）伺服静态文件。在生产环境中如何使用 WEBrick 运行或测试应用（不建议在生产环境中使用 WEBrick），把这个选项设为 `true`。否则无法使用页面缓存，也无法请求 public 目录中的文件。
+
+- `config.session_store` 通常在 `config/initializers/session_store.rb` 文件中设定，用于指定使用哪个类存储会话。可用的值有 `:cookie_store`（默认值）、`:mem_cache_store` 和 `:disabled`。最后一个值告诉 Rails 不处理会话。也可以指定自定义的会话存储器：
++
+[source,ruby]
+----
+config.session_store :my_custom_store
+----
++
+这个自定义的存储器必须定义为 `ActionDispatch::Session::MyCustomStore`。
+
+- `config.time_zone` 设定应用的默认时区，并让 Active Record 知道。
+
+[[configuring-assets]]
+==== 配置静态资源
+
+- `config.assets.enabled` 是个旗标，控制是否启用 Asset Pipeline。默认值为 `true`。
+
+- `config.assets.raise_runtime_errors` 设为 `true` 时启用额外的运行时错误检查。推荐在 `config/environments/development.rb` 设定，以免部署到生产环境时遇到意料之外的错误。
+
+- `config.assets.css_compressor` 定义所用的 CSS 压缩程序。默认设为 `sass-rails`。目前唯一的另一个值是 `:yui`，使用 `yui-compressor` gem 压缩。
+
+- `config.assets.js_compressor` 定义所用的 JavaScript 压缩程序。可用的值有 `:closure`、`:uglifier` 和 `:yui`，分别使用 `closure-compiler`、`uglifier` 和 `yui-compressor` gem。
+
+- `config.assets.gzip` 是一个旗标，设定在静态资源的常规版本之外是否创建 gzip 版本。默认为 `true`。
+
+- `config.assets.paths` 包含查找静态资源的路径。在这个配置选项中追加的路径，会在里面寻找静态资源。
+
+- `config.assets.precompile` 设定运行 `rake assets:precompile` 任务时要预先编译的其他静态资源（除 `application.css` 和 `application.js` 之外）。
+
+- `config.assets.prefix` 定义伺服静态资源的前缀。默认为 `/assets`。
+
+- `config.assets.manifest` 定义静态资源预编译器使用的清单文件的完整路径。默认为 `public` 文件夹中 `config.assets.prefix` 设定的目录中的 `manifest-<random>.json`。
+
+- `config.assets.digest` 设定是否在静态资源的名称中包含 MD5 指纹。默认为 `true`。
+
+- `config.assets.debug` 禁止拼接和压缩静态文件。在 `development.rb` 文件中默认设为 `true`。
+
+- `config.assets.compile` 是一个旗标，设定在生产环境中是否启用实时 Sprockets  编译。
+
+- `config.assets.logger` 接受一个符合 Log4r 接口的日志记录器，或者默认的 Ruby `Logger` 类。默认值与 `config.logger` 相同。如果设为 `false`，不记录对静态资源的伺服。
+
+[[configuring-generators]]
+==== 配置生成器
+
+Rails 允许通过 `config.generators` 方法调整生成器的行为。这个方法接受一个块：
+
+[source,ruby]
+----
+config.generators do |g|
+  g.orm :active_record
+  g.test_framework :test_unit
+end
+----
+
+在这个块中可以使用的全部方法如下：
+
+- `assets` 指定在生成脚手架时是否创建静态资源。默认为 `true`。
+- `force_plural` 指定模型名是否允许使用复数。默认为 `false`。
+- `helper` 指定是否生成辅助模块。默认为 `true`。
+- `integration_tool` 指定使用哪个集成工具生成集成测试。默认为 `:test_unit`。
+- `javascripts` 启用生成器中的 JavaScript 文件钩子。在 Rails 中供 `scaffold` 生成器使用。默认为 `true`。
+- `javascript_engine` 配置生成静态资源时使用的脚本引擎（如 coffee）。默认为 `:js`。
+- `orm` 指定使用哪个 ORM。默认为 `false`，即使用 Active Record。
+- `resource_controller` 指定 `rails generate resource` 使用哪个生成器生成控制器。默认为 `:controller`。
+- `resource_route` 指定是否生成资源理由。默认为 `true`。
+- `scaffold_controller` 与 `resource_controller` 不同，它指定 `rails generate scaffold` 使用哪个生成器生成脚手架中的控制器。默认为 `:scaffold_controller`。
+- `stylesheets` 启用生成器中的样式表钩子。在 Rails 中供 `scaffold` 生成器使用，不过也可以供其他生成器使用。默认为 `true`。
+- `stylesheet_engine` 配置生成静态资源时使用的样式表引擎（如 sass）。默认为 `:css`。
+- `scaffold_stylesheet` 生成脚手架中的资源时创建 `scaffold.css`。默认为 `true`。
+- `test_framework` 指定使用哪个测试框架。默认为 `false`，即使用 Minitest。
+- `template_engine` 指定使用哪个模板引擎，例如 ERB 或 Haml。默认为 `:erb`。
+
+[[configuring-middleware]]
+==== 配置中间件
+
+每个 Rails 应用都自带一系列中间件，在开发环境中按下述顺序使用：
+
+- `ActionDispatch::SSL` 强制使用 HTTPS 伺服每个请求。`config.force_ssl` 设为 `true` 时启用。传给这个中间件的选项通过 `config.ssl_options` 配置。
+
+- `ActionDispatch::Static` 用于伺服静态资源。`config.public_file_server.enabled` 设为 `false` 时禁用。如果静态资源目录的索引文件不是 `index`，使用 `config.public_file_server.index_name` 指定。例如，请求目录时如果想伺服 `main.html`，而不是 `index.html`，把 `config.public_file_server.index_name` 设为 `"main"`。
+
+- `ActionDispatch::Executor` 以线程安全的方式重新加载代码。`onfig.allow_concurrency` 设为 `false` 时禁用，此时加载 `Rack::Lock`。`Rack::Lock` 把应用包装在 mutex 中，因此一次只能被一个线程调用。
+
+- `ActiveSupport::Cache::Strategy::LocalCache` 是基本的内存后端缓存。这个缓存对线程不安全，只应该用作单线程的临时内存缓存。
+
+- `Rack::Runtime` 设定 `X-Runtime` 首部，包含执行请求的时间（单位为秒）。
+
+- `Rails::Rack::Logger` 通知日志请求开始了。请求完成后，清空相关日志。
+
+- `ActionDispatch::ShowExceptions` 拯救应用抛出的任何异常，在本地或者把 `config.consider_all_requests_local` 设为 `true` 时渲染精美的异常页面。如果把 `config.action_dispatch.show_exceptions` 设为 `false`，异常总是抛出。
+
+- `ActionDispatch::RequestId` 在响应中添加 `X-Request-Id` 首部，并且启用 `ActionDispatch::Request#uuid` 方法。
+
+- `ActionDispatch::RemoteIp` 检查 IP 欺骗攻击，从请求首部中获取有效的 `client_ip`。可通过 `config.action_dispatch.ip_spoofing_check` 和 `config.action_dispatch.trusted_proxies` 配置。
+
+- `Rack::Sendfile` 截获从文件中伺服内容的响应，将其替换成服务器专属的 `X-Sendfile` 首部。可通过 `config.action_dispatch.x_sendfile_header` 配置。
+
+- `ActionDispatch::Callbacks` 在伺服请求之前运行准备回调。
+
+- `ActiveRecord::ConnectionAdapters::ConnectionManagement` 在每次请求后清理活跃的连接，除非请求环境的 `rack.test` 键为 `true`。
+
+- `ActiveRecord::QueryCache` 缓存请求中生成的所有 SELECT 查询。如果有 INSERT 或 UPDATE 查询，清空所有缓存。
+
+- `ActionDispatch::Cookies` 为请求设定 cookie。
+
+- `ActionDispatch::Session::CookieStore` 负责把会话存储在 cookie 中。可以把 `config.action_controller.session_store` 改为其他值，换成其他中间件。此外，可以使用 `config.action_controller.session_options` 配置传给这个中间件的选项。
+
+- `ActionDispatch::Flash` 设定 `flash` 键。仅当为 `config.action_controller.session_store` 设定值时可用。
+
+- `Rack::MethodOverride` 在设定了 `params[:_method]` 时允许覆盖请求方法。这是支持 PATCH、PUT 和 DELETE HTTP 请求的中间件。
+
+- `Rack::Head` 把 HEAD 请求转换成 GET 请求，然后以 GET 请求伺服。
+
+除了这些常规中间件之外，还可以使用 `config.middleware.use` 方法添加：
+
+[source,ruby]
+----
+config.middleware.use Magical::Unicorns
+----
+
+上述代码把 `Magical::Unicorns` 中间件添加到栈的末尾。如果想把中间件添加到另一个中间件的前面，可以使用 `insert_before`：
+
+[source,ruby]
+----
+config.middleware.insert_before Rack::Head, Magical::Unicorns
+----
+
+此外，还有 `insert_after`。它把中间件添加到另一个中间件的后面：
+
+[source,ruby]
+----
+config.middleware.insert_after Rack::Head, Magical::Unicorns
+----
+
+中间件也可以完全替换掉：
+
+[source,ruby]
+----
+config.middleware.swap ActionController::Failsafe, Lifo::Failsafe
+----
+
+还可以从栈中移除：
+
+[source,ruby]
+----
+config.middleware.delete Rack::MethodOverride
+----
+
+[[configuring-i18n]]
+==== 配置 i18n
