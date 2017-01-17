@@ -1,7 +1,5 @@
 [[rails-routing-from-the-outside-in]]
 == Rails 路由全解
-:imagesdir: ../images
-:numbered:
 
 // chinakr 翻译
 
