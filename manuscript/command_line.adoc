@@ -595,7 +595,7 @@ spec/models/user_spec.rb:
 [[routes]]
 ==== `routes`
 
-`rails routes` 会列出应用中定义的所有路由，可为解决路由问题提供帮助，还可以让你对应用中的所有 URL 有个整体了解。
+`rails routes` 列出应用中定义的所有路由，可为解决路由问题提供帮助，还可以让你对应用中的所有 URL 有个整体了解。
 
 [[test]]
 ==== `test`
@@ -635,8 +635,8 @@ Rails 提供了一个名为 Minitest 的测试组件。Rails 的稳定性由测�
 ----
 desc "I am short, but comprehensive description for my cool task"
 task task_name: [:prerequisite_task, :another_task_we_depend_on] do
-  # All your magic here
-  # Any valid Ruby code is allowed
+  # 在这里定义任务
+  # 可以使用任何有效的 Ruby 代码
 end
 ----
 
@@ -656,7 +656,7 @@ end
 namespace :db do
   desc "This task does nothing"
   task :nothing do
-    # Seriously, nothing
+    # 确实什么也没做
   end
 end
 ----
@@ -672,7 +672,7 @@ $ bin/rails db:nothing
 
 [NOTE]
 ====
-如果在任务中要与应用的模型交互，查询数据库等，可以使用 `environment` 任务加载应用代码。
+如果在任务中要与应用的模型交互、查询数据库等，可以使用 `environment` 任务加载应用代码。
 ====
 
 [[the-rails-advanced-command-line]]
