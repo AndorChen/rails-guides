@@ -1,2 +1,39 @@
 [[rails-internationalization-api]]
 == Rails 国际化 API
+:imagesdir: ../images
+:numbered:
+
+// chinakr 翻译
+
+[.chapter-abstract]
+--
+Rails （Rails 2.2 及之后版本） 自带的 Ruby I18n （internationalization 的简写）gem，提供了易用、可扩展的框架，用于把应用翻译为英语之外的语言，或为应用提供多语言支持。
+
+“国际化”（internationalization）过程通常是指，把所有字符串及本地化相关信息（例如日期或货币格式）从应用中抽取出来。“本地化”（localization）过程通常是指，翻译这些字符串并提供相关信息的本地格式。
+
+因此，在国际化 Rails 应用的过程中，我们需要：
+
+* 确保 Rails 提供了 I18n 支持；
+* 把区域设置字典（locale dictionary）的位置告诉 Rails；
+* 告诉 Rails 如何设置、保存和切换区域（locale）。
+
+在本地化 Rails 应用的过程中，我们可能需要完成下面三项工作：
+
+* 替换或补充 Rails 的默认区域设置，例如日期和时间格式、月份名称、Active Record 模型名称等；
+* 从应用中抽取字符串，并放入字典，例如视图中的提示信息（flash message）、静态文本等；
+* 把生成的字典储存在某个地方。
+
+本文介绍了 Rails I18n API，并提供了国际化 Rails 应用的入门教程。
+
+读完本文后，您将学到：
+
+* Rails 中 I18n 的工作原理；
+* 在 REST 式应用中正确使用 I18n 的几种方式；
+* 如何使用 I18n 翻译 Active Record 错误或 Action Mailer 电子邮件主题；
+* 用于进一步翻译应用的其他工具。
+
+NOTE: Ruby I18n 框架提供了 Rails 应用国际化/本地化所需的所有必要支持。我们还可以使用各种 gem 来添加附加功能或特性。更多介绍请参阅 link:$https://github.com/svenfuchs/rails-i18n$[rails-18n gem]。
+--
+
+[[how-i18n-in-ruby-on-rails-works]]
+=== Rails 中 I18n 的工作原理
