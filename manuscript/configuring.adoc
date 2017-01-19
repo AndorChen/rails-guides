@@ -93,7 +93,7 @@ console do
 end
 ----
 
-- `config.eager_load` 设为 `true` 时，及早加载注册的全部 `config.eager_load_namespaces`。包括应用、引擎、Rails 框架和其他注册的命名空间。
+- `config.eager_load` 设为 `true` 时，及早加载注册的全部 `config.eager_load_namespaces`。包括应用、引擎、Rails 框架和注册的其他命名空间。
 
 - `config.eager_load_namespaces` 注册命名空间，当 `config.eager_load` 为 `true` 时及早加载。这里列出的所有命名空间都必须响应 `eager_load!` 方法。
 
@@ -111,18 +111,18 @@ end
 
 - `config.filter_parameters` 用于过滤不想记录到日志中的参数，例如密码或信用卡卡号。默认，Rails 把 `Rails.application.config.filter_parameters += [:password]` 添加到 `config/initializers/filter_parameter_logging.rb` 文件中，过滤密码。过滤的参数部分匹配正则表达式。
 
-- `config.force_ssl` 强制所有请求经由 `ActionDispatch::SSL` 中间件处理，即通过 HTTPS 伺服，而且把 `config.action_mailer.default_url_options` 设为 `{ protocol: 'https' }`。SSL 通过设定 `config.ssl_options` 选项配置，详情参见 http://edgeapi.rubyonrails.org/classes/ActionDispatch/SSL.html[ActionDispatch::SSL 的文档]。
+- `config.force_ssl` 强制所有请求经由 `ActionDispatch::SSL` 中间件处理，即通过 HTTPS 伺服，而且把 `config.action_mailer.default_url_options` 设为 `{ protocol: 'https' }`。SSL 通过设定 `config.ssl_options` 选项配置，详情参见 http://edgeapi.rubyonrails.org/classes/ActionDispatch/SSL.html[`ActionDispatch::SSL` 的文档]。
 
 - `config.log_formatter` 定义 Rails 日志记录器的格式化程序。这个选项的默认值在开发和测试环境中是 `ActiveSupport::Logger::SimpleFormatter` 的实例，在生产环境中是 `Logger::Formatter`。如果为 `config.logger` 设定了值，必须在包装到 `ActiveSupport::TaggedLogging` 实例中之前手动把格式化程序的值传给日志记录器，Rails 不会为你代劳。
 
-- `config.log_level` 定义 Rails 日志记录器的详细程度。在所有环境中，这个选项的默认值都是 `:debug`。可用的日志等级有 `:debug`、`:info、`:warn`、`:error`、`:fatal` 和 `:unknown`。
+- `config.log_level` 定义 Rails 日志记录器的详细程度。在所有环境中，这个选项的默认值都是 `:debug`。可用的日志等级有 `:debug`、`:info`、`:warn`、`:error`、`:fatal` 和 `:unknown`。
 
-- `config.log_tags` 的值可以是一组 `request` 对象响应的方法，可以是一个接受 `request` 对象的 `Proc`，也可以是能响应 `to_s` 方法的对象。这样便于为包含调试信息的日志行添加标记，例如二级域名和请求 ID——二者对调试多用户应用十分有用。
+- `config.log_tags` 的值可以是一组 `request` 对象响应的方法，可以是一个接受 `request` 对象的 `Proc`，也可以是能响应 `to_s` 方法的对象。这样便于为包含调试信息的日志行添加标签，例如二级域名和请求 ID——二者对调试多用户应用十分有用。
 
 - `config.logger` 指定 `Rails.logger` 和与 Rails 有关的其他日志（`ActiveRecord::Base.logger`）所用的日志记录器。默认值为 `ActiveSupport::TaggedLogging` 实例，包装 `ActiveSupport::Logger` 实例，把日志存储在 `log/` 目录中。你可以提供自定义的日志记录器，但是为了完全兼容，必须遵照下述指导方针：
 +
 ** 为了支持格式化程序，必须手动把 `config.log_formatter` 指定的格式化程序赋值给日志记录器。
-** 为了支持日志标记，日志实例必须使用 `ActiveSupport::TaggedLogging` 包装。
+** 为了支持日志标签，日志实例必须使用 `ActiveSupport::TaggedLogging` 包装。
 ** 为了支持静默，日志记录器必须引入 `LoggerSilence` 和 `ActiveSupport::LoggerThreadSafeLevel` 模块。`ActiveSupport::Logger` 类已经引入这两个模块。
 +
 [source,ruby]
@@ -143,7 +143,7 @@ config.logger = ActiveSupport::TaggedLogging.new(mylogger)
 
 - `secrets.secret_key_base` 用于指定一个密钥，检查应用的会话，防止篡改。`secrets.secret_key_base` 的值一开始是个随机的字符串，存储在 `config/secrets.yml` 文件中。
 
-- `config.public_file_server.enabled` 配置 Rails 从 public 目录中伺服静态文件。这个选项的默认值是 `false`，但在生产环境中设为 `false`，因为应该使用运行应用的服务器软件（如 NGINX 或 Apache）伺服静态文件。在生产环境中如何使用 WEBrick 运行或测试应用（不建议在生产环境中使用 WEBrick），把这个选项设为 `true`。否则无法使用页面缓存，也无法请求 public 目录中的文件。
+- `config.public_file_server.enabled` 配置 Rails 从 public 目录中伺服静态文件。这个选项的默认值是 `false`，但在生产环境中设为 `false`，因为应该使用运行应用的服务器软件（如 NGINX 或 Apache）伺服静态文件。在生产环境中如果使用 WEBrick 运行或测试应用（不建议在生产环境中使用 WEBrick），把这个选项设为 `true`。否则无法使用页面缓存，也无法请求 public 目录中的文件。
 
 - `config.session_store` 通常在 `config/initializers/session_store.rb` 文件中设定，用于指定使用哪个类存储会话。可用的值有 `:cookie_store`（默认值）、`:mem_cache_store` 和 `:disabled`。最后一个值告诉 Rails 不处理会话。也可以指定自定义的会话存储器：
 +
@@ -161,7 +161,7 @@ config.session_store :my_custom_store
 
 - `config.assets.enabled` 是个旗标，控制是否启用 Asset Pipeline。默认值为 `true`。
 
-- `config.assets.raise_runtime_errors` 设为 `true` 时启用额外的运行时错误检查。推荐在 `config/environments/development.rb` 设定，以免部署到生产环境时遇到意料之外的错误。
+- `config.assets.raise_runtime_errors` 设为 `true` 时启用额外的运行时错误检查。推荐在 `config/environments/development.rb` 中设定，以免部署到生产环境时遇到意料之外的错误。
 
 - `config.assets.css_compressor` 定义所用的 CSS 压缩程序。默认设为 `sass-rails`。目前唯一的另一个值是 `:yui`，使用 `yui-compressor` gem 压缩。
 
@@ -208,7 +208,7 @@ end
 - `javascript_engine` 配置生成静态资源时使用的脚本引擎（如 coffee）。默认为 `:js`。
 - `orm` 指定使用哪个 ORM。默认为 `false`，即使用 Active Record。
 - `resource_controller` 指定 `rails generate resource` 使用哪个生成器生成控制器。默认为 `:controller`。
-- `resource_route` 指定是否生成资源理由。默认为 `true`。
+- `resource_route` 指定是否生成资源路由。默认为 `true`。
 - `scaffold_controller` 与 `resource_controller` 不同，它指定 `rails generate scaffold` 使用哪个生成器生成脚手架中的控制器。默认为 `:scaffold_controller`。
 - `stylesheets` 启用生成器中的样式表钩子。在 Rails 中供 `scaffold` 生成器使用，不过也可以供其他生成器使用。默认为 `true`。
 - `stylesheet_engine` 配置生成静态资源时使用的样式表引擎（如 sass）。默认为 `:css`。
@@ -314,16 +314,16 @@ config.middleware.delete Rack::MethodOverride
 
 - `config.active_record.primary_key_prefix_type` 用于调整主键列的名称。默认情况下，Rails 假定主键列名为 `id`（无需配置）。此外有两个选择：
 +
-** 设为 `:table_name` 时，Customer 类的主键为 `customerid`。
-** 设为 `:table_name_with_underscore` 时，Customer 类的主键为 `customer_id`。
+** 设为 `:table_name` 时，`Customer` 类的主键为 `customerid`。
+** 设为 `:table_name_with_underscore` 时，`Customer` 类的主键为 `customer_id`。
 
-- `config.active_record.table_name_prefix` 设定一个全局字符串，放在表名前面。如果设为 `northwest_`，Customer 类对应的表是 `northwest_customers`。默认为空字符串。
+- `config.active_record.table_name_prefix` 设定一个全局字符串，放在表名前面。如果设为 `northwest_`，`Customer` 类对应的表是 `northwest_customers`。默认为空字符串。
 
-- `config.active_record.table_name_suffix` 设定一个全局字符串，放在表名后面。如果设为 `_northwest`，Customer 类对应的表是 `customers_northwest`。默认为空字符串。
+- `config.active_record.table_name_suffix` 设定一个全局字符串，放在表名后面。如果设为 `_northwest`，`Customer` 类对应的表是 `customers_northwest`。默认为空字符串。
 
 - `config.active_record.schema_migrations_table_name` 设定模式迁移表的名称。
 
-- `config.active_record.pluralize_table_names` 指定 Rails 在数据库中寻找单数还是复数表名。如果设为 `true`（默认），那么 Customer 类使用 `customers` 表。如果设为 `false`，Customer 类使用 `customer` 表。
+- `config.active_record.pluralize_table_names` 指定 Rails 在数据库中寻找单数还是复数表名。如果设为 `true`（默认），那么 `Customer` 类使用 `customers` 表。如果设为 `false`，`Customer` 类使用 `customer` 表。
 
 - `config.active_record.default_timezone` 设定从数据库中检索日期和时间时使用 `Time.local`（设为 `:local` 时）还是 `Time.utc`（设为 `:utc` 时）。默认为 `:utc`。
 
@@ -345,7 +345,7 @@ config.middleware.delete Rack::MethodOverride
 
 - `config.active_record.dump_schema_after_migration` 是个旗标，控制运行迁移后是否转储模式（`db/schema.rb` 或 `db/structure.sql`）。生成 Rails 应用时，`config/environments/production.rb` 文件中把它设为 `false`。如果不设定这个选项，默认为 `true`。
 
-- `config.active_record.dump_schemas` 控制运行 `db:structure:dump` 任务时转储哪些数据库模式。可用的值有：`:schema_search_path`（默认），转储 schema_search_path 列出的全部模式；`:all`，不考虑 schema_search_path，始终转储全部模式；以逗号分隔的模式字符串。
+- `config.active_record.dump_schemas` 控制运行 `db:structure:dump` 任务时转储哪些数据库模式。可用的值有：`:schema_search_path`（默认），转储 `schema_search_path` 列出的全部模式；`:all`，不考虑 `schema_search_path`，始终转储全部模式；以逗号分隔的模式字符串。
 
 - `config.active_record.belongs_to_required_by_default` 是个布尔值选项，控制没有 `belongs_to` 关联时记录的验证是否失败。
 
@@ -538,14 +538,14 @@ config.action_mailer.default_options = {
 }
 ----
 
-- `config.action_mailer.observers` 注册观测器，发送邮件时收到通知。
+- `config.action_mailer.observers` 注册观测器（observer），发送邮件时收到通知。
 +
 [source,ruby]
 ----
 config.action_mailer.observers = ["MailObserver"]
 ----
 
-- `config.action_mailer.interceptors` 注册侦听器，在发送邮件前调用。
+- `config.action_mailer.interceptors` 注册侦听器（interceptor），在发送邮件前调用。
 +
 [source,ruby]
 ----
@@ -820,7 +820,7 @@ development:
 
 [NOTE]
 ====
-Rails 默认使用 SQLite3 存储数据，因为它无需配置，立即就能使用。Rails 还原生支持 MySQL（含 MariaDB）和 PostgreSQL，此外还有针对其他数种数据库系统的插件。在生产环境中使用的数据库，基本上都有相应的 Rails 适配器。
+Rails 默认使用 SQLite3 存储数据，因为它无需配置，立即就能使用。Rails 还原生支持 MySQL（含 MariaDB）和 PostgreSQL，此外还有针对其他多种数据库系统的插件。在生产环境中使用的数据库，基本上都有相应的 Rails 适配器。
 ====
 
 [[configuring-a-mysql-or-mariadb-database]]
@@ -856,7 +856,7 @@ development:
   pool: 5
 ----
 
-PostgreSQL 默认启用预处理语句。若想禁用，把 `prepared_statements` 设为 `false`：
+PostgreSQL 默认启用预处理语句（prepared statement）。若想禁用，把 `prepared_statements` 设为 `false`：
 
 [source,yml]
 ----
@@ -964,7 +964,7 @@ http://unicorn.bogomips.org/[Unicorn] 就是这样的应用服务器，在反向
 
 配置好应用服务器之后，还要相应配置 Web 服务器，把请求代理过去。例如，NGINX 的配置可能包含：
 
-[source]
+[source,nginx]
 ----
 upstream application_server {
   server 0.0.0.0:8080
@@ -1105,7 +1105,7 @@ end
 
 - `i18n.callbacks`：在开发环境中设置一个 `to_prepare` 回调，如果自上次请求后本地化有变，调用 `I18n.reload!`。在生产环境，这个回调只在第一次请求时运行。
 
-- `active_support.deprecation_behavior`：设定各个环境报告启用的方式，在开发环境中默认为 `:log`，在生产环境中默认为 `:notify`，在测试环境中默认为 `:stderr`。如果没为 `config.active_support.deprecation` 设定一个值，这个初始化脚本提示用户在当前环境的配置文件（`config/environments` 目录里）中设定。可以设为一个数组。
+- `active_support.deprecation_behavior`：设定各个环境报告弃用的方式，在开发环境中默认为 `:log`，在生产环境中默认为 `:notify`，在测试环境中默认为 `:stderr`。如果没为 `config.active_support.deprecation` 设定一个值，这个初始化脚本提示用户在当前环境的配置文件（`config/environments` 目录里）中设定。可以设为一个数组。
 
 - `active_support.initialize_time_zone`：根据 `config.time_zone` 设置为应用设定默认的时区。默认为“UTC”。
 
@@ -1163,7 +1163,7 @@ end
 
 - `add_routing_paths`：加载所有的 `config/routes.rb` 文件（应用和 Railtie 中的，包括引擎），然后设置应用的路由。
 
-- `add_locales`：把 `config/locales` 目录（应用、Railtie 和引擎的）中的文件添加到 `I18n.load_path` 中，让那些文件中的翻译可用。
+- `add_locales`：把（应用、Railtie 和引擎的）`config/locales` 目录中的文件添加到 `I18n.load_path` 中，让那些文件中的翻译可用。
 
 - `add_view_paths`：把应用、Railtie 和引擎的 `app/views` 目录添加到应用查找视图文件的路径中。
 
@@ -1179,7 +1179,7 @@ end
 
 - `ensure_autoload_once_paths_as_subset`：确保 `config.autoload_once_paths` 只包含 `config.autoload_paths` 中的路径。如果有额外路径，抛出异常。
 
-- `add_to_prepare_blocks`：应用、Railtie 或引擎中的每个 `config.to_prepare` 调用都添加到 Action Dispatch 的 `to_prepare` 回调中。这些回调在开发环境中每次请求都运行，在生产环境中只在第一次请求之前运行。
+- `add_to_prepare_blocks`：把应用、Railtie 或引擎中的每个 `config.to_prepare` 调用都添加到 Action Dispatch 的 `to_prepare` 回调中。这些回调在开发环境中每次请求都运行，在生产环境中只在第一次请求之前运行。
 
 - `add_builtin_route`：如果应用在开发环境中运行，把针对 `rails/info/properties` 的路由添加到应用的路由中。这个路由在 Rails 应用的 `public/index.html` 文件中提供一些详细信息，例如 Rails 和 Ruby 的版本。
 
@@ -1209,7 +1209,7 @@ development:
 
 连接池默认在 Active Record 内部处理，因此所有应用服务器（Thin、mongrel、Unicorn，等等）的行为应该一致。数据库连接池一开始是空的，随着连接数的增加，会不断创建，直至连接池上限。
 
-每个请求在首次访问数据库时会检出连接，请求接收会再检入连接。这样，空出的连接位置就可以提供给队列中的下一个请求使用。
+每个请求在首次访问数据库时会检出连接，请求结束再检入连接。这样，空出的连接位置就可以提供给队列中的下一个请求使用。
 
 如果连接数超过可用值，Active Record 会阻塞，等待池中有空闲的连接。如果无法获得连接，会抛出类似下面的超时错误。
 
