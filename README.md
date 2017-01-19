@@ -18,7 +18,7 @@
 | Layouts and Rendering in Rails | ✔️ | ✔️ |
 | Action View Form Helpers | ✔️ | ✔️ |
 | Action Controller Overview | ✔️ | ✔️ |
-| Rails Routing from the Outside In | ✔️ | |
+| Rails Routing from the Outside In | ✔️ | ✔️ |
 | Active Support Core Extensions | ✔️ | ✔️ |
 | Rails Internationalization API | | |
 | Action Mailer Basics | ✔️ | ✔️ |
