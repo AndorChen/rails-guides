@@ -14,7 +14,7 @@
 - 常量是如何自动加载的；
 - `require_dependency` 是什么；
 - 常量是如何重新加载的；
-- 自动加载常见问题的解决方案；
+- 自动加载常见问题的解决方案。
 --
 
 [[introduction]]
@@ -182,7 +182,7 @@ Project.name # => "Project"
 
 [TIP]
 ====
-自此之后常量和实例发生的事情无关紧要。例如，可以把常量删除，类对象可以赋值给其他常量，或者不再存储在常量中，等等。名称一旦设定就不会再变。
+自此之后常量和实例发生的事情无关紧要。例如，可以把常量删除，类对象可以赋值给其他常量，或者不再存储于常量中，等等。名称一旦设定就不会再变。
 ====
 
 类似地，模块使用 `module` 关键字创建，如下所示：
@@ -232,7 +232,7 @@ end
 [[constants-are-stored-in-modules]]
 ==== 常量存储在模块中
 
-按字面意义上理解，常量属于模块。类和模块有常量表，你可以将其理解为哈希表。
+按字面意义理解，常量属于模块。类和模块有常量表，你可以将其理解为哈希表。
 
 下面通过一个示例来理解。通常我们都说“`String` 类”，这样方面，下面的阐述只是为了讲解原理。
 
@@ -304,7 +304,7 @@ Rails 的自动加载机制没有仿照这个算法，查找的起点是要自�
 
 给定常量路径字符串，父级命名空间是把最右边那一部分去掉后余下的字符串。
 
-例如，字符串“A::B::C”的父级命名空间是字符串“A::B”，“A::B”的父级命名空间是“A”，“A”的父级命名空间是“”。
+例如，字符串“A::B::C”的父级命名空间是字符串“A::B”，“A::B”的父级命名空间是“A”，“A”的父级命名空间是“”（空）。
 
 不过涉及类和模块的父级命名空间解释有点复杂。假设有个名为“A::B”的模块 M：
 
@@ -571,7 +571,7 @@ module Admin
 end
 ----
 
-如若不然，Ruby 就能解析出 `Ruby`，也就无需自动加载了。因此，Rails 假定它是限定引用，只会在 `admin/user.rb` 文件和 `admin/user` 目录中查找。
+如若不然，Ruby 就能解析出 `User`，也就无需自动加载了。因此，Rails 假定它是限定引用，只会在 `admin/user.rb` 文件和 `admin/user` 目录中查找。
 
 其实，只要嵌套匹配全部父级命名空间，而且彼时适用这一规则的常量已知，这种机制便能良好运行。
 
@@ -591,7 +591,7 @@ end
 [[generic-procedure]]
 ==== 一般步骤
 
-相对引用在 cref 中报告缺失，限定引用在 parent 中报告缺失（cref 的指代参见 <<resolution-algorithm-for-relative-constants>> 开头，parent 的指代参见 <<resolution-algorithm-for-qualified-constants>> 开头）。
+相对引用在 cref 中报告缺失，限定引用在 parent 中报告缺失（cref 的指代参见 <<resolution-algorithm-for-relative-constants>>开头，parent 的指代参见 <<resolution-algorithm-for-qualified-constants>>开头）。
 
 在任意的情况下，自动加载常量 C 的步骤如下：
 
@@ -854,12 +854,12 @@ end
 1. 如果在执行 `require` 之前自动加载了 `User`，`app/models/user.rb` 会再次运行，因为 `load` 不会更新 `$LOADED_FEATURES`。
 2. 如果 `require` 先执行了，Rails 不会把 `User` 标记为自动加载的常量，因此 `app/models/user.rb` 文件中的改动不会重新加载。
 
-我们应该使用遵守规则，使用常量自动加载机制，一定不能混用自动加载和 `require`。底线是，如果一定要加载特定的文件，使用 `require_dependency`，这样能正确利用常量自动加载机制。不过，实际上很少需要这么做。
+我们应该始终遵守规则，使用常量自动加载机制，一定不能混用自动加载和 `require`。底线是，如果一定要加载特定的文件，使用 `require_dependency`，这样能正确利用常量自动加载机制。不过，实际上很少需要这么做。
 
 当然，在自动加载的文件中使用 `require` 加载第三方库没问题，Rails 会做区分，不把第三方库里的常量标记为自动加载的。
 
 [[autoloading-and-initializers]]
-==== 自动加载和初始化程序
+==== 自动加载和初始化脚本
 
 假设 `config/initializers/set_auth_service.rb` 文件中有下述赋值语句：
 
@@ -872,7 +872,7 @@ else
 end
 ----
 
-这么做的目的是根据所在环境为 `AUTH_SERVICE` 赋予不同的值。在开发环境中，运行这个初始化程序时，自动加载 `MockedAuthService`。假如我们发送了几个请求，修改了实现，然后再次运行应用，奇怪的是，改动没有生效。这是为什么呢？
+这么做的目的是根据所在环境为 `AUTH_SERVICE` 赋予不同的值。在开发环境中，运行这个初始化脚本时，自动加载 `MockedAuthService`。假如我们发送了几个请求，修改了实现，然后再次运行应用，奇怪的是，改动没有生效。这是为什么呢？
 
 <<constant-reloading,从前文得知>>，Rails 会删除自动加载的常量，但是 `AUTH_SERVICE` 存储的还是原来那个类对象。原来那个常量不存在了，但是功能完全不受影响。
 
@@ -916,13 +916,13 @@ end
 然后在应用中使用 `AuthService.instance`。这样，`AuthService` 会按需加载，而且能顺利自动加载。
 
 [[require-dependency-and-initializers]]
-==== `require_dependency` 和初始化程序
+==== `require_dependency` 和初始化脚本
 
-前面说过，`require_dependency` 加载的文件能顺利自动加载。但是，一般来说不应该在初始化程序中使用。
+前面说过，`require_dependency` 加载的文件能顺利自动加载。但是，一般来说不应该在初始化脚本中使用。
 
-有人可能觉得在初始化程序中调用 <<require-dependency,`require_dependency`>> 能确保提前加载特定的常量，例如用于解决 <<autoloading-and-sti,STI 问题>>。
+有人可能觉得在初始化脚本中调用 <<require-dependency,`require_dependency`>> 能确保提前加载特定的常量，例如用于解决 <<autoloading-and-sti,STI 问题>>。
 
-问题是，在开发环境中，如果文件系统中有相关的改动，<<constant-reloading,自动加载的常量会被抹除>>。这样就与使用初始化程序的初衷背道而驰了。
+问题是，在开发环境中，如果文件系统中有相关的改动，<<constant-reloading,自动加载的常量会被抹除>>。这样就与使用初始化脚本的初衷背道而驰了。
 
 `require_dependency` 调用应该写在能自动加载的地方。
 
@@ -961,7 +961,7 @@ module BellX1
 end
 ----
 
-初始化程序想创建一个 `BellX1::FlightModel` 对象，而且嵌套中有 `BellX1`，看起来这么问题。但是，如果默认飞行模型加载了，但是 Bell-X1 模型没有，解释器能解析顶层的 `FlightModel`，因此 `BellX1::FlightModel` 不会触发自动加载机制。
+初始化脚本想创建一个 `BellX1::FlightModel` 对象，而且嵌套中有 `BellX1`，看起来这没什么问题。但是，如果默认飞行模型加载了，但是 Bell-X1 模型没有，解释器能解析顶层的 `FlightModel`，因此 `BellX1::FlightModel` 不会触发自动加载机制。
 
 这种代码取决于执行路径。
 
@@ -1045,7 +1045,7 @@ warning: toplevel constant Image referenced by Hotel::Image
 
 [WARNING]
 ====
-为了发现这种问题，限定命名空间必须是类，`Object` 不是模块的祖先。
+为了发现这种问题，限定命名空间必须是类。`Object` 不是模块的祖先。
 ====
 
 [[autoloading-within-singleton-classes]]
