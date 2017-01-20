@@ -13,7 +13,7 @@
 * 非侵入式 JavaScript；
 * 如何使用 Rails 内建的辅助方法；
 * 如何在服务器端处理 Ajax；
-* Turbolinks gem；
+* Turbolinks gem。
 --
 
 [[an-introduction-to-ajax]]
@@ -21,7 +21,7 @@
 
 在理解 Ajax 之前，要先知道 Web 浏览器常规的工作原理。
 
-在浏览器的地址栏中输入 `http://localhost:3000` 后，浏览器（客户端）会向服务器发起一个请求。然后浏览器会处理响应，获取相关的静态资源文件，比如 JavaScript、样式表和图像，然后显示页面内容。点击链接后发生的事情也是如此：获取页面，获取静态资源，把全部内容放在一起，显示最终的网页。这个过程叫做“请求响应循环”。
+在浏览器的地址栏中输入 `http://localhost:3000` 后，浏览器（客户端）会向服务器发起一个请求。然后浏览器处理响应，获取相关的静态资源文件，比如 JavaScript、样式表和图像，然后显示页面内容。点击链接后发生的事情也是如此：获取页面，获取静态资源，把全部内容放在一起，显示最终的网页。这个过程叫做“请求响应循环”。
 
 JavaScript 也可以向服务器发起请求，并解析响应。而且还能更新网页中的内容。因此，JavaScript 程序员可以编写只更新部分内容的网页，而不用从服务器获取完整的页面数据。这是一种强大的技术，我们称之为 Ajax。
 
@@ -42,7 +42,7 @@ Rails 内建了很多使用这种技术开发应用的功能，基本上无需�
 [[unobtrusive-javascript]]
 === 非侵入式 JavaScript
 
-Rails 使用一种叫做“非侵入式 JavaScript”（Unobtrusive JavaScript）的技术把 JavaScript 依附到 DOM 上。非侵入式 JavaScript 是前端开发社区推荐使用的做法，但有些教程可能会使用其他方式。
+Rails 使用一种叫做“非侵入式 JavaScript”（Unobtrusive JavaScript）的技术把 JavaScript 依附到 DOM 上。非侵入式 JavaScript 是前端开发社区推荐的做法，但有些教程可能会使用其他方式。
 
 下面是编写 JavaScript 最简单的方式，你可能见过，这叫做“行间 JavaScript”：
 
@@ -243,7 +243,7 @@ Ajax 不仅涉及客户端，服务器端也要做处理。Ajax 请求一般不�
 [[a-simple-example]]
 ==== 一个简单的例子
 
-假设在网页中要显示一系列用户，还有一个新建用户的表单，控制器的 `index` 动作如下所示：
+假设在网页中要显示一系列用户，还有一个新建用户的表单。控制器的 `index` 动作如下所示：
 
 [source,ruby]
 ----
