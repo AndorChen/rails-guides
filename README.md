@@ -32,7 +32,7 @@
 | Working with JavaScript in Rails | ✔️ | ✔️ |
 | The Rails Initialization Process | | |
 | Autoloading and Reloading Constants | ✔️ | ✔️ |
-| Caching with Rails: An Overview | | |
+| Caching with Rails: An Overview | ✔️ | |
 | Active Support Instrumentation | ✔️ | |
 | Profiling Rails Applications |️ | |
 | Using Rails for API-only Applications | ✔️ | |
