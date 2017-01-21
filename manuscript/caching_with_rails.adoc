@@ -9,7 +9,7 @@
 
 缓存是指存储请求-响应循环中生成的内容，在类似请求的响应中复用。
 
-通常，缓存时提升应用性能最有效的方式。通过缓存，在单个服务器中使用单个数据库的网站可以承受数千个用户并发访问。
+通常，缓存是提升应用性能最有效的方式。通过缓存，在单个服务器中使用单个数据库的网站可以承受数千个用户并发访问。
 
 Rails 自带了一些缓存功能。本文说明它们的适用范围和作用。掌握这些技术之后，你的 Rails 应用能承受大量访问，而不必花大量时间生成响应，或者支付高昂的服务器账单。
 
@@ -83,7 +83,7 @@ Rails 4 删除了动作缓存。参见 https://github.com/rails/actionpack-actio
 views/products/1-201505056193031061005000/bea67108094918eeba42cd4a6e786901
 ----
 
-中间的数字是 `product_id` 加上商品记录的 `updated_at` 属性中存储的时间戳。Rails 使用时间戳确保不伺服过期的数据。如果 `updated_at` 的值变换了，Rails 会生成一个新键，然后在那个键上写入一个新缓存，旧键上的旧缓存不再使用。这叫基于键的失效方式。
+中间的数字是 `product_id` 加上商品记录的 `updated_at` 属性中存储的时间戳。Rails 使用时间戳确保不伺服过期的数据。如果 `updated_at` 的值变了，Rails 会生成一个新键，然后在那个键上写入一个新缓存，旧键上的旧缓存不再使用。这叫基于键的失效方式。
 
 视图片段有变化时（例如视图的 HTML 有变），缓存的片段也失效。缓存键末尾那个字符串是模板树摘要，是基于缓存的视图片段的内容计算的 MD5 哈希值。如果视图片段有变化，MD5 哈希值就变了，因此现有文件失效。
 
@@ -265,7 +265,7 @@ end
 [[sql-caching]]
 ==== SQL 缓存
 
-查询缓存是 Rails 提供的一个功能，把各个查询的结果集缓存起来。如果在同一个请求中遇到了相同的查询，Rails 会使用缓存的结果节，而不再次到数据库中运行查询。
+查询缓存是 Rails 提供的一个功能，把各个查询的结果集缓存起来。如果在同一个请求中遇到了相同的查询，Rails 会使用缓存的结果集，而不再次到数据库中运行查询。
 
 例如：
 
@@ -307,7 +307,7 @@ config.cache_store = :memory_store, { size: 64.megabytes }
 
 NOTE: 此外，还可以在配置块外部调用 `ActionController::Base.cache_store`。
 
-缓存通过 `Rails.cache` 访问。
+缓存存储器通过 `Rails.cache` 访问。
 
 [[activesupport-cache-store]]
 ==== `ActiveSupport::Cache::Store`
@@ -339,7 +339,7 @@ config.cache_store = MyCacheStore.new
 [[activesupport-cache-memorystore]]
 ==== `ActiveSupport::Cache::MemoryStore`
 
-这个缓存存储器把缓存条目放在内存中，与 Ruby 进程放在一起。可以把 `:size` 选项传给构造方法，指定缓存的大小限制（默认为 32Mb）。超过分配的大小后，会清理缓存，把把最不常用的条目删除。
+这个缓存存储器把缓存条目放在内存中，与 Ruby 进程放在一起。可以把 `:size` 选项传给构造方法，指定缓存的大小限制（默认为 32Mb）。超过分配的大小后，会清理缓存，把最不常用的条目删除。
 
 [source,ruby]
 ----
@@ -360,7 +360,7 @@ config.cache_store = :file_store, "/path/to/cache/directory"
 
 使用这个缓存存储器时，在同一台主机中运行的多个服务器进程可以共享缓存。这个缓存存储器适合一到两个主机的中低流量网站使用。运行在不同主机中的多个服务器进程若想共享缓存，可以使用共享的文件系统，但是不建议这么做。
 
-缓存量一直增加，知道填满磁盘，所以建议你定期清理旧缓存条目。
+缓存量一直增加，直到填满磁盘，所以建议你定期清理旧缓存条目。
 
 这是默认的缓存存储器。
 
@@ -371,7 +371,7 @@ config.cache_store = :file_store, "/path/to/cache/directory"
 
 初始化这个缓存存储器时，要指定集群中所有 memcached 服务器的地址。如果不指定，假定 memcached 运行在本地的默认端口上，但是对大型网站来说，这样做并不好。
 
-这个缓存存储器的 `write` 和 `fetch` 方法接受两个额外的选项，以便利用 memcached 的专有特性。指定 `:raw` 时，直接把值发给服务器，不做序列化。值必须是字符串或数字。memcached 的直接操作，如 `increment` 和 `decrement`，只能用于原始值。还可以指定 `:unless_exist` 选项，不让 memcached 覆盖现有条目。
+这个缓存存储器的 `write` 和 `fetch` 方法接受两个额外的选项，以便利用 memcached 的独有特性。指定 `:raw` 时，直接把值发给服务器，不做序列化。值必须是字符串或数字。memcached 的直接操作，如 `increment` 和 `decrement`，只能用于原始值。还可以指定 `:unless_exist` 选项，不让 memcached 覆盖现有条目。
 
 [source,ruby]
 ----
@@ -406,7 +406,7 @@ Rails.cache.read(site: "mysite", owners: [owner_1, owner_2])
 [[conditional-get-support]]
 === 对条件 GET 请求的支持
 
-添加 GET 请求是 HTTP 规范的一个特性，以此告诉 Web 浏览器，GET 请求的响应自上次请求之后没有变化，可以放心从浏览器的缓存中读取。
+条件 GET 请求是 HTTP 规范的一个特性，以此告诉 Web 浏览器，GET 请求的响应自上次请求之后没有变化，可以放心从浏览器的缓存中读取。
 
 为此，要传递 `HTTP_IF_NONE_MATCH` 和 `HTTP_IF_MODIFIED_SINCE` 首部，其值分别为唯一的内容标识符和上一次改动时的时间戳。浏览器发送的请求，如果内容标识符（etag）或上一次修改的时间戳与服务器中的版本匹配，那么服务器只需返回一个空响应，把状态设为未修改。
 
@@ -457,7 +457,7 @@ end
 ----
 class ProductsController < ApplicationController
 
-  # 如果请求的内容是新鲜的，自动返回  :not_modified
+  # 如果请求的内容是新鲜的，自动返回 :not_modified
   # 否则渲染默认的模板（product.*）
 
   def show
@@ -476,8 +476,8 @@ Rails 默认生成弱 ETag。这种 Etag 允许语义等效但主体不完全匹
 
 [source]
 ----
-W/"618bbc92e2d35ea1945008b42799b0e7" → 弱 ETag
-"618bbc92e2d35ea1945008b42799b0e7"   → 强 ETag
+W/"618bbc92e2d35ea1945008b42799b0e7" => 弱 ETag
+"618bbc92e2d35ea1945008b42799b0e7"   => 强 ETag
 ----
 
 与弱 Etag 不同，强 Etag 要求响应完全一样，不能有一个字节的差异。在大型视频或 PDF 文件内部做 Range 查询时用得到。有些 CDN，如 Akamai，只支持强 Etag。如果确实想生成强 Etag，可以这么做：
