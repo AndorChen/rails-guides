@@ -37,7 +37,7 @@
 | Profiling Rails Applications |️ ✔️ | ✔️ |
 | Using Rails for API-only Applications | ✔️ | ✔️ |
 | Action Cable Overview | | |
-| The Basics of Creating Rails Plugins| ✔️ | |
+| The Basics of Creating Rails Plugins| ✔️ | ✔️ |
 | Rails on Rack | ✔️ | |
 | Creating and Customizing Rails Generators | ✔️ | |
 | Getting Started with Engines | | |

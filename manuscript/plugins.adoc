@@ -35,7 +35,7 @@ NOTE: 本文原文尚未完工！
 [[generate-a-gemified-plugin]]
 ==== 生成 gem 式插件
 
-Rails 自带一个 ` rails plugin new` 命令，用于创建任何 Rails 扩展的骨架。这个命令还会生成一个虚设的 Rails 应用，用于运行集成测试。请使用下述命令创建这个插件：
+Rails 自带一个 `rails plugin new` 命令，用于创建任何 Rails 扩展的骨架。这个命令还会生成一个虚设的 Rails 应用，用于运行集成测试。请使用下述命令创建这个插件：
 
 [source,sh]
 ----
@@ -130,14 +130,14 @@ String.class_eval do
 end
 ----
 
-为了测试方法的行为得当，在插件目录中使用 `bin/test` 运行单元测试：
+为了测试方法的行为是否得当，在插件目录中使用 `bin/test` 运行单元测试：
 
 [source]
 ----
 2 runs, 2 assertions, 0 failures, 0 errors, 0 skips
 ----
 
-为了实测一些，进入 `test/dummy` 目录，打开控制台：
+为了实测一下，进入 `test/dummy` 目录，打开控制台：
 
 [source,sh]
 ----
@@ -180,7 +180,7 @@ end
 
 module Yaffle
   module ActsAsYaffle
-    # your code will go here
+    # 在这里编写你的代码
   end
 end
 ----
@@ -505,7 +505,7 @@ $ bundle exec rake rdoc
 ----
 
 [[references]]
-==== 参考资料
+=== 参考资料
 
 - https://github.com/radar/guides/blob/master/gem-development.md[Developing a RubyGem using Bundler]
 - http://yehudakatz.com/2010/04/02/using-gemspecs-as-intended/[Using .gemspecs as Intended]
