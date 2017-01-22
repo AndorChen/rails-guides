@@ -16,7 +16,7 @@
 - 如何通过创建新生成器定制脚手架；
 - 如何通过修改生成器模板定制脚手架；
 - 如何使用后备机制防范覆盖大量生成器；
-- 如何创建应用模板；
+- 如何创建应用模板。
 --
 
 [[first-contact]]
@@ -41,9 +41,9 @@ $ bin/rails generate helper --help
 [[creating-your-first-generator]]
 === 创建首个生成器
 
-自 Rails 3.0 起，生成器使用 https://github.com/erikhuda/thor[Thor] 构建。Thor 提供了强大的解析选项和处理文件的丰富 API。举个例子。我们来构建一个生成器，在 `config/initializers` 目录中创建一个名为 `initializer.rb` 的初始化文件。
+自 Rails 3.0 起，生成器使用 https://github.com/erikhuda/thor[Thor] 构建。Thor 提供了强大的解析选项和处理文件的丰富 API。举个例子。我们来构建一个生成器，在 `config/initializers` 目录中创建一个名为 `initializer.rb` 的初始化脚本。
 
-第一步是创建 `lib/generators/initializer_generator.rb` 文件，并写入下述内容：
+第一步是创建 `lib/generators/initializer_generator.rb` 文件，写入下述内容：
 
 [source,ruby]
 ----
@@ -112,7 +112,7 @@ class InitializerGenerator < Rails::Generators::NamedBase
 end
 ----
 
-首先注意，我们继承的是 `Rails::Generators::NamedBase`，而不是 `Rails::Generators::Base`。这表明，我们的生成器至少需要一个参数，即初始化程序的名称，在代码中通过 `name` 变量获取。
+首先注意，我们继承的是 `Rails::Generators::NamedBase`，而不是 `Rails::Generators::Base`。这表明，我们的生成器至少需要一个参数，即初始化脚本的名称，在代码中通过 `name` 变量获取。
 
 查看这个生成器的描述可以证实这一点（别忘了删除旧的生成器文件）：
 
@@ -585,7 +585,7 @@ end
 gsub_file 'name_of_file.rb', 'method.to_be_replaced', 'method.the_replacing_code'
 ----
 
-使用正则表达式替换的效果更精准。可以使用类似的方式调用 `append_file` 和 `prepend_file `，分别在文件的末尾和开头添加代码。
+使用正则表达式替换的效果更精准。可以使用类似的方式调用 `append_file` 和 `prepend_file`，分别在文件的末尾和开头添加代码。
 
 [[application]]
 ==== `application`
@@ -696,7 +696,7 @@ end
 [[initializer]]
 ==== `initializer`
 
-在应用的 `config/initializers` 目录中创建一个初始化程序：
+在应用的 `config/initializers` 目录中创建一个初始化脚本：
 
 [source,ruby]
 ----

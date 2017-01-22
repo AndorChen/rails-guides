@@ -39,7 +39,7 @@
 | Action Cable Overview | | |
 | The Basics of Creating Rails Plugins| ✔️ | ✔️ |
 | Rails on Rack | ✔️ | ✔️ |
-| Creating and Customizing Rails Generators | ✔️ | |
+| Creating and Customizing Rails Generators | ✔️ | ✔️ |
 | Getting Started with Engines | | |
 | Contributing to Ruby on Rails | ✔️ | |
 | API Documentation Guidelines | ✔️ | |
