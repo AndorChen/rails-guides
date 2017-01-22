@@ -43,7 +43,7 @@
 | Getting Started with Engines | | |
 | Contributing to Ruby on Rails | ✔️ | ✔️ |
 | API Documentation Guidelines | ✔️ | ✔️ |
-| Ruby on Rails Guides Guidelines | ✔️ | |
+| Ruby on Rails Guides Guidelines | ✔️ | ✔️ |
 | Maintenance Policy | ✔️ | |
 | Upgrading Ruby on Rails | ✔️ | |
 | Ruby on Rails 5.0 Release Notes | ✔️ | |
