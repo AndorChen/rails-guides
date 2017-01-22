@@ -41,7 +41,7 @@
 | Rails on Rack | ✔️ | ✔️ |
 | Creating and Customizing Rails Generators | ✔️ | ✔️ |
 | Getting Started with Engines | | |
-| Contributing to Ruby on Rails | ✔️ | |
+| Contributing to Ruby on Rails | ✔️ | ✔️ |
 | API Documentation Guidelines | ✔️ | |
 | Ruby on Rails Guides Guidelines | ✔️ | |
 | Maintenance Policy | ✔️ | |

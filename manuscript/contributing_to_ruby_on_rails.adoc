@@ -13,7 +13,7 @@
 - 如果克隆 master，运行测试组件；
 - 如何帮助解决现有问题；
 - 如何为 Ruby on Rails 文档做贡献；
-- 如何为 Ruby on Rails 代码做贡献；
+- 如何为 Ruby on Rails 代码做贡献。
 
 Ruby on Rails 不是某一个人的框架。这些年，有成百上千个人为 Ruby on Rails 做贡献，小到修正一个字符，大到调整重要的架构或文档——目的都是把 Ruby on Rails 变得更好，适合所有人使用。即便你现在不想编写代码或文档，也能通过其他方式做贡献，例如报告问题和测试补丁。
 
@@ -42,7 +42,7 @@ Ruby on Rails 最新版的缺陷最受关注。此外，Rails 核心团队始终
 [[create-an-executable-test-case]]
 ==== 创建可执行的测试用例
 
-提供重现问题的方式有助于别人帮你确认、研究并最终结局问题。为此，你可以提供可执行的测试用例。为了简化这一过程，我们准备了几个缺陷报告模板供你参考：
+提供重现问题的方式有助于别人帮你确认、研究并最终解决问题。为此，你可以提供可执行的测试用例。为了简化这一过程，我们准备了几个缺陷报告模板供你参考：
 
 - 报告 Active Record（模型、数据库）问题的模板：link:https://github.com/rails/rails/blob/master/guides/bug_report_templates/active_record_gem.rb[gem] / https://github.com/rails/rails/blob/master/guides/bug_report_templates/active_record_master.rb[master]
 - 报告 Action Pack（控制器、路由）问题的模板：link:https://github.com/rails/rails/blob/master/guides/bug_report_templates/action_controller_gem.rb[gem] / https://github.com/rails/rails/blob/master/guides/bug_report_templates/action_controller_master.rb[master]
@@ -50,7 +50,7 @@ Ruby on Rails 最新版的缺陷最受关注。此外，Rails 核心团队始终
 
 这些模板包含样板代码，供你着手编写测试用例，分别针对 Rails 的发布版（`*_gem.rb`）和最新开发版（`*_master.rb`）。
 
-你只需把相应模板中的内容复制到一个 `.rb` 文件中，然后做必要的改动说明问题。如果想运行测试，只需在终端里执行 `ruby the_file.rb`。如果一切顺利，测试用例应该失败。
+你只需把相应模板中的内容复制到一个 `.rb` 文件中，然后做必要的改动，说明问题。如果想运行测试，只需在终端里执行 `ruby the_file.rb`。如果一切顺利，测试用例应该失败。
 
 随后，可以通过一个 https://gist.github.com/[gist] 分享你的可执行测试用例，或者直接粘贴到问题描述中。
 
@@ -97,7 +97,7 @@ Ruby on Rails 最新版的缺陷最受关注。此外，Rails 核心团队始终
 $ git checkout -b testing_branch
 ----
 
-然后可以使用他们的远程分支更新代码基。假如 GitHub 用户 JohnSmith 派生了 Rails 源码，地址是 https://github.com/JohnSmith/rails，然后推送到主题分支“orange”：
+然后可以使用他们的远程分支更新代码基。假如 GitHub 用户 JohnSmith 派生了 Rails 源码，地址是 \https://github.com/JohnSmith/rails，然后推送到主题分支“orange”：
 
 [source,sh]
 ----
@@ -108,7 +108,7 @@ $ git pull JohnSmith orange
 然后，使用主题分支中的代码做测试。下面是一些考虑的事情：
 
 - 改动可用吗？
-- 你对测试满意吗？你能理解测试吗？少测试吗？
+- 你对测试满意吗？你能理解测试吗？缺少测试吗？
 - 有适度的文档覆盖度吗？其他地方的文档需要更新吗？
 - 你喜欢他的实现方式吗？你能以更好或更快的方式实现部分改动吗？
 
@@ -132,13 +132,13 @@ Ruby on Rails 主要有两份文档：这份指南，帮你学习 Ruby on Rails�
 
 docrails 定期合并到 master 分支，因此 Ruby on Rails 的文档能得到及时更新。
 
-如果你对文档的改动有疑问，可以在 Rails 的问题追踪系统的发工单。
+如果你对文档的改动有疑问，可以在 Rails 的问题追踪系统发工单。
 
 如果你想为文档做贡献，请阅读<<api_documentation_guidelines#api-documentation-guidelines>>和<<ruby_on_rails_guides_guidelines#ruby-on-rails-guides-guidelines>>。
 
 [[NOTE]]
 ====
-前面说过，常规的代码补丁应该有适当的文档覆盖度。docrails 项目只是为了在单独的地方改机文档。
+前面说过，常规的代码补丁应该有适当的文档覆盖度。docrails 项目只是为了在单独的地方改进文档。
 ====
 
 [NOTE]
@@ -148,7 +148,7 @@ docrails 定期合并到 master 分支，因此 Ruby on Rails 的文档能得到
 
 [WARNING]
 ====
-docrails 有个十分严格的方针：不能触碰任何代码，不过改动有多小都不行。通过 docrails 只能编辑 RDoc 和指南。此外，在 docrails 中也不能编辑 CHANGELOG。
+docrails 有个十分严格的方针：不能触碰任何代码，不管改动有多小都不行。通过 docrails 只能编辑 RDoc 和指南。此外，在 docrails 中也不能编辑 CHANGELOG。
 ====
 
 [[translating-rails-guides]]
@@ -254,7 +254,7 @@ $ bundle exec rails new ~/my-test-app --dev
 [[write-your-code]]
 ==== 编写你的代码
 
-现在可以着手添加和编辑代码了。你出在自己的分支中，可以编写任何你想编写的代码（使用 `git branch -a` 确定你处于正确的分支中）。不过，如果你打算把你的改动提交到 Rails 中，要注意几点：
+现在可以着手添加和编辑代码了。你处在自己的分支中，可以编写任何你想编写的代码（使用 `git branch -a` 确定你处于正确的分支中）。不过，如果你打算把你的改动提交到 Rails 中，要注意几点：
 
 - 代码要写得正确。
 - 使用 Rails 习惯用法和辅助方法。
@@ -274,7 +274,7 @@ Rails 遵守下述简单的编程风格约定：
 - （缩进）使用两个空格，不用制表符。
 - 行尾没有空白。空行不能有任何空白。
 - 私有和受保护的方法多一层缩进。
-- 使用 Ruby 1.9 及以上版本采用的散列句法。使用 `{ a: :b }`，而非 `{ :a => :b }`。
+- 使用 Ruby 1.9 及以上版本采用的散列句法。使用 `{ a: :b }`，而非 `pass:[{ :a => :b }]`。
 - 较之 `and`/`or`，尽量使用 `&&`/`||`。
 - 编写类方法时，较之 `self.method`，尽量使用 `class << self`。
 - 使用 `my_method(my_arg)`，而非 `my_method( my_arg )` 或 `my_method my_arg`。
@@ -395,7 +395,7 @@ $ ARCONN=sqlite3 bundle exec ruby -Itest test/cases/associations/has_many_associ
 
 使用全部适配器运行某个测试：
 
-[source,ruby]
+[source,sh]
 ----
 $ bundle exec rake TEST=test/cases/associations/has_many_associations_test.rb
 ----
@@ -419,7 +419,7 @@ $ RUBYOPT=-W0 bundle exec rake test
 
 CHANGELOG 是每次发布的重要一环，保存着每个 Rails 版本的改动列表。
 
-如果添加或删除了功能、提交了缺陷修正，或者添加了启用提示，应该在框架的 CHANGELOG 顶部添加一条记录。重构和文档修改一般不应该在 CHANGELOG 中记录。
+如果添加或删除了功能、提交了缺陷修正，或者添加了弃用提示，应该在框架的 CHANGELOG 顶部添加一条记录。重构和文档修改一般不应该在 CHANGELOG 中记录。
 
 CHANGELOG 中的记录应该概述所做的改动，并且在末尾加上作者的名字。如果需要，可以写成多行，也可以缩进四个空格，添加代码示例。如果改动与某个工单有关，应该加上工单号。下面是一条 CHANGELOG 记录示例：
 
@@ -461,11 +461,11 @@ CHANGELOG 中的记录应该概述所做的改动，并且在末尾加上作者�
 $ git commit -a
 ----
 
-上述命令会启动编辑器，让你编写一个提交消息。写完之后，保存并并关闭编辑器，然后继续往下做。
+上述命令会启动编辑器，让你编写一个提交消息。写完之后，保存并关闭编辑器，然后继续往下做。
 
 行文好，而且具有描述性的提交消息有助于别人理解你为什么做这项改动，因此请认真对待提交消息。
 
-好的提交详细类似下面这样：
+好的提交消息类似下面这样：
 
 [source]
 ----
@@ -585,7 +585,7 @@ $ git push origin branch_name
 [[issue-a-pull-request]]
 ==== 创建拉取请求
 
-打开你刚刚推送的目标仓库（例如 link:$$https://github.com/your-user-name/rails$$[]），点击“New pull request”按钮。
+打开你刚刚推送的目标仓库（例如 \https://github.com/your-user-name/rails），点击“New pull request”按钮。
 
 如果需要修改比较的分支（默认比较 master 分支），点击“Edit”，然后点击“Click to create a pull request for this comparison”。
 
