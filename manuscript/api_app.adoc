@@ -7,10 +7,10 @@
 --
 在本文中您将学到：
 
-- Rails 对只提供 API 的应用的支持
-- 如何配置 Rails，不使用任何针对浏览器的功能
-- 如何决定使用哪些中间件
-- 如何决定在控制器中使用哪些模块
+- Rails 对只提供 API 的应用的支持；
+- 如何配置 Rails，不使用任何针对浏览器的功能；
+- 如何决定使用哪些中间件；
+- 如何决定在控制器中使用哪些模块。
 --
 
 [[what-is-an-api-application-questionmark]]
@@ -24,7 +24,7 @@
 
 很多人不再使用 Rails 生成 HTML，通过表单和链接与服务器通信，而是把 Web 应用当做 API 客户端，分发包含 JavaScript 的 HTML，消费 JSON API。
 
-本文说明如何构建私服 JSON 资源的 Rails 应用，供 API 客户端（包括客户端框架）使用。
+本文说明如何构建伺服 JSON 资源的 Rails 应用，供 API 客户端（包括客户端框架）使用。
 
 [[why-use-rails-for-json-apis-questionmark]]
 === 为什么使用 Rails 构建 JSON API？
@@ -45,7 +45,7 @@
 - 日志：Rails 应用会在日志中记录每次请求，而且为不同环境设定了合适的详细等级。在开发环境中，Rails 记录的信息包括请求环境、数据库查询和基本的性能信息。
 - 安全性：Rails 能检测并防范 https://en.wikipedia.org/wiki/IP_address_spoofing[IP 欺骗攻击]，还能处理link:http://en.wikipedia.org/wiki/Timing_attack[时序攻击]中的加密签名。不知道 IP 欺骗攻击和时序攻击是什么？这就对了。
 - 参数解析：想以 JSON 的形式指定参数，而不是 URL 编码字符串形式？没问题。Rails 会代为解码 JSON，存入 `params` 中。想使用嵌套的 URL 编码参数？也没问题。
-- 条件 GET请求：Rails 能处理条件 `GET` 请求相关的首部（`ETag` 和 `Last-Modified`），然后返回正确的响应首部和状态码。你只需在控制器中使用 http://api.rubyonrails.org/classes/ActionController/ConditionalGet.html#method-i-stale-3F[`stale?`] 做检查，剩下的 HTTP 细节都由 Rails 处理。
+- 条件 GET 请求：Rails 能处理条件 `GET` 请求相关的首部（`ETag` 和 `Last-Modified`），然后返回正确的响应首部和状态码。你只需在控制器中使用 http://api.rubyonrails.org/classes/ActionController/ConditionalGet.html#method-i-stale-3F[`stale?`] 做检查，剩下的 HTTP 细节都由 Rails 处理。
 - HEAD 请求：Rails 会把 `HEAD` 请求转换成 `GET` 请求，只返回首部。这样 `HEAD` 请求在所有 Rails API 中都可靠。
 
 虽然这些功能可以使用 Rack 中间件实现，但是上述列表的目的是说明 Rails 默认提供的中间件栈提供了大量有价值的功能，即便“只是生成 JSON”也用得到。
@@ -298,7 +298,7 @@ API 应用（使用 `ActionController::API`）默认有下述控制器模块：
 - `ActionController::Renderers::All`：提供 `render :json` 等。
 - `ActionController::ConditionalGet`：提供 `stale?`。
 - `ActionController::BasicImplicitRender`：如果没有显式响应，确保返回一个空响应。
-- `ActionController::StrongParameters`：结合 Active Model 批量复制，提供参数白名单过滤功能。
+- `ActionController::StrongParameters`：结合 Active Model 批量赋值，提供参数白名单过滤功能。
 - `ActionController::ForceSSL`：提供 `force_ssl`。
 - `ActionController::DataStreaming`：提供 `send_file` 和 `send_data`。
 - `AbstractController::Callbacks`：提供 `before_action` 等方法。
