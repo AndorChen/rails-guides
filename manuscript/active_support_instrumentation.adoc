@@ -5,16 +5,16 @@
 
 [.chapter-abstract]
 --
-Active Support 是 Rails 核心的一部分，提供 Ruby 语言扩展、实用方法等。其中包括一份监测 API，在应用中可以用它衡量 Ruby 代码（如 Rails 应用或框架自身）中的特定操作。不过，这个 API 不限于只能在 Rails 中使用，如果愿意，也可以在其他 Ruby 脚本中使用。
+Active Support 是 Rails 核心的一部分，提供 Ruby 语言扩展、实用方法等。其中包括一份监测 API，在应用中可以用它测度 Ruby 代码（如 Rails 应用或框架自身）中的特定操作。不过，这个 API 不限于只能在 Rails 中使用，如果愿意，也可以在其他 Ruby 脚本中使用。
 
-本文教你如何使用 Active Support 中的监测 API 衡量 Rails 和其他 Ruby 代码中的事件。
+本文教你如何使用 Active Support 中的监测 API 测度 Rails 和其他 Ruby 代码中的事件。
 
 读完本文后，您将学到：
 
 - 使用监测程序能做什么；
 - Rails 框架为监测提供的钩子；
 - 订阅钩子；
-- 自定义监测点；
+- 自定义监测点。
 --
 
 NOTE: 本文原文尚未完工！
@@ -24,7 +24,7 @@ NOTE: 本文原文尚未完工！
 
 Active Support 提供的监测 API 允许开发者提供钩子，供其他开发者订阅。在 Rails 框架中，有很多。通过这个 API，开发者可以选择在应用或其他 Ruby 代码中发生特定事件时接收通知。
 
-例如，Active Record 中有一个钩子，在每次使用 SQL 查询数据库时调用。开发者可以订阅这个钩子，记录特定操作执行的查询次数。还有一个钩子在控制器的动作执行前后调用。这个钩子可用于记录动作的执行时间。
+例如，Active Record 中有一个钩子，在每次使用 SQL 查询数据库时调用。开发者可以订阅这个钩子，记录特定操作执行的查询次数。还有一个钩子在控制器的动作执行前后调用，记录动作的执行时间。
 
 在应用中甚至还可以自己创建事件，然后订阅。
 
@@ -414,7 +414,7 @@ Ruby on Rails 框架为很多常见的事件提供了钩子。下面详述。
   to: ["users@rails.com", "ddh@rails.com"],
   from: ["me@rails.com"],
   date: Sat, 10 Mar 2012 14:18:09 +0100,
-  mail: "..." # omitted for brevity
+  mail: "..." # 为了节省空间，省略
 }
 ----
 
@@ -583,7 +583,7 @@ Ruby on Rails 框架为很多常见的事件提供了钩子。下面详述。
 |===
 | 键 | 值
 
-| `:initializer` | 从 `config/initializers` 中加载的初始化程序的路径
+| `:initializer` | 从 `config/initializers` 中加载的初始化脚本的路径
 |===
 
 [[rails]]
