@@ -34,7 +34,7 @@
 | Autoloading and Reloading Constants | ✔️ | ✔️ |
 | Caching with Rails: An Overview | ✔️ | ✔️ |
 | Active Support Instrumentation | ✔️ | ✔️ |
-| Profiling Rails Applications |️ ✔️ | |
+| Profiling Rails Applications |️ ✔️ | ✔️ |
 | Using Rails for API-only Applications | ✔️ | |
 | Action Cable Overview | | |
 | The Basics of Creating Rails Plugins| ✔️ | |
