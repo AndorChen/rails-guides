@@ -37,6 +37,10 @@
 :ebook-theme: rails_guides
 :rails-version: 5.0.1
 
+ifeval::["{ebook-format}" != "html"]
+include::manuscript/foreword.adoc[]
+endif::[]
+
 :numbered:
 
 include::manuscript/start_here.adoc[]
