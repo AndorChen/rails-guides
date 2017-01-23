@@ -45,7 +45,7 @@
 | API Documentation Guidelines | ✔️ | ✔️ |
 | Ruby on Rails Guides Guidelines | ✔️ | ✔️ |
 | Maintenance Policy | ✔️ | ✔️ |
-| Upgrading Ruby on Rails | ✔️ | |
+| Upgrading Ruby on Rails | ✔️ | ✔️ |
 | Ruby on Rails 5.0 Release Notes | ✔️ | |
 
 ## 译者
