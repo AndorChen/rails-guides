@@ -457,7 +457,7 @@ edit_article GET    /articles/:id/edit(.:format) articles#edit
 
 有了表单和与之相关联的路由，我们现在可以填写表单，然后点击提交按钮来新建文章了，请实际操作一下。提交表单后，会看到一个熟悉的错误：
 
-[[unknown-action-new-for-articles]]
+[[unknown-action-create-for-articles]]
 .未知动作，在 `ArticlesController` 中找不到 `create` 动作
 image::unknown_action_create_for_articles.png[未知动作，在 `ArticlesController` 中找不到 `create` 动作]
 

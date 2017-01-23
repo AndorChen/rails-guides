@@ -222,7 +222,7 @@ TIP: 使用密码框时可以配置 Rails 应用，不把密码框的值写入�
 [[dealing-with-model-objects]]
 === 处理模型对象
 
-[[model-object-helpers]]
+[[dealing-with-model-objects-model-object-helpers]]
 ==== 模型对象辅助方法
 
 表单经常用于修改或创建模型对象。这种情况下当然可以使用 `*_tag` 辅助方法，但使用起来却有些麻烦，因为我们需要确保每个标记都使用了正确的参数名称并设置了合适的默认值。为此，Rails 提供了量身定制的辅助方法。这些辅助方法的名称不使用 `_tag` 后缀，例如 `text_field` 和 `text_area`。

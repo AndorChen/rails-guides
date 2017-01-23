@@ -61,7 +61,7 @@ fixtures/       integration/    models/
 [[rails-meets-minitest]]
 ==== 使用 Minitest 测试 Rails 应用
 
-还记得我们在<<get_started#getting-started-with-rails>>用过的 `rails generate model` 命令吗？我们使用这个命令生成了第一个模型，这个命令会生成很多内容，其中就包括在 `test` 目录中创建的测试：
+还记得我们在<<getting_started#getting-started-with-rails>>用过的 `rails generate model` 命令吗？我们使用这个命令生成了第一个模型，这个命令会生成很多内容，其中就包括在 `test` 目录中创建的测试：
 
 [source,ruby]
 ----

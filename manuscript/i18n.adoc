@@ -32,7 +32,7 @@ Rails （Rails 2.2 及之后版本） 自带的 Ruby I18n （internationalizatio
 * 如何使用 I18n 翻译 Active Record 错误或 Action Mailer 电子邮件主题；
 * 用于进一步翻译应用的其他工具。
 
-NOTE: Ruby I18n 框架提供了 Rails 应用国际化/本地化所需的所有必要支持。我们还可以使用各种 gem 来添加附加功能或特性。更多介绍请参阅 link:$https://github.com/svenfuchs/rails-i18n$[rails-18n gem]。
+NOTE: Ruby I18n 框架提供了 Rails 应用国际化/本地化所需的所有必要支持。我们还可以使用各种 gem 来添加附加功能或特性。更多介绍请参阅 link:https://github.com/svenfuchs/rails-i18n[rails-18n gem]。
 --
 
 [[how-i18n-in-ruby-on-rails-works]]
