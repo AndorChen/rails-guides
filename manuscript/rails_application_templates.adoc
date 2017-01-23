@@ -5,12 +5,12 @@
 
 [.chapter-abstract]
 --
-应用模板是包含 DSL 的 Ruby 文件，作用是为新建的或现有的 Rails 项目添加 gem 和初始化程序等。
+应用模板是包含 DSL 的 Ruby 文件，作用是为新建的或现有的 Rails 项目添加 gem 和初始化脚本等。
 
 读完本文后，您将学到：
 
 - 如何使用模板生成和定制 Rails 应用；
-- 如何使用 Rails Templates API 编写可复用的应用模板；
+- 如何使用 Rails Templates API 编写可复用的应用模板。
 --
 
 [[usage]]
@@ -66,7 +66,7 @@ gem "bj"
 gem "nokogiri"
 ----
 
-请注意，这么做不会为你安装 gem，你要指定 `bundle install` 命令安装。
+请注意，这么做不会为你安装 gem，你要执行 `bundle install` 命令安装。
 
 [source,sh]
 ----
@@ -125,7 +125,7 @@ environment 'config.action_mailer.default_url_options = {host: "http://yourwebsi
 [[vendor-lib-file-initializer-filename-data-nil-block]]
 ==== `vendor`/`lib`/`file`/`initializer(filename, data = nil, &block)`
 
-在生成的应用的 `config/initializers` 目录中添加一个初始化程序。
+在生成的应用的 `config/initializers` 目录中添加一个初始化脚本。
 
 假设你想使用 `Object#not_nil?` 和 `Object#not_blank?` 方法：
 
@@ -201,7 +201,7 @@ run "rm README.rdoc"
 [[rails-command-command-options]]
 ==== `rails_command(command, options = {})`
 
-在 Rails 应用中运行指定的任务。加入你想迁移数据库：
+在 Rails 应用中运行指定的任务。假如你想迁移数据库：
 
 [source,ruby]
 ----
