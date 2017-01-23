@@ -46,7 +46,7 @@
 | Ruby on Rails Guides Guidelines | ✔️ | ✔️ |
 | Maintenance Policy | ✔️ | ✔️ |
 | Upgrading Ruby on Rails | ✔️ | ✔️ |
-| Ruby on Rails 5.0 Release Notes | ✔️ | |
+| Ruby on Rails 5.0 Release Notes | ✔️ | ✔️ |
 
 ## 译者
 

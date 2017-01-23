@@ -121,13 +121,13 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 
 这个测试运行程序受 `RSpec`、`minitest-reporters` 和 `maxitest` 等启发，包含下述主要优势：
 
-- 使用测试的行号运行单个测试。
+- 通过测试的行号运行单个测试。
 - 指定多个行号，运行多个测试。
 - 改进失败消息，也便于重新运行失败的测试。
 - 指定 `-f` 选项，尽早失败，一旦发现失败就停止测试，而不是等到整个测试组件运行完毕。
 - 指定 `-d` 选项，等到测试全部运行完毕再显示输出。
 - 指定 `-b` 选项，输出完整的异常回溯信息。
-- 与 `Minitest` 集成，允许指定 `-s` 选项测试种子数据，指定 `-n` 运行指定名称的测试，指定 `-v` 选项输出更详细的信息，等等。
+- 与 `Minitest` 集成，允许指定 `-s` 选项测试种子数据，指定 `-n` 选项运行指定名称的测试，指定 `-v` 选项输出更详细的信息，等等。
 - 以不同颜色显示测试输出。
 
 [[railties]]
@@ -138,7 +138,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 [[railties-removals]]
 ==== 删除
 
-- 删除对 `debugger` 的支持，换用 `byebug`。因为 RUby 2.2 不支持 `debugger`。（link:https://github.com/rails/rails/commit/93559da4826546d07014f8cfa399b64b4a143127[提交]）
+- 删除对 `debugger` 的支持，换用 `byebug`。因为 Ruby 2.2 不支持 `debugger`。（link:https://github.com/rails/rails/commit/93559da4826546d07014f8cfa399b64b4a143127[提交]）
 - 删除弃用的 `test:all` 和 `test:all:db` 任务。（link:https://github.com/rails/rails/commit/f663132eef0e5d96bf2a58cec9f7c856db20be7c[提交]）
 - 删除弃用的 `Rails::Rack::LogTailer`。（link:https://github.com/rails/rails/commit/c564dcb75c191ab3d21cc6f920998b0d6fbca623[提交]）
 - 删除弃用的 `RAILS_CACHE` 常量。（link:https://github.com/rails/rails/commit/b7f856ce488ef8f6bf4c12bb549f462cb7671c08[提交]）
@@ -157,7 +157,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 ==== 重要变化
 
 - 添加 Rails 测试运行程序 `bin/rails test`。（link:https://github.com/rails/rails/pull/19216[拉取请求]）
-- 新生成的应用和插件的自述文件使用 Markdown 编写。（link:https://github.com/rails/rails/commit/89a12c931b1f00b90e74afffcdc2fc21f14ca663[提交]，link:https://github.com/rails/rails/pull/22068[拉取请求]）
+- 新生成的应用和插件的自述文件使用 Markdown 格式。（link:https://github.com/rails/rails/commit/89a12c931b1f00b90e74afffcdc2fc21f14ca663[提交]，link:https://github.com/rails/rails/pull/22068[拉取请求]）
 - 添加 `bin/rails restart` 任务，通过 touch `tmp/restart.txt` 文件重启 Rails 应用。（link:https://github.com/rails/rails/pull/18965[拉取请求]）
 - 添加 `bin/rails initializers` 任务，按照 Rails 调用的顺序输出所有初始化脚本。（link:https://github.com/rails/rails/pull/19323[拉取请求]）
 - 添加 `bin/rails dev:cache` 任务，在开发环境启用或禁用缓存。（link:https://github.com/rails/rails/pull/20961[拉取请求]）
@@ -168,7 +168,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 新应用通过 IncludeSudomains 首部启用 HSTS。（link:https://github.com/rails/rails/pull/23852[拉取请求]）
 - 应用生成器创建一个名为 `config/spring.rb` 的新文件，告诉 Spring 监视其他常见的文件。（link:https://github.com/rails/rails/commit/b04d07337fd7bc17e88500e9d6bcd361885a45f8[提交]）
 - 添加 `--skip-action-mailer`，生成新应用时不生成 Action Mailer。（link:https://github.com/rails/rails/pull/18288[拉取请求]）
-- 删除 `tmp/sessions` 目录，以及与之对应的清理 Rake 任务。（link:https://github.com/rails/rails/pull/18314[拉取请求]）
+- 删除 `tmp/sessions` 目录，以及与之对应的 Rake 清理任务。（link:https://github.com/rails/rails/pull/18314[拉取请求]）
 - 让脚手架生成的 `_form.html.erb` 使用局部变量。（link:https://github.com/rails/rails/pull/13434[拉取请求]）
 - 禁止在生产环境自动加载类。（link:https://github.com/rails/rails/commit/a71350cae0082193ad8c66d65ab62e8bb0b7853b[提交]）
 
@@ -182,7 +182,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 
 - 删除 `ActionDispatch::Request::Utils.deep_munge`。（link:https://github.com/rails/rails/commit/52cf1a71b393486435fab4386a8663b146608996[提交]）
 - 删除 `ActionController::HideActions`。（link:https://github.com/rails/rails/pull/18371[拉取请求]）
-- 删除占位方法 `respond_to` 和 `respond_with`，提取到 https://github.com/plataformatec/responders[`responders`] gem。(link:https://github.com/rails/rails/commit/afd5e9a7ff0072e482b0b0e8e238d21b070b6280[提交])
+- 删除占位方法 `respond_to` 和 `respond_with`，提取为 https://github.com/plataformatec/responders[`responders`] gem。(link:https://github.com/rails/rails/commit/afd5e9a7ff0072e482b0b0e8e238d21b070b6280[提交])
 - 删除弃用的断言文件。（link:https://github.com/rails/rails/commit/92e27d30d8112962ee068f7b14aa7b10daf0c976[提交]）
 - 不再允许在 URL 辅助方法中使用字符串键。（link:https://github.com/rails/rails/commit/34e380764edede47f7ebe0c7671d6f9c9dc7e809[提交]）
 - 删除弃用的 `*_path` 辅助方法的 `only_path` 选项。（link:https://github.com/rails/rails/commit/e4e1fd7ade47771067177254cb133564a3422b8a[提交]）
@@ -192,14 +192,14 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 删除弃用的 `ActionDispatch::Request#deep_munge`。（link:https://github.com/rails/rails/commit/7676659633057dacd97b8da66e0d9119809b343e[提交]）
 - 删除弃用的 `ActionDispatch::Http::Parameters#symbolized_path_parameters`。（link:https://github.com/rails/rails/commit/7fe7973cd8bd119b724d72c5f617cf94c18edf9e[提交]）
 - 不再允许在控制器测试中使用 `use_route` 选项。（link:https://github.com/rails/rails/commit/e4cfd353a47369dd32198b0e67b8cbb2f9a1c548[提交]）
-- 删除 `assigns` 和 `assert_template`，提取到 https://github.com/rails/rails-controller-testing[`rails-controller-testing`] gem 中。（link:https://github.com/rails/rails/pull/20138[拉取请求]）
+- 删除 `assigns` 和 `assert_template`，提取为 https://github.com/rails/rails-controller-testing[`rails-controller-testing`] gem 中。（link:https://github.com/rails/rails/pull/20138[拉取请求]）
 
 [[action-pack-deprecations]]
 ==== 弃用
 
 - 弃用所有 `*_filter` 回调，换成 `*_action`。（link:https://github.com/rails/rails/pull/18410[拉取请求]）
 - 弃用 `*_via_redirect` 集成测试方法。请在请求后手动调用 `follow_redirect!`，效果一样。（link:https://github.com/rails/rails/pull/18693[拉取请求]）
-- 弃用 `AbstractController#skip_action_callback`，换成单独的 skip_callback 方法。（link:https://github.com/rails/rails/pull/19060[拉取请求]）
+- 弃用 `AbstractController#skip_action_callback`，换成单独的 `skip_callback` 方法。（link:https://github.com/rails/rails/pull/19060[拉取请求]）
 - 弃用 `render` 方法的 `:nothing` 选项。（link:https://github.com/rails/rails/pull/20336[拉取请求]）
 - 以前，`head` 方法的第一个参数是一个 散列，而且可以设定默认的状态码；现在弃用了。（link:https://github.com/rails/rails/pull/20407[拉取请求]）
 - 弃用通过字符串或符号指定中间件类名。直接使用类名。（link:https://github.com/rails/rails/commit/83b767ce[提交]）
@@ -244,7 +244,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 ==== 删除
 
 - 删除弃用的 `AbstractController::Base::parent_prefixes`。（link:https://github.com/rails/rails/commit/34bcbcf35701ca44be559ff391535c0dd865c333[提交]）
-- 删除 `ActionView::Helpers::RecordTagHelper`，提取到 https://github.com/rails/record_tag_helper[`record_tag_helper`] gem 中。（link:https://github.com/rails/rails/pull/18411[拉取请求]）
+- 删除 `ActionView::Helpers::RecordTagHelper`，提取为 https://github.com/rails/record_tag_helper[`record_tag_helper`] gem。（link:https://github.com/rails/rails/pull/18411[拉取请求]）
 - 删除 `translate` 辅助方法的 `:rescue_format` 选项，因为 I18n 不再支持。（link:https://github.com/rails/rails/pull/20019[拉取请求]）
 
 [[action-view-notable-changes]]
@@ -315,7 +315,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 弃用通过为关联方法传入一个真值参数强制重新加载关联。（link:https://github.com/rails/rails/pull/20888[拉取请求]）
 - 弃用关联的错误键 `restrict_dependent_destroy`，换成更好的键名。（link:https://github.com/rails/rails/pull/20668[拉取请求]）
 - `#tables` 的同步行为。（link:https://github.com/rails/rails/pull/21601[拉取请求]）
-- 弃用 ` SchemaCache#tables`、`SchemaCache#table_exists?` 和 `SchemaCache#clear_table_cache!`，换成相应的数据源方法。（link:https://github.com/rails/rails/pull/21715[拉取请求]）
+- 弃用 `SchemaCache#tables`、`SchemaCache#table_exists?` 和 `SchemaCache#clear_table_cache!`，换成相应的数据源方法。（link:https://github.com/rails/rails/pull/21715[拉取请求]）
 - 弃用 SQLite3 和 MySQL 适配器的 `connection.tables`。（link:https://github.com/rails/rails/pull/21601[拉取请求]）
 - 弃用把参数传给 `#tables`：在某些适配器中（mysql2、sqlite3），它返回表和视图，而其他适配器（postgresql）只返回表。为了保持行为一致，未来 `#tables` 只返回表。（link:https://github.com/rails/rails/pull/21601[拉取请求]）
 - 弃用 `table_exists?` 方法：它既检查表，也检查视图。为了与 `#tables` 的行为一致，未来 `#table_exists?` 只检查表。（link:https://github.com/rails/rails/pull/21601[拉取请求]）
@@ -334,7 +334,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 为 `ActiveRecord::Relation` 添加 `#cache_key` 方法。（link:https://github.com/rails/rails/pull/20884[拉取请求]）
 - 把 `timestamps` 默认的 `null` 值改为 `false`。（link:https://github.com/rails/rails/commit/a939506f297b667291480f26fa32a373a18ae06a[提交]）
 - 添加 `ActiveRecord::SecureToken`，在模型中使用 `SecureRandom` 为属性生成唯一令牌。（link:https://github.com/rails/rails/pull/18217[拉取请求]）
-- 为 `drop_table` 添加 `:if_exists`。（link:https://github.com/rails/rails/pull/18597[拉取请求]）
+- 为 `drop_table` 添加 `:if_exists` 选项。（link:https://github.com/rails/rails/pull/18597[拉取请求]）
 - 添加 `ActiveRecord::Base#accessed_fields`，在模型中只从数据库中选择数据时快速查看读取哪些字段。（link:https://github.com/rails/rails/commit/be9b68038e83a617eb38c26147659162e4ac3d2c[提交]）
 - 为 `ActiveRecord::Relation` 添加 `#or` 方法，允许在 `WHERE` 或 `HAVING` 子句中使用 `OR` 运算符。（link:https://github.com/rails/rails/commit/b0b37942d729b6bdcd2e3178eda7fa1de203b3d0[提交]）
 - 添加 `ActiveRecord::Base.suppress`，禁止在指定的块执行时保存接收者。（link:https://github.com/rails/rails/pull/18910[拉取请求]）
@@ -360,6 +360,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 为 PostgreSQL 添加表达式索引和运算符类支持。（link:https://github.com/rails/rails/commit/edc2b7718725016e988089b5fb6d6fb9d6e16882[提交]）
 - 添加 `:index_errors` 选项，为嵌套属性的错误添加索引。（link:https://github.com/rails/rails/pull/19686[拉取请求]）
 - 添加对双向销毁依赖的支持。（link:https://github.com/rails/rails/pull/18548[拉取请求]）
+- 支持在事务型测试中使用 `after_commit` 回调。（link:https://github.com/rails/rails/pull/18662[拉取请求]）
 - 添加 `foreign_key_exists?` 方法，检查表中是否有外键。（link:https://github.com/rails/rails/pull/18662[拉取请求]）
 - 为 `touch` 方法添加 `:time` 选项，使用当前时间之外的时间更新记录的时间戳。（link:https://github.com/rails/rails/pull/18956[拉取请求]）
 
@@ -381,14 +382,14 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 弃用通过返回 `false` 停止 Active Model 和 `ActiveModel::Validations` 回调链的方式。推荐的方式是 `throw(:abort)`。（link:https://github.com/rails/rails/pull/17227[拉取请求]）
 - 弃用行为不一致的 `ActiveModel::Errors#get`、`ActiveModel::Errors#set` 和 `ActiveModel::Errors#[]=` 方法。（link:https://github.com/rails/rails/pull/18634[拉取请求]）
 - 弃用 `validates_length_of` 的 `:tokenizer` 选项，换成普通的 Ruby。（link:https://github.com/rails/rails/pull/19585[拉取请求]）
-- 弃用 `ActiveModel::Errors#add_on_empty` 和 `ActiveModel::Errors#add_on_blank`，而且没有替代方法。（link:https://github.com/rails/rails/pull/18996[拉取请]）
+- 弃用 `ActiveModel::Errors#add_on_empty` 和 `ActiveModel::Errors#add_on_blank`，而且没有替代方法。（link:https://github.com/rails/rails/pull/18996[拉取请求]）
 
 [[active-model-notable-changes]]
 ==== 重要变化
 
-- 添加 `ActiveModel::Errors#details`，判断哪个验证失败。（link:https://github.com/rails/rails/pull/18322[拉取请求]）。
-- 把 `ActiveRecord::AttributeAssignment` 提取为 `ActiveModel::AttributeAssignment`，以便把任意对象作为引入的模块使用。（link:https://github.com/rails/rails/pull/10776[拉取请求]）。
-- 添加 ` ActiveModel::Dirty#[attr_name]_previously_changed?` 和 `ActiveModel::Dirty#[attr_name]_previous_change`，更好地访问保存模型后有变的记录。（link:https://github.com/rails/rails/pull/19847[拉取请求]）
+- 添加 `ActiveModel::Errors#details`，判断哪个验证失败。（link:https://github.com/rails/rails/pull/18322[拉取请求]）
+- 把 `ActiveRecord::AttributeAssignment` 提取为 `ActiveModel::AttributeAssignment`，以便把任意对象作为引入的模块使用。（link:https://github.com/rails/rails/pull/10776[拉取请求]）
+- 添加 `ActiveModel::Dirty#[attr_name]_previously_changed?` 和 `ActiveModel::Dirty#[attr_name]_previous_change`，更好地访问保存模型后有变的记录。（link:https://github.com/rails/rails/pull/19847[拉取请求]）
 - 让 `valid?` 和 `invalid?` 一次验证多个上下文。（link:https://github.com/rails/rails/pull/21069[拉取请求]）
 - 让 `validates_acceptance_of` 除了 `1` 之外接受 `true` 为默认值。（link:https://github.com/rails/rails/pull/18439[拉取请求]）
 
@@ -423,7 +424,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 删除弃用的 `ActiveSupport::Cache::Store.instrument` 和 `ActiveSupport::Cache::Store.instrument=` 方法。（link:https://github.com/rails/rails/commit/a3ce6ca30ed0e77496c63781af596b149687b6d7[提交]）
 - 删除弃用的 `Class#superclass_delegating_accessor`，换用 `Class#class_attribute`。（link:https://github.com/rails/rails/pull/16938[拉取请求]）
 - 删除弃用的 `ThreadSafe::Cache`，换用 `Concurrent::Map`。（link:https://github.com/rails/rails/pull/21679[拉取请求]）
-- 删除 `Object#itself`，因为 Ruby 2.2 自带了。
+- 删除 `Object#itself`，因为 Ruby 2.2 自带了。（link:https://github.com/rails/rails/pull/18244[拉取请求]）
 
 [[deprecations]]
 ==== 弃用
@@ -446,7 +447,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 改变回调链停止的方式。现在停止回调链的推荐方式是明确使用 `throw(:abort)`。（link:https://github.com/rails/rails/pull/17227[拉取请求]）
 - 新增配置选项 `config.active_support.halt_callback_chains_on_return_false`，指定是否允许在前置回调中停止 ActiveRecord、ActiveModel 和 ActiveModel::Validations 回调链。（link:https://github.com/rails/rails/pull/17227[拉取请求]）
 - 把默认的测试顺序由 `:sorted` 改为 `:random`。（link:https://github.com/rails/rails/commit/5f777e4b5ee2e3e8e6fd0e2a208ec2a4d25a960d[提交]）
-- 为 `Date`、`Time` 和 `DateTime` 添加 `#on_weekend?`、`#on_weekday?`、`#next_weekday` 节 `#prev_weekday` 方法。（link:https://github.com/rails/rails/pull/18335[拉取请求]，link:https://github.com/rails/rails/pull/23687[拉取请求]）
+- 为 `Date`、`Time` 和 `DateTime` 添加 `#on_weekend?`、`#on_weekday?`、`#next_weekday` 及 `#prev_weekday` 方法。（link:https://github.com/rails/rails/pull/18335[拉取请求]，link:https://github.com/rails/rails/pull/23687[拉取请求]）
 - 为 `Date`、`Time` 和 `DateTime` 的 `#next_week` 和 `#prev_week` 方法添加 `same_time` 选项。（link:https://github.com/rails/rails/pull/18335[拉取请求]）
 - 为 `Date`、`Time` 和 `DateTime` 添加 `#yesterday` 和 `#tomorrow` 对应的 `#prev_day` 和 `#next_day` 方法。
 - 添加 `SecureRandom.base58`，生成 base58 字符串。（link:https://github.com/rails/rails/commit/b1093977110f18ae0cafe56c3d99fc22a7d54d1b[提交]）
@@ -460,8 +461,8 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 添加一个文件事件监视程序，异步监测应用源码、路由、本地化文件等的变化。（link:https://github.com/rails/rails/pull/22254[拉取请求]）
 - 添加 `thread_m`/`cattr_accessor`/`reader`/`writer` 方法，声明存活在各个线程中的类和模块变量。（link:https://github.com/rails/rails/pull/22630[拉取请求]）
 - 添加 `Array#second_to_last` 和 `Array#third_to_last` 方法。（link:https://github.com/rails/rails/pull/23583[拉取请求]）
-- 开发 `ActiveSupport::Executor` 和 `ActiveSupport::Reloader` API，允许组件和库管理和参与应用代码的执行以及应用重新加载过程。（link:https://github.com/rails/rails/pull/23807[拉取请求]）
-- `ActiveSupport::Duration` 现在支持 ISO8601 格式和解析。（link:https://github.com/rails/rails/pull/16917[拉取请求]）
+- 发布 `ActiveSupport::Executor` 和 `ActiveSupport::Reloader` API，允许组件和库管理并参与应用代码的执行以及应用重新加载过程。（link:https://github.com/rails/rails/pull/23807[拉取请求]）
+- `ActiveSupport::Duration` 现在支持使用和解析 ISO8601 格式。（link:https://github.com/rails/rails/pull/16917[拉取请求]）
 - 启用 `parse_json_times` 后，`ActiveSupport::JSON.decode` 支持解析 ISO8601 本地时间。（link:https://github.com/rails/rails/pull/23011[拉取请求]）
 - `ActiveSupport::JSON.decode` 现在解析日期字符串后返回 `Date` 对象。（link:https://github.com/rails/rails/pull/23011[拉取请求]）
 - 让 `TaggedLogging` 支持多次实例化日志记录器，避免共享标签。（link:https://github.com/rails/rails/pull/9065[拉取请求]）
@@ -469,9 +470,9 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 [[credits]]
 === 名誉榜
 
-得益于link:http://contributors.rubyonrails.org/[众多贡献者]，Rails 才能变得这么稳定和强健。向他们致敬。
+得益于link:http://contributors.rubyonrails.org/[众多贡献者]，Rails 才能变得这么稳定和强健。向他们致敬！
 
 [NOTE]
 ====
-原文还有 http://guides.rubyonrails.org/4_2_release_notes.html[Rails 4.2]、link:http://guides.rubyonrails.org/4_1_release_notes.html[4.1]、link:http://guides.rubyonrails.org/4_0_release_notes.html[4.0] 等版本的发布记，由于版本旧，不再翻译，敬请谅解。——译者注
+英语原文还有 http://guides.rubyonrails.org/4_2_release_notes.html[Rails 4.2]、link:http://guides.rubyonrails.org/4_1_release_notes.html[4.1]、link:http://guides.rubyonrails.org/4_0_release_notes.html[4.0] 等版本的发布记，由于版本旧，不再翻译，敬请谅解。——译者注
 ====
