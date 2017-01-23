@@ -11,7 +11,7 @@
 
 - 如何设置你的设备供 Rails 开发；
 - 如何运行 Rails 测试组件中特定的单元测试组；
-- Rails 测试组件中的 Active Record 部分是如何运作的；
+- Rails 测试组件中的 Active Record 部分是如何运作的。
 --
 
 [[development-dependencies-install-the-easy-way]]
@@ -193,7 +193,7 @@ Active Record 的测试组件运行三次：一次针对 SQLite3，一次针对 
 
 [WARNING]
 ====
-编写 Active Record 代码时，必须确保测试至少能在 MySQL、PostgreSQL 和 SQLite3 中通过。如果只是用 MySQL 测试，虽然测试能通过，但是不同适配器之间的差异没有考虑到。
+编写 Active Record 代码时，必须确保测试至少能在 MySQL、PostgreSQL 和 SQLite3 中通过。如果只使用 MySQL 测试，虽然测试能通过，但是不同适配器之间的差异没有考虑到。
 ====
 
 [[database-configuration]]
