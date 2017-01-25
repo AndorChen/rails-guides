@@ -37,3 +37,304 @@ NOTE: Ruby I18n 框架提供了 Rails 应用国际化/本地化所需的所有�
 
 [[how-i18n-in-ruby-on-rails-works]]
 === Rails 中 I18n 的工作原理
+
+国际化是一个复杂的问题。自然语言在很多方面（例如复数规则）有所不同，要想一次性提供解决所有问题的工具很难。因此，Rails I18n API 专注于：
+
+* 支持英语及类似语言
+* 易于定制和扩展，以支持其他语言
+
+作为这个解决方案的一部分，Rails 框架中的每个静态字符串（例如，Active Record 数据验证信息、时间和日期格式）都已国际化。Rails 应用的本地化意味着把这些静态字符串翻译为所需语言。
+
+[[the-overall-architecture-of-the-library]]
+==== I18n 库的总体架构
+
+因此，Ruby I18n gem 分为两部分：
+
+* I18n 框架的公共 API——包含公共方法的 Ruby 模块，定义了 I18n 库的工作方式
+* 实现这些方法的默认后端（称为简单后端）
+
+作为用户，我们应该始终只访问 I18n 模块的公共方法，但了解后端的功能也很有帮助。
+
+NOTE: 我们可以把默认的简单后端替换为其他功能更强的后端，这时翻译数据可能会储存在关系数据库、GetText 字典或类似解决方案中。更多介绍请参阅 <<http://guides.rubyonrails.org/i18n.html#using-different-backends>> 一节。
+
+[[the-public-i18n-api]]
+==== I18n 公共 API
+
+I18n API 中最重要的两个方法是：
+
+[source,ruby]
+----
+translate # 查找文本翻译
+localize  # 把日期和时间对象转换为本地格式（本地化）
+----
+
+这两个方法的别名分别为 `#t` 和 `#l`，用法如下：
+
+[source,ruby]
+----
+I18n.t 'store.title'
+I18n.l Time.now
+----
+
+对于下列属性，I18n API 还提供了属性读取器和写入器：
+
+[source,ruby]
+----
+load_path         # 自定义翻译文件（custom translation file）的路径
+locale            # 获取或设置当前区域
+default_locale    # 获取或设置默认区域
+exception_handler # 使用不同的 `exception_handler`
+backend           # 使用不同后端
+----
+
+现在，我们已经掌握了 Rails I18n API 的基本用法，从下一节开始，我们要从头开始国际化一个简单的 Rails 应用。
+
+[[setup-the-rails-application-for-internationalization]]
+=== Rails 应用的国际化设置
+
+本节介绍为 Rails 应用提供 I18n 支持的几个步骤。
+
+[[configure-the-i18n-module]]
+==== 配置 I18n 模块
+
+根据“多约定，少配置”原则，Rails I18n 库提供了默认翻译字符串。如果需要不同的翻译字符串，可以直接覆盖默认值。
+
+Rails 会把 `config/locales` 文件夹中的 `.rb` 和 `.yml` 文件，自动添加到翻译文件加载路径（translations load path）。
+
+这个文件夹中的 `en.yml` 区域设置文件包含了一个翻译字符串示例：
+
+[source,ruby]
+----
+en:
+  hello: "Hello world"
+----
+
+上面的代码表示，在 `:en` 区域设置中，键 `hello` 会映射到 `Hello world` 字符串上。在 Rails 中，字符串都以这种方式进行国际化，例如，Active Model 的数据验证信息位于 link:$$https://github.com/rails/rails/blob/master/activemodel/lib/active_model/locale/en.yml$$[activemodel/lib/active_model/locale/en.yml] 文件中，时间和日期格式位于 link:$$https://github.com/rails/rails/blob/master/activesupport/lib/active_support/locale/en.yml$$[activesupport/lib/active_support/locale/en.yml] 文件中。我们可以使用 YAML 或标准 Ruby 散列，把翻译信息储存在默认的简单后端中。
+
+I18n 库使用英语作为默认的区域设置，例如，如果未设置不同区域，那么会使用 `:en` 区域来查找翻译。
+
+NOTE: 经过link:$$http://groups.google.com/group/rails-i18n/browse_thread/thread/14dede2c7dbe9470/80eec34395f64f3c?hl=en$$[讨论]，I18n 库在选取区域设置的键时最终采取了务实的方式，也就是仅包含语言部分，例如 `:en`、`:pl`，而不是传统上使用的语言和区域两部分，例如 `:en-US` 、 `:en-GB`。很多国际化的应用都是这样做的，例如把 `:cs`、`:th` 和 `:es` 分别用于捷克语、泰语和西班牙语。尽管如此，在同一语系中也可能存在重要的区域差异，例如，`:en-US` 使用 `$` 作为货币符号，而 `:en-GB` 使用 `£` 作为货币符号。因此，如果需要，我们也可以使用传统方式，例如，在 `:en-GB` 字典中提供完整的 `"English - United Kingdom"` 区域。像 link:$$https://github.com/globalize/globalize$$[Globalize3] 这样的 gem 可以实现这一功能。
+
+Rails 会自动加载翻译文件加载路径（`I18n.load_path`），这是一个保存有翻译文件路径的数组。通过配置翻译文件加载路径，我们可以自定义翻译文件的目录结构和文件命名规则。
+
+NOTE: I18n 库的后端采用了延迟加载技术，相关翻译信息仅在第一次查找时加载。我们可以根据需要，随时替换默认后端。
+
+默认的 `config/application.rb` 文件包含了，如何从其他目录添加区域设置，以及如何设置不同默认区域的说明。
+
+[source,ruby]
+----
+# 默认区域设置是 :en，config/locales/ 文件夹下的 .rb 和 .yml 翻译文件会被自动加载
+# config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
+# config.i18n.default_locale = :de
+----
+
+在查找翻译文件之前，必须先指定翻译文件加载路径。应该通过初始化程序，而不是 `config/application.rb` 文件，来修改默认区域设置：
+
+[source,ruby]
+----
+# config/initializers/locale.rb
+
+# 指定 I18n 库搜索翻译文件的路径
+I18n.load_path += Dir[Rails.root.join('lib', 'locale', '*.{rb,yml}')]
+
+# 修改默认区域设置（默认是 :en）
+I18n.default_locale = :pt
+----
+
+[[managing-the-locale-across-requests]]
+==== 跨请求管理区域设置
+
+除非显式设置了 `I18n.locale`，默认区域设置将会应用于所有翻译文件。
+
+本地化应用有时需要支持多区域设置。此时，需要在每个请求之前设置区域，这样在请求的整个生命周期中，都会根据指定区域，对所有字符串进行翻译。
+
+我们可以在 `ApplicationController` 中使用 `before_action` 方法设置区域：
+
+[source,ruby]
+----
+before_action :set_locale
+
+def set_locale
+  I18n.locale = params[:locale] || I18n.default_locale
+end
+----
+
+上面的例子说明了，如何使用 URL 查询参数来设置区域。例如，对于 pass:[http://example.com/books?locale=pt] 会使用葡萄牙语进行本地化，对于 pass:[http://localhost:3000?locale=de] 会使用德语进行本地化。
+
+接下来介绍区域设置的几种不同方式。
+
+[[setting-the-locale-from-the-domain-name]]
+===== 根据域名设置区域
+
+第一种方式是，根据应用的域名设置区域。例如，通过 `www.example.com` 加载英语（或默认）区域设置，通过 `www.example.es` 加载西班牙语区域设置。也就是根据顶级域名设置区域。这种方式有下列优点：
+
+* 区域设置成为 URL 地址的显而易见的一部分
+* 用户可以直观地判断出页面所使用的语言
+* 在 Rails 中非常容易实现
+* 搜索引擎偏爱这种把不同语言内容放在不同域名上的做法
+
+在 `ApplicationController` 中，我们可以进行如下配置：
+
+[source,ruby]
+----
+before_action :set_locale
+
+def set_locale
+  I18n.locale = extract_locale_from_tld || I18n.default_locale
+end
+
+# 从顶级域名中获取区域设置，如果获取失败会返回 nil
+# 需要在 /etc/hosts 文件中添加如下设置：
+#   127.0.0.1 application.com
+#   127.0.0.1 application.it
+#   127.0.0.1 application.pl
+def extract_locale_from_tld
+  parsed_locale = request.host.split('.').last
+  I18n.available_locales.map(&:to_s).include?(parsed_locale) ? parsed_locale : nil
+end
+----
+
+我们还可以通过类似方式，根据子域名设置区域：
+
+[source,ruby]
+----
+# 从子域名中获取区域设置（例如 http://it.application.local:3000）
+# 需要在 /etc/hosts 文件中添加如下设置：
+#   127.0.0.1 gr.application.local
+def extract_locale_from_subdomain
+  parsed_locale = request.subdomains.first
+  I18n.available_locales.map(&:to_s).include?(parsed_locale) ? parsed_locale : nil
+end
+----
+
+要想为应用添加区域设置切换菜单，可以使用如下代码：
+
+[source,ruby]
+----
+link_to("Deutsch", "#{APP_CONFIG[:deutsch_website_url]}#{request.env['PATH_INFO']}")
+----
+
+其中 `APP_CONFIG[:deutsch_website_url]` 的值类似 `http://www.application.de`。
+
+尽管这个解决方案具有上面提到的各种优点，但通过不同域名来提供不同的本地化版本（“语言版本”）有时并非我们的首选。在其他各种可选方案中，在 URL 参数（或请求路径）中包含区域设置是最常见的。
+
+[[setting-the-locale-from-url-params]]
+===== 根据 URL 参数设置区域
+
+区域设置（和传递）的最常见方式，是将其包含在URL参数中，例如，在前文第一个示例中，`before_action` 方法调用中的 `I18n.locale = params[:locale]`。此时，我们会使用 `www.example.com/books?locale=ja` 或 `www.example.com/ja/books` 这样的网址。
+
+和根据域名设置区域类似，这种方式具有不少优点，尤其是 REST 式的命名风格，顺应了当前的互联网潮流。不过采用这种方式所需的工作量要大一些。
+
+从 URL 参数获取并设置区域并不难，只要把区域设置包含在 URL 中并通过请求传递即可。当然，没有人愿意在生成每个 URL 地址时显式添加区域设置，例如 `link_to(books_url(locale: I18n.locale))`。
+
+Rails 的 `ApplicationController#default_url_options` 方法提供的“集中修改 URL 动态生成规则”的功能，正好可以解决这个问题：我们可以设置 `url_for` 及相关辅助方法的默认行为（通过覆盖 `default_url_options` 方法）。
+
+我们可以在 `ApplicationController` 中添加下面的代码：
+
+[source,ruby]
+----
+# app/controllers/application_controller.rb
+def default_url_options
+  { locale: I18n.locale }
+end
+----
+
+这样，所有依赖于 `url_for` 的辅助方法（例如，具名路由辅助方法 `root_path` 和 `root_url`，资源路由辅助方法 `books_path` 和 `books_url` 等等）都会自动在查询字符串中添加区域设置，例如：`http://localhost:3001/?locale=ja`。
+
+至此，我们也许已经很满意了。但是，在应用的每个 URL 地址的末尾添加区域设置，会影响 URL 地址的可读性。此外，从架构的角度看，区域设置的层级应该高于 URL 地址中除域名之外的其他组成部分，这一点也应该通过 URL 地址自身体现出来。
+
+要想使用 `http://www.example.com/en/books`（加载英语区域设置）和 `http://www.example.com/nl/books`（加载荷兰语区域设置）这样的 URL 地址，我们可以使用前文提到的覆盖 `default_url_options` 方法的方式，通过 `scope` 方法设置路由：
+
+[source,ruby]
+----
+# config/routes.rb
+scope "/:locale" do
+  resources :books
+end
+----
+
+现在，当我们调用 `books_path` 方法时，就会得到 `"/en/books"`（对于默认区域设置）。像 `http://localhost:3001/nl/books` 这样的 URL 地址会加载荷兰语区域设置，之后调用 `books_path` 方法时会返回 `"/nl/books"`（因为区域设置发生了变化）。
+
+TIP: 由于 `default_url_options` 方法的返回值是根据请求分别缓存的，因此无法通过循环调用辅助方法来生成 URL 地址中的区域设置，
+也就是说，无法在每次迭代中设置相应的 `I18n.locale`。正确的做法是，保持 `I18n.locale` 不变，向辅助方法显式传递 `:locale` 选项，或者编辑 `request.original_fullpath`。
+
+如果不想在路由中强制使用区域设置，我们可以使用可选的路径作用域（用括号表示），就像下面这样：
+
+[source,ruby]
+----
+# config/routes.rb
+scope "(:locale)", locale: /en|nl/ do
+  resources :books
+end
+----
+
+通过这种方式，访问不带区域设置的 `http://localhost:3001/books` URL 地址时就不会抛出 `Routing Error` 错误了。这样，我们就可以在不指定区域设置时，使用默认的区域设置。
+
+当然，我们需要特别注意应用的根地址（通常是“主页（homepage）”或“仪表盘（dashboard）”）。像 `root to: "books#index"` 这样的不考虑区域设置的路由声明，会导致 `http://localhost:3001/nl` 无法正常访问。（尽管“只有一个根地址”看起来并没有错）
+
+因此，我们可以像下面这样映射 URL 地址：
+
+[source,ruby]
+----
+# config/routes.rb
+get '/:locale' => 'dashboard#index'
+----
+
+需要特别注意路由的声明顺序，以避免这条路由覆盖其他路由。（我们可以把这条路由添加到 `root :to` 路由声明之前）
+
+NOTE: 有一些 gem 可以简化路由设置，如 link:$$https://github.com/svenfuchs/routing-filter/tree/master$$[routing_filter]、link:$$https://github.com/francesc/rails-translate-routes$$[rails-translate-routes] 和 link:$$https://github.com/enriclluelles/route_translator$$[route_translator]。
+
+[[setting-the-locale-from-user-preferences]]
+===== 根据用户偏好设置进行区域设置
+
+支持用户身份验证的应用，可能会允许用户在界面中选择区域偏好设置。通过这种方式，用户选择的区域偏好设置会储存在数据库中，并用于处理该用户发起的请求。
+
+[source,ruby]
+----
+def set_locale
+  I18n.locale = current_user.try(:locale) || I18n.default_locale
+end
+----
+
+[[choosing-an-implied-locale]]
+===== 使用隐式区域设置
+
+如果没有显式地为请求设置区域（例如，通过上面提到各种方式），应用就会尝试推断出所需区域。
+
+[[inferring-locale-from-the-language-header]]
+====== 根据 HTTP 请求头推断区域设置
+
+`Accept-Language` HTTP 请求头说明了响应请求时使用的首选语言。请浏览link:$$http://www.w3.org/International/questions/qa-lang-priorities$$[根据用户的语言偏好设置，对HTTP 请求头进行设置]，文中介绍的方式可以作为推断区域设置时的首选方案。
+
+下面是使用 `Accept-Language` HTTP 请求头的一个简单实现：
+
+[source,ruby]
+----
+def set_locale
+  logger.debug "* Accept-Language: #{request.env['HTTP_ACCEPT_LANGUAGE']}"
+  I18n.locale = extract_locale_from_accept_language_header
+  logger.debug "* Locale set to '#{I18n.locale}'"
+end
+
+private
+  def extract_locale_from_accept_language_header
+    request.env['HTTP_ACCEPT_LANGUAGE'].scan(/^[a-z]{2}/).first
+  end
+----
+
+实际上，我们通常会使用更可靠的代码。Iain Hecker 开发的 link:$$https://github.com/iain/http_accept_language/tree/master$$[http_accept_language] 或 Ryan Tomayko 开发的 link:$$https://github.com/rack/rack-contrib/blob/master/lib/rack/contrib/locale.rb[locale] Rack 中间件就提供了更好的解决方案。
+
+[[inferring-the-locale-from-ip-geolocation]]
+====== 根据 IP 地理位置推断区域设置
+
+我们可以通过客户端请求的 IP 地址来推断客户端所处的地理位置，进而推断其区域设置。link:$$http://www.maxmind.com/app/geolitecountry$$[GeoIP Lite Country] 这样的服务或 link:$$https://github.com/alexreisner/geocoder$$[geocoder] 这样的 gem 就可以实现这一功能。
+
+一般来说，这种方式远不如使用 HTTP 请求头可靠，因此并不适用于大多数 Web 应用。
+
+[[storing-the-locale-from-the-session-or-cookies]]
+===== 在会话或 Cookie 中储存区域设置
+
+TIP: 我们可能会认为，可以把区域设置储存在会话或 Cookie 中。但是，我们不能这样做。区域设置应该是透明的，并作为 URL 地址的一部分。这样，我们就不会打破用户的正常预期：如果我们发送一个 URL 地址给朋友，他们应该看到和我们一样的页面和内容。这就是所谓的 REST 规则。关于 REST 规则的更多介绍，请参阅link:$$http://www.infoq.com/articles/rest-introduction$$[Stefan Tilkov 的系列文章]。后文我们将讨论这个规则的一些例外情况。
+
+[[internationalization-and-localization]]
+=== 国际化和本地化
