@@ -20,7 +20,7 @@ Rails （Rails 2.2 及之后版本） 自带的 Ruby I18n （internationalizatio
 在本地化 Rails 应用的过程中，我们可能需要完成下面三项工作：
 
 * 替换或补充 Rails 的默认区域设置，例如日期和时间格式、月份名称、Active Record 模型名称等；
-* 从应用中抽取字符串，并放入字典，例如视图中的提示信息（flash message）、静态文本等；
+* 从应用中抽取字符串，并放入字典，例如视图中的闪现信息（flash message）、静态文本等；
 * 把生成的字典储存在某个地方。
 
 本文介绍了 Rails I18n API，并提供了国际化 Rails 应用的入门教程。
@@ -62,7 +62,6 @@ NOTE: 我们可以把默认的简单后端替换为其他功能更强的后端�
 
 I18n API 中最重要的两个方法是：
 
-[source,ruby]
 ----
 translate # 查找文本翻译
 localize  # 把日期和时间对象转换为本地格式（本地化）
@@ -78,7 +77,6 @@ I18n.l Time.now
 
 对于下列属性，I18n API 还提供了属性读取器和写入器：
 
-[source,ruby]
 ----
 load_path         # 自定义翻译文件（custom translation file）的路径
 locale            # 获取或设置当前区域
@@ -103,7 +101,7 @@ Rails 会把 `config/locales` 文件夹中的 `.rb` 和 `.yml` 文件，自动�
 
 这个文件夹中的 `en.yml` 区域设置文件包含了一个翻译字符串示例：
 
-[source,ruby]
+[source,yml]
 ----
 en:
   hello: "Hello world"
@@ -255,7 +253,7 @@ end
 
 现在，当我们调用 `books_path` 方法时，就会得到 `"/en/books"`（对于默认区域设置）。像 `http://localhost:3001/nl/books` 这样的 URL 地址会加载荷兰语区域设置，之后调用 `books_path` 方法时会返回 `"/nl/books"`（因为区域设置发生了变化）。
 
-TIP: 由于 `default_url_options` 方法的返回值是根据请求分别缓存的，因此无法通过循环调用辅助方法来生成 URL 地址中的区域设置，
+WARNING: 由于 `default_url_options` 方法的返回值是根据请求分别缓存的，因此无法通过循环调用辅助方法来生成 URL 地址中的区域设置，
 也就是说，无法在每次迭代中设置相应的 `I18n.locale`。正确的做法是，保持 `I18n.locale` 不变，向辅助方法显式传递 `:locale` 选项，或者编辑 `request.original_fullpath`。
 
 如果不想在路由中强制使用区域设置，我们可以使用可选的路径作用域（用括号表示），就像下面这样：
@@ -334,7 +332,247 @@ private
 [[storing-the-locale-from-the-session-or-cookies]]
 ===== 在会话或 Cookie 中储存区域设置
 
-TIP: 我们可能会认为，可以把区域设置储存在会话或 Cookie 中。但是，我们不能这样做。区域设置应该是透明的，并作为 URL 地址的一部分。这样，我们就不会打破用户的正常预期：如果我们发送一个 URL 地址给朋友，他们应该看到和我们一样的页面和内容。这就是所谓的 REST 规则。关于 REST 规则的更多介绍，请参阅link:$$http://www.infoq.com/articles/rest-introduction$$[Stefan Tilkov 的系列文章]。后文我们将讨论这个规则的一些例外情况。
+WARNING: 我们可能会认为，可以把区域设置储存在会话或 Cookie 中。但是，我们不能这样做。区域设置应该是透明的，并作为 URL 地址的一部分。这样，我们就不会打破用户的正常预期：如果我们发送一个 URL 地址给朋友，他们应该看到和我们一样的页面和内容。这就是所谓的 REST 规则。关于 REST 规则的更多介绍，请参阅link:$$http://www.infoq.com/articles/rest-introduction$$[Stefan Tilkov 的系列文章]。后文我们将讨论这个规则的一些例外情况。
 
 [[internationalization-and-localization]]
 === 国际化和本地化
+
+现在，我们已经完成了对 Rails 应用 I18n 支持的初始化，进行了区域设置，并在不同请求中应用了区域设置。
+
+接下来，我们要通过抽象本地化相关元素，完成应用的国际化。最后，通过为这些抽象元素提供必要翻译，完成应用的本地化。
+
+下面给出了一个例子：
+
+[source,ruby]
+----
+# config/routes.rb
+Rails.application.routes.draw do
+  root to: "home#index"
+end
+----
+
+[source,ruby]
+----
+# app/controllers/application_controller.rb
+class ApplicationController < ActionController::Base
+  before_action :set_locale
+
+  def set_locale
+    I18n.locale = params[:locale] || I18n.default_locale
+  end
+end
+----
+
+[source,ruby]
+----
+# app/controllers/home_controller.rb
+class HomeController < ApplicationController
+  def index
+    flash[:notice] = "Hello Flash"
+  end
+end
+----
+
+[source,erb]
+----
+# app/views/home/index.html.erb
+<h1>Hello World</h1>
+<p><%= flash[:notice] %></p>
+----
+
+image::demo_untranslated.png[]
+
+
+[[abstracting-localized-code]]
+==== 抽象本地化代码
+
+在我们的代码中有两个英文字符串（`"Hello Flash"` 和 `"Hello World"`），它们在响应用户请求时显示。为了国际化这部分代码，需要用 Rails 提供的 `#t` 辅助方法来代替这两个字符串，同时为每个字符串选择合适的键：
+
+[source,ruby]
+----
+# app/controllers/home_controller.rb
+class HomeController < ApplicationController
+  def index
+    flash[:notice] = t(:hello_flash)
+  end
+end
+----
+
+[source,erb]
+----
+# app/views/home/index.html.erb
+<h1><%= t :hello_world %></h1>
+<p><%= flash[:notice] %></p>
+----
+
+现在，Rails 在渲染 `index` 视图时会显示错误信息，告诉我们缺少 `:hello_world` 和 `:hello_flash` 这两个键的翻译。
+
+image::demo_translation_missing.png[]
+
+NOTE: Rails 为视图添加了 `t`（`translate`）辅助方法，从而避免了反复使用 `I18n.t` 这么长的写法。此外，`t` 辅助方法还能捕获缺少翻译的错误，并用 `<span class="translation_missing">` 包装生成的错误信息。
+
+[[providing-translations-for-internationalized-strings]]
+==== 为国际化字符串提供翻译
+
+下面，我们把缺少的翻译添加到翻译字典文件中：
+
+[source,yml]
+----
+# config/locales/en.yml
+en:
+  hello_world: Hello world!
+  hello_flash: Hello flash!
+
+# config/locales/pirate.yml
+pirate:
+  hello_world: Ahoy World
+  hello_flash: Ahoy Flash
+----
+
+因为我们没有修改 `default_locale`，翻译会使用 `:en` 区域设置，响应请求时生成的视图会显示英文字符串：
+
+image::demo_translated_en.png[]
+
+如果我们通过 URL 地址（`http://localhost:3000?locale=pirate`）把区域设置为 `pirate`，响应请求时生成的视图就会显示 `pirate` 字符串：
+
+image::demo_translated_pirate.png[]
+
+NOTE: 添加新的区域设置文件后，需要重启服务器。
+
+要想把翻译储存在 SimpleStore 中，我们可以使用 YAML（`.yml`）或 Ruby（`.rb`）文件。大多数 Rails 开发者会优先选择 YAML。不过 YAML 有一个很大的缺点，它对空格和特殊字符非常敏感，因此有可能出现应用无法正确加载字典的情况。而 Ruby 文件如果有错误，在第一次加载时应用就会崩溃，因此我们很容易就能找出问题。（如果在使用 YAML 字典时遇到了“奇怪的问题”，我们可以尝试把字典的相关部分放入 Ruby 文件中。）
+
+[[passing-variables-to-translations]]
+==== 把变量传递给翻译
+
+成功完成应用国际化的一个关键因素是，避免在抽象本地化代码时，对语法规则做出不正确的假设。某个区域设置的基本语法规则，在另一个区域设置中可能不成立。
+
+下面给出了一个不正确抽象的例子，其中对翻译的不同组成部分的排序进行了假设。注意，为了处理这个例子中出现的情况，Rails 提供了 `number_to_currency` 辅助方法。
+
+[source,erb]
+----
+# app/views/products/show.html.erb
+<%= "#{t('currency')}#{@product.price}" %>
+----
+
+[source,yml]
+----
+# config/locales/en.yml
+en:
+  currency: "$"
+
+# config/locales/es.yml
+es:
+  currency: "€"
+----
+
+如果产品价格是 10，那么西班牙语的正确翻译是“10 €”而不是“€10”，但上面的抽象并不能正确处理这种情况。
+
+为了创建正确的抽象，I18n gem 提供了变量插值（variable interpolation）功能，它允许我们在翻译定义（translation definition）中使用变量，并把这些变量的值传递给翻译方法。
+
+下面给出了一个正确抽象的例子：
+
+[source,erb]
+----
+# app/views/products/show.html.erb
+<%= t('product_price', price: @product.price) %>
+----
+
+[source,yml]
+----
+# config/locales/en.yml
+en:
+  product_price: "$%{price}"
+
+# config/locales/es.yml
+es:
+  product_price: "%{price} €"
+----
+
+所有的语法和标点都由翻译定义自己决定，所以抽象可以给出正确的翻译。
+
+NOTE: `default` 和 `scope` 是保留关键字，不能用作变量名。如果误用，Rails 会抛出 `I18n::ReservedInterpolationKey` 异常。如果没有把翻译所需的插值变量传递给 `#translate` 方法，Rails 会抛出 `I18n::MissingInterpolationArgument` 异常。
+
+[[adding-date-time-formats]]
+==== 添加日期/时间格式
+
+现在，我们要给视图添加时间戳，以便演示日期/时间的本地化功能。要想本地化时间格式，可以把时间对象传递给 `I18n.l` 方法或者（最好）使用 `#l` 辅助方法。可以通过 `:format` 选项指定时间格式（默认情况下使用 `:default` 格式）。
+
+[source,erb]
+----
+# app/views/home/index.html.erb
+<h1><%=t :hello_world %></h1>
+<p><%= flash[:notice] %></p>
+<p><%= l Time.now, format: :short %></p>
+----
+
+然后在 `pirate` 翻译文件中添加时间格式（Rails 默认使用的英文翻译文件已经包含了时间格式）：
+
+[source,yml]
+----
+# config/locales/pirate.yml
+pirate:
+  time:
+    formats:
+      short: "arrrround %H'ish"
+----
+
+得到的结果如下：
+
+image::demo_localized_pirate.png[]
+
+TIP: 现在，我们可能需要添加一些日期/时间格式，这样 I18n 后端才能按照预期工作（至少应该为 `pirate` 区域设置添加日期/时间格式）。当然，很可能已经有人通过翻译 Rails 相关区域设置的默认值，完成了这些工作。link:$$https://github.com/svenfuchs/rails-i18n/tree/master/rails/locale[GitHub 上的 rails-i18n 仓库]提供了各种本地化文件的存档。把这些本地化文件放在 `config/locales/` 文件夹中即可正常使用。
+
+[[inflection-rules-for-other-locales]]
+==== 其他区域的变形规则
+
+Rails 允许我们为英语之外的区域定义变形规则（例如单复数规则）。在 `config/initializers/inflections.rb` 文件中，我们可以为多个区域定义规则。初始程序包含了为英语指定附加规则的默认例子，我们可以参考这些例子的格式为其他区域定义规则。
+
+[[localized-views]]
+==== 本地化视图
+
+假设应用中包含 `BooksController`，`index` 动作默认会渲染 `app/views/books/index.html.erb` 模板。如果我们在同一个文件夹中创建了包含本地化变量的 `index.es.html.erb` 模板，当区域设置为 `:es` 时，`index` 动作就会渲染这个模板，而当区域设置为默认区域时， `index` 动作会渲染通用的 `index.html.erb` 模板。（在 Rails 的未来版本中，本地化的这种自动化魔术，有可能被应用于 `public` 文件夹中的资源）
+
+本地化视图功能很有用，例如，如果我们有大量静态内容，就可以使用本地化视图，从而避免把所有东西都放进 YAML 或 Ruby 字典里的麻烦。但要记住，一旦我们需要修改模板，就必须对每个模板文件逐一进行修改。
+
+[[organization-of-locale-files]]
+==== 区域设置文件的组织
+
+当我们使用 I18n 库自带的 SimpleStore 时，字典储存在磁盘上的纯文本文件中。对于每个区域，把应用的各部分翻译都放在一个文件中，可能会带来管理上的困难。因此，把每个区域的翻译放在多个文件中，分层进行管理是更好的选择。
+
+例如，我们可以像下面这样组织 `config/locales` 文件夹：
+
+----
+|-defaults
+|---es.rb
+|---en.rb
+|-models
+|---book
+|-----es.rb
+|-----en.rb
+|-views
+|---defaults
+|-----es.rb
+|-----en.rb
+|---books
+|-----es.rb
+|-----en.rb
+|---users
+|-----es.rb
+|-----en.rb
+|---navigation
+|-----es.rb
+|-----en.rb
+----
+
+这样，我们就可以把模型和模型属性的名称同视图中的文本分离，同时还能使用“默认值”（例如日期和时间格式）。I18n 库的不同后端可以提供不同的分离方式。
+
+NOTE: Rails 默认的区域设置加载机制，无法自动加载上面例子中位于嵌套文件夹中的区域设置文件。因此，我们还需要进行显式设置：
+
+[source,ruby]
+----
+# config/application.rb
+config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]
+----
+
+[[overview-of-the-i18n-api-features]]
+=== I18n API 功能概述
