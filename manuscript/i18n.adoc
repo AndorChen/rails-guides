@@ -9,7 +9,7 @@
 --
 Rails （Rails 2.2 及之后版本） 自带的 Ruby I18n （internationalization 的简写）gem，提供了易用、可扩展的框架，用于把应用翻译为英语之外的语言，或为应用提供多语言支持。
 
-“国际化”（internationalization）过程通常是指，把所有字符串及本地化相关信息（例如日期或货币格式）从应用中抽取出来。“本地化”（localization）过程通常是指，翻译这些字符串并提供相关信息的本地格式。
+“国际化”（internationalization）过程通常是指，把所有字符串及本地化相关信息（例如日期或货币格式）从应用中抽取出来。“本地化”（localization）过程通常是指，翻译这些字符串并提供相关信息的本地格式。footnote:[维基百科的定义是：“国际化是指在设计软件时，将软件与特定语言及地区脱钩的过程。当软件被移植到不同的语言及地区时，软件本身不用做内部工程上的改变或修正。本地化则是指在移植软件时，加上与特定区域设置有关的信息和翻译文件的过程。”]
 
 因此，在国际化 Rails 应用的过程中，我们需要：
 
@@ -439,7 +439,7 @@ image::demo_translated_pirate.png[]
 
 NOTE: 添加新的区域设置文件后，需要重启服务器。
 
-要想把翻译储存在 SimpleStore 中，我们可以使用 YAML（`.yml`）或 Ruby（`.rb`）文件。大多数 Rails 开发者会优先选择 YAML。不过 YAML 有一个很大的缺点，它对空格和特殊字符非常敏感，因此有可能出现应用无法正确加载字典的情况。而 Ruby 文件如果有错误，在第一次加载时应用就会崩溃，因此我们很容易就能找出问题。（如果在使用 YAML 字典时遇到了“奇怪的问题”，我们可以尝试把字典的相关部分放入 Ruby 文件中。）
+要想把翻译储存在 SimpleStore 中，我们可以使用 YAML（`.yml`）或纯 Ruby（`.rb`）文件。大多数 Rails 开发者会优先选择 YAML。不过 YAML 有一个很大的缺点，它对空格和特殊字符非常敏感，因此有可能出现应用无法正确加载字典的情况。而 Ruby 文件如果有错误，在第一次加载时应用就会崩溃，因此我们很容易就能找出问题。（如果在使用 YAML 字典时遇到了“奇怪的问题”，我们可以尝试把字典的相关部分放入 Ruby 文件中。）
 
 [[passing-variables-to-translations]]
 ==== 把变量传递给翻译
@@ -1158,3 +1158,163 @@ en:
 
 [[how-to-store-your-custom-translations]]
 === 如何储存自定义翻译
+
+Active Support 自带的简单后端，允许我们用纯 Ruby 或 YAML 格式储存翻译。footnote:[其他后端可能允许或要求使用其他格式，例如，GetText 后端允许读取 GetText 文件。]
+
+通过 Ruby 散列储存翻译的示例如下：
+
+[source,ruby]
+----
+{
+  pt: {
+    foo: {
+      bar: "baz"
+    }
+  }
+}
+----
+
+对应的 YAML 文件如下：
+
+[source,yml]
+----
+pt:
+  foo:
+    bar: baz
+----
+
+正如我们看到的，在这两种情况下，顶层的键是区域设置。`:foo` 是命名空间的键，`:bar` 是翻译 `"baz"` 的键。
+
+下面是来自 Active Support 自带的 YAML 格式的翻译文件 `en.yml` 的“真实”示例：
+
+[source,yml]
+----
+en:
+  date:
+    formats:
+      default: "%Y-%m-%d"
+      short: "%b %d"
+      long: "%B %d, %Y"
+----
+
+因此，下列查找效果相同，都会返回短日期格式 `"%b %d"`：
+
+[source,ruby]
+----
+I18n.t 'date.formats.short'
+I18n.t 'formats.short', scope: :date
+I18n.t :short, scope: 'date.formats'
+I18n.t :short, scope: [:date, :formats]
+----
+
+一般来说，我们推荐使用 YAML 作为储存翻译的格式。然而，在有些情况下，我们可能需要把 Ruby lambda 作为储存的区域设置信息的一部分，例如特殊的日期格式。
+
+[[customize-your-i18n-setup]]
+=== 自定义 I18n 设置
+
+[[using-different-backends]]
+==== 使用不同的后端
+
+由于某些原因，Active Support 自带的简单后端只为 Ruby on Rails 做了“完成任务所需的最少量工作”footnote:[其中一个原因是，我们不想为不需要 I18n 支持的应用增加不必要的负载，因此对于英语，I18n 库应该尽可能保持简单。另一个原因是，为所有现存语言的 I18n 相关问题提供一揽子解决方案是不可能的。因此，一个允许被完全替换的解决方案更加合适。这样对特定功能和扩展进行试验就会更容易。]，这意味着只有对英语以及和英语高度类似的语言，简单后端才能保证正常工作。此外，简单后端只能读取翻译，而不能动态地把翻译储存为任何格式。
+
+这并不意味着我们会被这些限制所困扰。Ruby I18n gem 让我们能够轻易地把简单后端替换为其他更适合实际需求的后端。例如，我们可以把简单后端替换为 Globalize 的 Static 后端：
+
+[source,ruby]
+----
+I18n.backend = Globalize::Backend::Static.new
+----
+
+我们还可以使用 Chain 后端，把多个后端链接在一起。当我们想要通过简单后端使用标准翻译，同时把自定义翻译储存在数据库或其他后端中时，链接多个后端的方式非常有用。例如，我们可以使用 Active Record 后端，并在需要时退回到默认的简单后端：
+
+[source,ruby]
+----
+I18n.backend = I18n::Backend::Chain.new(I18n::Backend::ActiveRecord.new, I18n.backend)
+----
+
+[[using-different-exception-handlers]]
+==== 使用不同的异常处理器
+
+I18n API定义了下列异常，这些异常会在相应的意外情况发生时由后端引发：
+
+----
+MissingTranslationData       # 找不到键对应的翻译
+InvalidLocale                # I18n.locale 的区域设置不合法（例如 nil）
+InvalidPluralizationData     # 传递了 count 参数，但翻译数据无法转换为复数形式
+MissingInterpolationArgument # 翻译所需的插值参数未传递
+ReservedInterpolationKey     # 翻译包含的插值变量名使用了保留关键字（例如，:scope、default）
+UnknownFileType              # 后端不知道应该如何处理添加到 I18n.load_path 的文件类型
+----
+
+当后端抛出上述异常时，I18n API 会捕获这些异常，并把它们传递给 `default_exception_handler` 方法。这个方法会再次抛出除了 `MissingTranslationData` 之外的异常。当捕捉到 `MissingTranslationData` 异常时，这个方法会返回异常的错误信息字符串，其中包含了所缺少的键/作用域。
+
+这样做的原因是，在开发期间，我们通常希望在缺少翻译时仍然渲染视图。
+
+不过，在其他上下文中，我们可能想要改变此行为。例如，默认的异常处理器不允许在自动化测试期间轻易捕获缺少的翻译，要改变这一行为，我们可以使用不同的异常处理器。所使用的异常处理器必需是 I18n 模块中的方法，或具有 `#call` 方法的类。
+
+[source,ruby]
+----
+module I18n
+  class JustRaiseExceptionHandler < ExceptionHandler
+    def call(exception, locale, key, options)
+      if exception.is_a?(MissingTranslationData)
+        raise exception.to_exception
+      else
+        super
+      end
+    end
+  end
+end
+
+I18n.exception_handler = I18n::JustRaiseExceptionHandler.new
+----
+
+这个例子中使用的异常处理器，只会重新抛出 `MissingTranslationData` 异常，并把其他异常传递给默认的异常处理器。
+
+不过，如果我们使用了 `I18n::Backend::Pluralization` 异常处理器，则还会抛出 `I18n::MissingTranslationData: translation missing: en.i18n.plural.rule` 异常，而这个异常通常应该被忽略，以便退回到默认的英语区域设置的复数转换规则。为了避免这种情况，我们可以对翻译键进行附加检查：
+
+[source,ruby]
+----
+if exception.is_a?(MissingTranslationData) && key.to_s != 'i18n.plural.rule'
+  raise exception.to_exception
+else
+  super
+end
+----
+
+默认行为不太适用的另一个例子，是 Rails 的 `TranslationHelper` 提供的 `#t` 辅助方法（和 `#translate` 辅助方法）。当上下文中出现了 `MissingTranslationData` 异常时，这个辅助方法会用 `<span class="translation_missing">` 包装错误信息。
+
+不管异常处理器是什么，这个辅助方法都能够通过设置 `:raise` 选项，强制 `I18n#translate` 方法抛出异常：
+
+[source,ruby]
+----
+I18n.t :foo, raise: true # 总是重新抛出来自后端的异常
+----
+
+[[conclusion]]
+=== 结论
+
+现在，我们已经对 Ruby on Rails 的 I18n 支持有了较为全面的了解，可以开始着手翻译自己的项目了。
+
+如果想参加讨论或寻找问题的解答，可以注册 link:$$http://groups.google.com/group/rails-i18n$$[rails-i18n 邮件列表]。
+
+[[contributing-to-rails-i18n]]
+=== 为 Rails I18n 作贡献
+
+I18n 是在 Ruby on Rails 2.2 中引入的，并且仍在不断发展。该项目继承了 Ruby on Rails 开发的优良传统，各种解决方案首先应用于 gem 和真实应用，然后再把其中最好和最广泛使用的部分纳入 Rails 核心。
+
+因此，Rails 鼓励每个人在 gem 或其他库中试验新想法和新特性，并将它们贡献给社区。（别忘了在邮件列表上宣布我们的工作！）
+
+如果我们在 Ruby on Rails 的link:$$https://github.com/svenfuchs/rails-i18n/tree/master/rails/locale$$[示例翻译数据]库中没找到想要的区域设置（语言），那么可以创建这个库的分支，添加翻译数据，然后发送 link:$$https://github.com/guides/pull-requests$$[推送请求]。
+
+[[resources]]
+=== 资源
+
+* link:$$http://groups.google.com/group/rails-i18n$$[Google 群组：rails-i18n]：项目的邮件列表。
+* link:$$https://github.com/svenfuchs/rails-i18n$$[GitHub：rails-i18n]：rails-i18n 项目的代码仓库和问题跟踪器。最重要的是，我们可以在这里找到很多 Rails 的link:$$https://github.com/svenfuchs/rails-i18n/tree/master/rails/locale$$[示例翻译]，在大多数情况下，它们都适用于我们的应用。
+* link:$$https://github.com/svenfuchs/i18n$$[GitHub：i18n]：i18n gem 的代码仓库和问题跟踪器。
+
+[[authors]]
+=== 作者
+
+* link:$$http://svenfuchs.com/$$[Sven Fuchs]（原文作者）
+* link:$$http://www.karmi.cz/$$[Karel Minařík]
