@@ -1,7 +1,5 @@
 [[rails-internationalization-api]]
 == Rails 国际化 API
-:imagesdir: ../images
-:numbered:
 
 // chinakr 翻译
 
