@@ -4,49 +4,49 @@
 
 ## 进度
 
-| 文章 | 翻译 | 校对 |
-|-----|-----|------|
-| Getting Started with Rails | ✔️ | ✔️ |
-| Active Record Basics | ✔️ | ✔️ |
-| Active Record Migrations | ✔️ | ✔️ |
-| Active Record Validations | ✔️ | ✔️ |
-| Active Record Callbacks | ✔️ | ✔️ |
-| Active Record Associations | ✔️ | ✔️ |
-| Active Record Query Interface | ✔️ | ✔️ |
-| Active Model Basics | ✔️ | ✔️ |
-| Action View Overview | ✔️ | ✔️ |
-| Layouts and Rendering in Rails | ✔️ | ✔️ |
-| Action View Form Helpers | ✔️ | ✔️ |
-| Action Controller Overview | ✔️ | ✔️ |
-| Rails Routing from the Outside In | ✔️ | |
-| Active Support Core Extensions | ✔️ | ✔️ |
-| Rails Internationalization API | | |
-| Action Mailer Basics | ✔️ | ✔️ |
-| Active Job Basics | ✔️ | ✔️ |
-| Testing Rails Applications | ✔️ | ✔️ |
-| Securing Rails Applications | | |
-| Debugging Rails Applications | ✔️ | ✔️ |
-| Configuring Rails Applications | | |
-| Rails Command Line Tools and Rake Tasks | ✔️ | |
-| Asset Pipeline | | |
-| Working with JavaScript in Rails | ✔️ | |
-| The Rails Initialization Process | | |
-| Autoloading and Reloading Constants | ✔️ | |
-| Caching with Rails: An Overview | | |
-| Active Support Instrumentation | ✔️ | |
-| Profiling Rails Applications |️ | |
-| Using Rails for API-only Applications | ✔️ | |
-| Action Cable Overview | | |
-| The Basics of Creating Rails Plugins| ✔️ | |
-| Rails on Rack | ✔️ | |
-| Creating and Customizing Rails Generators | ✔️ | |
-| Getting Started with Engines | | |
-| Contributing to Ruby on Rails | ✔️ | |
-| API Documentation Guidelines | ✔️ | |
-| Ruby on Rails Guides Guidelines | ✔️ | |
-| Maintenance Policy | ✔️ | |
-| Upgrading Ruby on Rails | ✔️ | |
-| Ruby on Rails 5.0 Release Notes | ✔️ | |
+| 文章                                      | 翻译 | 校对 |
+|-------------------------------------------|------|------|
+| Getting Started with Rails                | ✔️   | ✔️   |
+| Active Record Basics                      | ✔️   | ✔️   |
+| Active Record Migrations                  | ✔️   | ✔️   |
+| Active Record Validations                 | ✔️   | ✔️   |
+| Active Record Callbacks                   | ✔️   | ✔️   |
+| Active Record Associations                | ✔️   | ✔️   |
+| Active Record Query Interface             | ✔️   | ✔️   |
+| Active Model Basics                       | ✔️   | ✔️   |
+| Action View Overview                      | ✔️   | ✔️   |
+| Layouts and Rendering in Rails            | ✔️   | ✔️   |
+| Action View Form Helpers                  | ✔️   | ✔️   |
+| Action Controller Overview                | ✔️   | ✔️   |
+| Rails Routing from the Outside In         | ✔️   |      |
+| Active Support Core Extensions            | ✔️   | ✔️   |
+| Rails Internationalization API            | ✔️   |      |
+| Action Mailer Basics                      | ✔️   | ✔️   |
+| Active Job Basics                         | ✔️   | ✔️   |
+| Testing Rails Applications                | ✔️   | ✔️   |
+| Securing Rails Applications               |      |      |
+| Debugging Rails Applications              | ✔️   | ✔️   |
+| Configuring Rails Applications             |      |      |
+| Rails Command Line Tools and Rake Tasks   | ✔️   |      |
+| Asset Pipeline                            |      |      |
+| Working with JavaScript in Rails          | ✔️   |      |
+| The Rails Initialization Process          |      |      |
+| Autoloading and Reloading Constants       | ✔️   |      |
+| Caching with Rails: An Overview           |      |      |
+| Active Support Instrumentation            | ✔️   |      |
+| Profiling Rails Applications               |️      |      |
+| Using Rails for API-only Applications     | ✔️   |      |
+| Action Cable Overview                     |      |      |
+| The Basics of Creating Rails Plugins      | ✔️   |      |
+| Rails on Rack                             | ✔️   |      |
+| Creating and Customizing Rails Generators | ✔️   |      |
+| Getting Started with Engines              |      |      |
+| Contributing to Ruby on Rails             | ✔️   |      |
+| API Documentation Guidelines              | ✔️   |      |
+| Ruby on Rails Guides Guidelines           | ✔️   |      |
+| Maintenance Policy                        | ✔️   |      |
+| Upgrading Ruby on Rails                   | ✔️   |      |
+| Ruby on Rails 5.0 Release Notes           | ✔️   |      |
 
 ## 译者
 
