@@ -5,7 +5,7 @@
 ## 进度
 
 | 文章                                      | 翻译 | 校对 |
-|-------------------------------------------|------|-----|
+|-------------------------------------------|------|------|
 | Getting Started with Rails                | ✔    | ✔  |
 | Active Record Basics                      | ✔    | ✔  |
 | Active Record Migrations                  | ✔    | ✔  |
@@ -24,23 +24,23 @@
 | Action Mailer Basics                      | ✔    | ✔  |
 | Active Job Basics                         | ✔    | ✔  |
 | Testing Rails Applications                | ✔    | ✔  |
-| Securing Rails Applications               |      |     |
+| Securing Rails Applications               |       |     |
 | Debugging Rails Applications              | ✔    | ✔  |
-| Configuring Rails Applications            | ✔    | ✔  |
+| Configuring Rails Applications             | ✔    | ✔  |
 | Rails Command Line Tools and Rake Tasks   | ✔    | ✔  |
-| Asset Pipeline                            |      |     |
+| Asset Pipeline                            |       |     |
 | Working with JavaScript in Rails          | ✔    | ✔  |
-| The Rails Initialization Process          |      |     |
+| The Rails Initialization Process          |       |     |
 | Autoloading and Reloading Constants       | ✔    | ✔  |
 | Caching with Rails: An Overview           | ✔    | ✔  |
 | Active Support Instrumentation            | ✔    | ✔  |
-| Profiling Rails Applications              | ✔    | ✔  |
+| Profiling Rails Applications               | ✔    | ✔  |
 | Using Rails for API-only Applications     | ✔    | ✔  |
-| Action Cable Overview                     |      |     |
+| Action Cable Overview                     |       |     |
 | The Basics of Creating Rails Plugins      | ✔    | ✔  |
 | Rails on Rack                             | ✔    | ✔  |
 | Creating and Customizing Rails Generators | ✔    | ✔  |
-| Getting Started with Engines              |      |     |
+| Getting Started with Engines              |       |     |
 | Contributing to Ruby on Rails             | ✔    | ✔  |
 | API Documentation Guidelines              | ✔    | ✔  |
 | Ruby on Rails Guides Guidelines           | ✔    | ✔  |
