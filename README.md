@@ -20,7 +20,7 @@
 | Action Controller Overview                | ✔    | ✔  |
 | Rails Routing from the Outside In         | ✔    | ✔  |
 | Active Support Core Extensions            | ✔    | ✔  |
-| Rails Internationalization API            | ✔    |    |
+| Rails Internationalization API            | ✔    | ✔  |
 | Action Mailer Basics                      | ✔    | ✔  |
 | Active Job Basics                         | ✔    | ✔  |
 | Testing Rails Applications                | ✔    | ✔  |
