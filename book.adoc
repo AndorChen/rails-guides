@@ -1,5 +1,5 @@
 = Rails 指南
-:slug: rails-guides-cn
+:slug: railsguides
 :translator: 安道/chinakr
 :translator-email: andor.chen.27@email.com
 :revnumber: 5.0.1.1
