@@ -30,7 +30,7 @@ Web 应用框架的作用是帮助开发者创建 Web 应用。其中一些框�
 
 针对 Web 应用的安全威胁包括账户劫持、绕过访问控制、读取或修改敏感数据，以及显示欺诈信息等。有时，攻击者还会安装木马程序或使用垃圾邮件群发软件，以便获取经济利益，或者通过篡改公司资源来损害品牌形象。为了防止这些攻击，最大限度降低或消除攻击造成的影响，首先我们必须全面了解各种攻击方式，只有这样才能找出正确对策——这正是本文的主要目的。
 
-为了开发安全的 Web 应用，我们必须从各个层面紧跟安全形势，做到知己知彼。为此，我们可以订阅安全相关的邮件列表，阅读相关博客，同时养成及时更新并定期进行安全检查的习惯（请参阅 <<http://guides.rubyonrails.org/security.html#additional-resources,其他资源>> 一节）。这些工作都是手动完成的，只有这样我们才能发现潜在安全隐患。
+为了开发安全的 Web 应用，我们必须从各个层面紧跟安全形势，做到知己知彼。为此，我们可以订阅安全相关的邮件列表，阅读相关博客，同时养成及时更新并定期进行安全检查的习惯（请参阅<<security#additional-resources,其他资源>>一节）。这些工作都是手动完成的，只有这样我们才能发现潜在安全隐患。
 
 [[sessions]]
 === 会话
@@ -77,7 +77,7 @@ config.force_ssl = true
 
 * 大多数人在使用公共终端后不会清除 Cookie。因此，如果最后一个用户没有退出 Web 应用，后续用户就能以该用户的身份继续使用。因此，Web 应用一定要提供“退出”按钮，并且要尽可能显眼。
 
-* 很多跨站脚本（XSS）攻击的目标是获取用户 Cookie。更多介绍请参阅 <<http://guides.rubyonrails.org/security.html#cross-site-scripting-xss,跨站脚本攻击>> 一节。
+* 很多跨站脚本（XSS）攻击的目标是获取用户 Cookie。更多介绍请参阅<<security#cross-site-scripting-xss,跨站脚本攻击>>一节。
 
 * 有的攻击者不窃取 Cookie，而是篡改用户 Cookie 中的会话 ID。这种攻击方式被称为固定会话攻击，后文会详细介绍。
 
@@ -151,12 +151,12 @@ image::session_fixation.png[]
 
 会话固定攻击的关键是强制用户的浏览器使用攻击者已知的会话 ID，这样攻击者就无需窃取会话 ID。会话固定攻击的工作原理如下：
 
-* 攻击者创建一个合法的会话 ID：打开 Web 应用的登录页面，从响应中获取 Cookie 中的会话 ID（参见上图中的第 1 和第 2 步）。
+* 攻击者创建一个有效的会话 ID：打开 Web 应用的登录页面，从响应中获取 Cookie 中的会话 ID（参见上图中的第 1 和第 2 步）。
 * 攻击者定期访问 Web 应用，以避免会话过期。
-* 攻击者强制用户的浏览器使用这个会话 ID（参见上图中的第 3 步）。由于无法修改另一个域名的 Cookie（基于同源原则的限制），攻击者必须在目标 Web 应用的域名上运行 JavaScript 代码，也就是通过 XSS 把 JavaScript 代码注入目标 Web 应用来完成攻击。例如：`<script>document.cookie="_session_id=16d5b78abb28e3d6206b60f22a03c8d9";</script>`。关于 XSS 和注入的更多介绍见后文。
+* 攻击者强制用户的浏览器使用这个会话 ID（参见上图中的第 3 步）。由于无法修改另一个域名的 Cookie（基于同源原则的限制），攻击者必须在目标 Web 应用的域名上运行 JavaScript，也就是通过 XSS 把 JavaScript 注入目标 Web 应用来完成攻击。例如：`<script>document.cookie="_session_id=16d5b78abb28e3d6206b60f22a03c8d9";</script>`。关于 XSS 和注入的更多介绍见后文。
 * 攻击者诱使用户访问包含恶意 JavaScript 代码的页面，这样用户的浏览器中的会话 ID 就会被篡改为攻击者已知的会话 ID。
 * 由于这个被篡改的会话还未使用过，Web 应用会进行身份验证。
-* 此后，用户和攻击者将共用同一个会话来访问 Web 应用。攻击者篡改后的会话成为了合法会话，用户面对攻击却浑然不知。
+* 此后，用户和攻击者将共用同一个会话来访问 Web 应用。攻击者篡改后的会话成为了有效会话，用户面对攻击却浑然不知。
 
 [[session-fixation-countermeasures]]
 ==== 会话固定攻击的对策
@@ -204,3 +204,90 @@ delete_all "updated_at < '#{time.ago.to_s(:db)}' OR
 
 [[cross-site-request-forgery-csrf]]
 === 跨站请求伪造（CSRF）
+
+跨站请求伪造的工作原理是，通过在页面中包含恶意代码或链接，访问已验证用户才能访问的 Web 应用。如果该 Web 应用的会话未超时，攻击者就能执行未经授权的操作。
+
+image::csrf.png[]
+
+在<<security#sessions,会话>>一节中，我们了解到大多数 Rails 应用都使用基于 Cookie 的会话。它们或者把会话 ID 储存在 Cookie 中并在服务器端储存会话散列，或者把整个会话散列储存在客户端。不管是哪种情况，只要浏览器能够找到某个域名对应的 Cookie，就会自动在发送请求时包含该 Cookie。有争议的是，即便请求来源于另一个域名上的网站，浏览器在发送请求时也会包含客户端的 Cookie。让我们来看个例子：
+
+* 鲍勃在访问留言板时浏览了一篇黑客发布的帖子，其中有一个精心设计的 HTML 图片元素。这个元素实际指向的是鲍勃的项目管理应用中的某个操作，而不是真正的图片文件：`<img src="http://www.webapp.com/project/1/destroy">`。
+* 鲍勃在 pass:[www.webapp.com] 上的会话仍然是活动的，因为几分钟前他访问这个应用后没有退出。
+* 当鲍勃浏览这篇帖子时，浏览器发现了这个图片标签，于是尝试从 pass:[www.webapp.com] 上加载图片。如前文所述，浏览器在发送请求时包含了 Cookie，其中包含了有效的会话 ID。
+* pass:[www.webapp.com] 上的 Web 应用会验证对应会话散列中的用户信息，并删除 ID 为 1 的项目，然后返回结果页面。由于返回的并非浏览器所期待的结果，图片无法显示。
+* 鲍勃当时并未发觉受到了攻击，但几天后，他发现 ID 为 1 的项目不见了。
+
+有一点需要特别注意，像上面这样精心设计的图片或链接，并不一定要出现在 Web 应用所在的域名上，而是可以出现在任何地方，例如论坛、博客帖子，甚至电子邮件中。
+
+CSRF 在 CVE（Common Vulnerabilities and Exposures，公共漏洞披露）中很少出现，在 2006 年不到 0.1%，但却是个可怕的隐形杀手。对于很多安全保障工作来说，CSRF 是一个严重的安全问题。
+
+[[csrf-countermeasures]]
+==== CSRF 对策
+
+NOTE: 首先，根据 W3C 的要求，应该适当地使用 `GET` 和 `POST` HTTP 方法。其次，在非 GET 请求中使用安全令牌（security token），可以防止应用受到 CSRF 攻击。
+
+HTTP 协议提供了两种主要的基本请求类型，`GET` 和 `POST`（还有其他请求类型，但大多数浏览器不支持）。万维网联盟（W3C）提供了检查表，以帮助开发者在 `GET` 和 `POST` 这两个 HTTP 方法之间做出正确选择：
+
+使用 `GET` HTTP 方法的情形：
+
+* 当交互更像是在询问时，例如查询、读取、查找等安全操作。
+
+使用 `POST` HTTP 方法的情形：
+
+* 当交互更像是在执行命令时；
+* 当交互改变了资源的状态并且这种变化能够被用户察觉时，例如订阅某项服务；
+* 当用户需要对交互结果负责时。
+
+如果应用是 REST 式的，我们还可以使用附加的 HTTP 方法，例如 `PATCH`、`PUT` 或 `DELETE`。然而现今的大多数浏览器都不支持这些 HTTP 方法，只有 `GET` 和 `POST` 得到了普遍支持。Rails 通过隐藏的 `_method` 字段来解决这个问题。
+
+`POST` 请求也可以自动发送。在下面的例子中，链接 pass:[www.harmless.com] 在浏览器状态栏中显示为目标地址，实际上却动态新建了一个发送 POST 请求的表单：
+
+[source,ruby]
+----
+<a href="http://www.harmless.com/" onclick="
+  var f = document.createElement('form');
+  f.style.display = 'none';
+  this.parentNode.appendChild(f);
+  f.method = 'POST';
+  f.action = 'http://www.example.com/account/destroy';
+  f.submit();
+  return false;">To the harmless survey</a>
+----
+
+攻击者还可以把代码放在图片的 `onmouseover` 事件句柄中：
+
+[source,html]
+----
+<img src="http://www.harmless.com/img" width="400" height="400" onmouseover="..." />
+----
+
+CSRF 还有很多可能的攻击方式，例如使用 `<script>` 标签向返回 JSONP 或 JavaScript 的 URL 地址发起跨站请求。对跨站请求的响应，返回的如果是攻击者可以设法运行的可执行代码，就有可能导致敏感数据泄露。为了避免发生这种情况，我们必须禁用跨站 `<script>` 标签。不过 Ajax 请求是遵循同源原则的（只有在同一个网站中才能初始化 `XmlHttpRequest`），因此在响应 Ajax 请求时返回 JavaScript 是安全的，不必担心跨站请求问题。
+
+注意：我们无法区分 `<script>` 标签的来源，无法知道这个标签是自己网站上的，还是其他恶意网站上的，因此我们必须全面禁止 `<script>` 标签，哪怕这个标签实际上来源于自己网站上的安全的同源脚本。在这种情况下，对于返回 JavaScript 的控制器动作，显式跳过 CSRF 保护，就意味着允许使用 `<scipt>` 标签。
+
+为了防止其他各种伪造请求，我们引入了安全令牌，这个安全令牌只有我们自己的网站知道，其他网站不知道。我们把安全令牌包含在请求中，并在服务器上进行验证。这是应用的控制器中的一个线程，也是新建 Rails 应用的默认值：
+
+[source,ruby]
+----
+protect_from_forgery with: :exception
+----
+
+这行代码会在 Rails 生成的所有表单和 Ajax 请求中包含安全令牌。如果安全令牌验证失败，就会抛出异常。
+
+NOTE: 默认情况下，Rails 会包含 jQuery 和 jQuery 非侵入式适配器，后者会在 jQuery 的每个非 GET Ajax 调用中添加名为 `X-CSRF-Token` 的头信息，其中包含安全令牌。如果没有这个头信息，Rails 不会接受非 GET Ajax 请求。当使用其他库进行 Ajax 调用时，同样需要把安全令牌作为 Ajax 调用的默认头信息添加到库中。要想获取令牌，请查看应用视图中由 `<%= csrf_meta_tags %>` 这行代码生成的 `<meta name='csrf-token' content='THE-TOKEN'>` 标签。
+
+通常我们会使用持久化 Cookie 来储存用户信息，例如使用 `cookies.permanent`。在这种情况下，Cookie 不会被清除，CSRF 保护也无法自动生效。如果使用了其他 Cookie 存储而不是会话来保存用户信息，我们就必须手动解决这个问题：
+
+[source,ruby]
+----
+rescue_from ActionController::InvalidAuthenticityToken do |exception|
+  sign_out_user # 删除用户 Cookie 的示例方法
+end
+----
+
+这段代码可以放在 `ApplicationController` 中。对于非 GET 请求，如果 CSRF 令牌不存在或不正确，就会执行这段代码。
+
+注意，跨站脚本（XSS）漏洞能够绕过所有 CSRF 保护。攻击者通过 XSS 可以访问页面中的所有元素，也就是说攻击者可以读取表单中的 CSRF 安全令牌，也可以直接提交表单。更多介绍请参阅<<security#cross-site-scripting-xss,跨站脚本>>一节。
+
+[[redirection-and-files]]
+=== 重定向和文件
