@@ -291,3 +291,102 @@ end
 
 [[redirection-and-files]]
 === 重定向和文件
+
+另一类安全漏洞由 Web 应用中的重定向和文件引起。
+
+[[redirection]]
+==== 重定向
+
+WARNING: Web 应用中的重定向是一个被低估的黑客工具：攻击者不仅能够把用户的访问跳转到恶意网站，还能够发起独立攻击。
+
+只要允许用户指定 URL 重定向地址（或其中的一部分），就有可能造成风险。最常见的攻击方式是，把用户重定向到假冒的 Web 应用，这个假冒的 Web 应用看起来感觉和真的一模一样。这就是所谓的钓鱼攻击。攻击者发动钓鱼攻击时，或者给用户发送包含恶意链接的邮件，或者通过 XSS 在 Web 应用中注入恶意链接，或者把恶意链接放入其他网站。这些恶意链接一般不会引起用户的怀疑，因为它们以正常的网站 URL 开头，而把恶意网站的 URL 隐藏在重定向参数中，例如link:$$http://www.example.com/site/redirect?to= www.attacker.com$$[]。让我们来看一个例子：
+
+[source,ruby]
+----
+def legacy
+  redirect_to(params.update(action:'main'))
+end
+----
+
+如果用户访问 `legacy` 动作，就会被重定向到 `main` 动作，同时传递给 `legacy` 动作的 URL 参数会被保留并传递给 `main` 动作。然而，攻击者通过在 URL 地址中包含 `host` 参数就可以发动攻击：
+
+----
+http://www.example.com/site/legacy?param1=xy&param2=23&host=www.attacker.com
+----
+
+如果 `host` 参数出现在 URL 地址末尾，将很难被注意到，从而会把用户重定向到 pass:[www.attacker.com] 这个恶意网站。一个简单的对策是，在 `legacy` 动作中只保留所期望的参数（使用白名单，而不是去删除不想要的参数）。对于用户指定的重定向 URL 地址，应该通过白名单或正则表达式进行检查。
+
+[[self-contained-xss]]
+===== 独立的 XSS
+
+在 Firefox 和 Opera 浏览器中，通过使用 data 协议，还能发起另一种重定向和独立 XSS 攻击。data 协议允许把内容直接显示在浏览器中，支持的类型包括 HTML、JavaScript 和图片，例如：
+
+----
+data:text/html;base64,PHNjcmlwdD5hbGVydCgnWFNTJyk8L3NjcmlwdD4K
+----
+
+这是一段使用 Base64 编码的 JavaScript 代码，运行后会显示一个消息框。通过这种方式，攻击者可以使用恶意代码把用户重定向到恶意网站。为了防止这种攻击，我们的对策是禁止用户指定 URL 重定向地址。
+
+[[file-uploads]]
+==== 文件上传
+
+NOTE: 请确保文件上传时不会覆盖重要文件，同时对于媒体文件应该采用异步上传方式。
+
+很多 Web 应用都允许用户上传文件。由于文件名通常由用户指定（或部分指定），必须对文件名进行过滤，以防止攻击者通过指定恶意文件名覆盖服务器上的文件。如果我们把上传的文件储存在 `/var/www/uploads` 文件夹中，而用户输入了类似 `"../../../etc/passwd"` 的文件名，在没有对文件名进行过滤的情况下，`passwd` 这个重要文件就有可能被覆盖。当然，只有在 Ruby 解析器具有足够权限时文件才会被覆盖，这也是不应该使用 Unix 特权用户运行 Web 服务器、数据库服务器和其他应用的原因之一。
+
+在过滤用户输入的文件名时，不要去尝试删除文件名的恶意部分。我们可以设想这样一种情况，Web 应用把文件名中所有的 `"../"` 都删除了，但攻击者使用的是 `"....//"` 这样的字符串，于是过滤后的文件名中仍然包含 `"../"`。最佳策略是使用白名单，只允许在文件名中使用白名单中的字符。黑名单的做法是尝试删除禁止使用的字符，白名单的做法恰恰相反。对于无效的文件名，可以直接拒绝（或者把禁止使用的字符都替换掉），但不要尝试删除禁止使用的字符。下面这个文件名净化程序来自 link:$$https://github.com/technoweenie/attachment_fu/tree/master$$[attachment_fu] 插件：
+
+[source,ruby]
+----
+def sanitize_filename(filename)
+  filename.strip.tap do |name|
+    # NOTE: File.basename doesn't work right with Windows paths on Unix
+    # get only the filename, not the whole path
+    name.sub! /\A.*(\\|\/)/, ''
+    # Finally, replace all non alphanumeric, underscore
+    # or periods with underscore
+    name.gsub! /[^\w\.\-]/, '_'
+  end
+end
+----
+
+通过同步方式上传文件（`attachment_fu` 插件也可能被用于上传图片）的一个明显缺点是，存在受到拒绝服务攻击（denial-of-service，简称 DoS）的风险。攻击者可以通过很多计算机同时上传图片，这将导致服务器负载增加，并最终导致应用崩溃或服务器宕机。
+
+最佳解决方案是，对于媒体文件采用异步上传方式：保存媒体文件，并通过数据库调度程序处理请求。由另一个进程在后台完成文件上传。
+
+[[executable-code-in-file-uploads]]
+==== 文件上传中的可执行代码
+
+WARNING: 如果把上传的文件储存在某些特定的文件夹中，文件中的源代码就有可能被执行。因此，如果 Rails 应用的 `/public` 文件夹被设置为 Apache 的主目录，请不要在这个文件夹中储存上传的文件。
+
+流行的 Apache Web 服务器的配置文件中有一个名为 `DocumentRoot` 的选项，用于指定网站的主目录。主目录及其子文件夹中的所有内容都由 Web 服务器直接处理。如果其中包含了一些具有特定扩展名的文件，就能够通过 HTTP 请求执行这些文件中的代码（可能还需要设置一些选项），例如 PHP 和 CGI 文件。假设攻击者上传了 `"file.cgi"` 文件，其中包含了可执行代码，那么之后有人下载这个文件时，这些代码就会在服务器上执行。
+
+如果 Apache 的 `DocumentRoot` 选项指向 Rails 的 `/public` 文件夹，请不要在其中储存上传的文件，至少也应该储存在子文件夹中。
+
+[[file-downloads]]
+==== 文件下载
+
+NOTE: 请确保用户不能随意下载文件。
+
+正如在上传文件时必须过滤文件名，在下载文件时也必须进行过滤。`send_file()` 方法用于把服务器上的文件发送到客户端。如果传递给 `send_file()` 方法的文件名参数是由用户输入的，却没有进行过滤，用户就能够下载服务器上的任何文件：
+
+[source,ruby]
+----
+send_file('/var/www/uploads/' + params[:filename])
+----
+
+可以看到，只要指定 `"../../../etc/passwd"` 这样的文件名，用户就可以下载服务器登录信息。对此，一个简单的解决方案是，检查所请求的文件是否在规定的文件夹中：
+
+[source,ruby]
+----
+basename = File.expand_path(File.join(File.dirname(__FILE__), '../../files'))
+filename = File.expand_path(File.join(basename, @file.public_filename))
+raise if basename !=
+     File.expand_path(File.join(File.dirname(filename), '../../../'))
+send_file filename, disposition: 'inline'
+----
+
+另一个（附加的）解决方案是在数据库中储存文件名，并以数据库中的记录 ID 作为文件名，把文件保存到磁盘。这样做还能有效防止上传的文件中的代码被执行。`attachment_fu` 插件具有类似的工作原理。
+
+[[intranet-and-admin-security]]
+=== 局域网和管理界面的安全
