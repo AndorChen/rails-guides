@@ -1121,7 +1121,7 @@ config.filter_redirect.concat ['s3.amazonaws.com', /private_path/]
 [[rescue-form]]
 ==== `rescue_from`
 
-捕获错误后如果想做更详尽的处理，可以使用 `rescue_form`。`rescue_from` 可以处理整个控制器及其子类中的某种（或多种）异常。
+捕获错误后如果想做更详尽的处理，可以使用 `rescue_from`。`rescue_from` 可以处理整个控制器及其子类中的某种（或多种）异常。
 
 异常发生时，会被 `rescue_from` 捕获，异常对象会传入处理程序。处理程序可以是方法，也可以是 `Proc` 对象，由 `:with` 选项指定。也可以不用 `Proc` 对象，直接使用块。
 
