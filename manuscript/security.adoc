@@ -1,7 +1,5 @@
 [[ruby-on-rails-security-guide]]
 == Ruby on Rails 安全指南
-:imagesdir: ../images
-:numbered:
 
 // chinakr 翻译
 
@@ -1035,3 +1033,122 @@ Content-Type: text/html
 
 [[unsafe-query-generation]]
 === 生成不安全的查询
+
+由于 Active Record 和 Rack 解析查询参数的特有方式，通过在 WHERE 子句中使用 `IS NULL`，攻击者可以发起非常规的数据库查询。为了应对这类安全问题（link:$$https://groups.google.com/forum/#!searchin/rubyonrails-security/deep_munge/rubyonrails-security/8SA-M3as7A8/Mr9fi9X4kNgJ$$[CVE-2012-2660]、link:$$https://groups.google.com/forum/#!searchin/rubyonrails-security/deep_munge/rubyonrails-security/jILZ34tAHF4/7x0hLH-o0-IJ$$[CVE-2012-2694] 和 link:$$https://groups.google.com/forum/#!searchin/rubyonrails-security/CVE-2012-2660/rubyonrails-security/c7jT-EeN9eI/L0u4e87zYGMJ$$[CVE-2013-0155]），Rails 提供了 `deep_munge` 方法，以保证默认情况下的数据库安全。
+
+在未使用 `deep_munge` 方法的情况下，攻击者可以利用下面代码中的安全漏洞发起攻击：
+
+[source,ruby]
+----
+unless params[:token].nil?
+  user = User.find_by_token(params[:token])
+  user.reset_password!
+end
+----
+
+只要 `params[:token]` 的值是 `[nil]`、`[nil, nil, ...]` 和 `['foo', nil]` 其中之一，上述测试就会被被绕过，而带有 `IS NULL` 或 `IN ('foo', NULL)` 的 WHERE 子句仍将被添加到 SQL 查询中。
+
+默认情况下，为了保证数据库安全，`deep_munge` 方法会把某些值替换为 `nil`。下述表格列出了经过替换处理后 JSON 请求和查询参数的对应关系：
+
+|===
+|JSON	|Parameters
+
+|`{ "person": null }`
+|`{ :person => nil }`
+
+|`{ "person": [] }`
+|`{ :person => [] }`
+
+|`{ "person": [null] }`
+|`{ :person => [] }`
+
+|`{ "person": [null, null, ...] }`
+|`{ :person => [] }`
+
+|`{ "person": ["foo", null] }`
+|`{ :person => ["foo"] }`
+|===
+
+当然，如果我们非常了解这类安全风险并知道如何处理，也可以通过设置禁用 `deep_munge` 方法：
+
+[source,ruby]
+----
+config.action_dispatch.perform_deep_munge = false
+----
+
+[[default-headers]]
+=== 默认头信息
+
+Rails 应用返回的每个 HTTP 响应都带有下列默认的安全头信息（default security header）：
+
+[source,ruby]
+----
+config.action_dispatch.default_headers = {
+  'X-Frame-Options' => 'SAMEORIGIN',
+  'X-XSS-Protection' => '1; mode=block',
+  'X-Content-Type-Options' => 'nosniff'
+}
+----
+
+在 `config/application.rb` 中可以对默认头信息进行配置：
+
+[source,ruby]
+----
+config.action_dispatch.default_headers = {
+  'Header-Name' => 'Header-Value',
+  'X-Frame-Options' => 'DENY'
+}
+----
+
+如果需要也可以删除默认头信息：
+
+[source,ruby]
+----
+config.action_dispatch.default_headers.clear
+----
+
+下面是常见头信息的列表：
+
+* **X-Frame-Options**：Rails 中的默认值是 `'SAMEORIGIN'`，即允许使用相同域名中的 iframe。设置为 `'DENY'` 将禁用所有 iframe。设置为 `'ALLOWALL'` 将允许使用所有域名中的 iframe。
+* **X-XSS-Protection**：Rails 中的默认值是 `'1; mode=block'`，即使用 XSS 安全审计程序，如果检测到 XSS 攻击就不显示页面。设置为 `'0'`，将关闭 XSS 安全审计程序（当响应中需要包含通过请求参数传入的脚本时）。
+* **X-Content-Type-Options**：Rails 中的默认值是 `'nosniff'`，即禁止浏览器猜测文件的 MIME 类型。
+* **X-Content-Security-Policy**：强大的link:$$http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html$$[安全机制]，用于设置加载某个类型的内容时允许的来源网站。
+* **Access-Control-Allow-Origin**：用于设置允许绕过同源原则的网站，以便发送跨域请求。
+* **Strict-Transport-Security**：用于设置是否强制浏览器通过link:$$http://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security$$[安全连接]访问网站。
+
+[[environmental-security]]
+=== 环境安全
+
+如何增强应用代码和环境的安全性已经超出了本文的范畴。但是，别忘了保护好数据库配置（例如 `config/database.yml`）和服务器端密钥（例如 `config/secrets.yml`）。要想进一步限制对敏感信息的访问，对于包含敏感信息的文件，我们可以针对不同环境使用不同的专用版本。
+
+[[custom-secrets]]
+==== 自定义密钥
+
+默认情况下，Rails 生成的 `config/secrets.yml` 文件中包含了应用的 `secret_key_base`，还可以在这个文件中包含其他密钥，例如外部 API 的访问密钥。
+
+此文件中的密钥可以通过 `Rails.application.secrets` 访问。例如，当 `config/secrets.yml` 包含如下内容时：
+
+[source,ruby]
+----
+development:
+  secret_key_base: 3b7cd727ee24e8444053437c36cc66c3
+  some_api_key: SOMEKEY
+----
+
+在开发环境中，`Rails.application.secrets.some_api_key` 会返回 `SOMEKEY`。
+
+要想在密钥值为空时抛出异常，请使用带感叹号的方法（bang version）：
+
+[source,ruby]
+----
+Rails.application.secrets.some_api_key! # => 抛出 KeyError: key not found: :some_api_key
+----
+
+[[additional-resources]]
+=== 其他资源
+
+安全漏洞层出不穷，与时俱进至关重要，哪怕只是错过一个新出现的安全漏洞，都有可能造成灾难性后果。关于 Rails 安全问题的更多介绍，请访问下列资源：
+
+* 订阅 Rails 安全技术link:$$http://groups.google.com/group/rubyonrails-security$$[邮件列表]
+* 时刻关注link:$$http://secunia.com/$$[其他应用层]的安全问题（可订阅周报）
+* 一个优秀的link:$$https://www.owasp.org/$$[安全技术网站]，提供了link:$$https://www.owasp.org/index.php/DOM_based_XSS_Prevention_Cheat_Sheet$$[跨网站脚本速查卡]
