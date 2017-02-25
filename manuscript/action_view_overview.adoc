@@ -1,5 +1,5 @@
 [[action-view-overview]]
-== Action View 概述
+== Action View 概览
 
 // chinakr 翻译
 
