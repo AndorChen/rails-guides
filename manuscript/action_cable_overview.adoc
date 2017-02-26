@@ -18,3 +18,318 @@
 
 [[introduction]]
 === 简介
+
+Action Cable 将 WebSocket 与 Rails 应用的其余部分无缝集成。有了 Action Cable，我们就可以用 Ruby 语言，以 Rails 风格实现实时功能，并且保持了高性能和可扩展性。Action Cable 为此提供了全栈支持，包括客户端 JavaScript 框架和服务器端 Ruby 框架。同时，我们也能够通过 Action Cable 访问使用 Active Record 或其他 ORM 编写的所有模型。
+
+[[what-is-pub-sub]]
+=== Pub/Sub 是什么
+
+link:$$https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern$$[Pub/Sub]，也就是发布/订阅，是指在消息队列中，信息发送者（发布者）把数据发送给某一类接收者（订阅者），而不必单独指定接收者。Action Cable 通过发布/订阅的方式在服务器和多个客户端之间进行通信。
+
+[[server-side-components]]
+=== 服务器端组件
+
+[[connections]]
+==== 连接
+
+连接是客户端-服务器通信的基础。每当服务器接受一个 WebSocket，就会实例化一个连接对象。所有通道订阅（channel subscription）都是在继承连接对象的基础上创建的。连接本身并不处理身份验证和授权之外的任何应用逻辑。WebSocket 连接的客户端被称为连接用户（connection consumer）。每当用户新打开一个浏览器标签、窗口或设备，对应地都会新建一个用户-连接对（consumer-connection pair）。
+
+连接是 `ApplicationCable::Connection` 类的实例。对连接的授权就是在这个类中完成的，对于能够识别的用户，才会继续建立连接。
+
+[[connection-setup]]
+===== 连接设置
+
+[source,ruby]
+----
+# app/channels/application_cable/connection.rb
+module ApplicationCable
+  class Connection < ActionCable::Connection::Base
+    identified_by :current_user
+
+    def connect
+      self.current_user = find_verified_user
+    end
+
+    protected
+      def find_verified_user
+        if current_user = User.find_by(id: cookies.signed[:user_id])
+          current_user
+        else
+          reject_unauthorized_connection
+        end
+      end
+  end
+end
+----
+
+其中 `identified_by` 用于声明连接标识符，连接标识符稍后将用于查找指定连接。注意，在声明连接标识符的同时，在基于连接创建的通道实例上，会自动创建同名委托（delegate）。
+
+上述例子假设我们已经在应用的其他部分完成了用户身份验证，并且在验证成功后设置了经过用户 ID 签名的 Cookie。
+
+在尝试建立新连接时，Cookie 被自动发送给连接实例（connection instance），用于设置 `current_user`。通过使用 `current_user` 标识连接，我们稍后就能够检索指定用户打开的所有连接（如果删除用户或取消对用户的授权，该用户打开的所有连接都会被断开）。
+
+[[channels]]
+==== 通道
+
+和常规 MVC 中的控制器类似，通道用于封装逻辑工作单元。默认情况下，Rails 会把 `ApplicationCable::Channel` 类作为通道的父类，用于封装通道之间的共享逻辑。
+
+[[parent-channel-setup]]
+===== 父通道设置
+
+[source,ruby]
+----
+# app/channels/application_cable/channel.rb
+module ApplicationCable
+  class Channel < ActionCable::Channel::Base
+  end
+end
+----
+
+接下来我们要创建自己的通道类。例如，可以创建 `ChatChannel` 和 `AppearanceChannel` 类：
+
+[source,ruby]
+----
+# app/channels/chat_channel.rb
+class ChatChannel < ApplicationCable::Channel
+end
+
+# app/channels/appearance_channel.rb
+class AppearanceChannel < ApplicationCable::Channel
+end
+----
+
+这样用户就可以订阅通道了，订阅一个或两个都行。
+
+[[subscriptions]]
+===== 订阅
+
+用户订阅通道，被称为订阅者。用户创建的连接被称为（通道）订阅。订阅基于连接用户（订阅者）发送的标识符创建，生成的消息将被发送到这些订阅。
+
+[source,ruby]
+----
+# app/channels/chat_channel.rb
+class ChatChannel < ApplicationCable::Channel
+  # Called when the consumer has successfully
+  # become a subscriber of this channel.
+  def subscribed
+  end
+end
+----
+
+[[client-side-components]]
+=== 客户端组件
+
+[[connections]]
+==== 连接
+
+用户需要在客户端创建连接实例。下面这段由 Rails 默认生成的 JavaScript 代码，正是用于在客户端创建连接实例：
+
+[[connect-consumer]]
+===== 连接用户
+
+[source,ruby]
+----
+// app/assets/javascripts/cable.js
+//= require action_cable
+//= require_self
+//= require_tree ./channels
+
+(function() {
+  this.App || (this.App = {});
+
+  App.cable = ActionCable.createConsumer();
+}).call(this);
+----
+
+上述代码会创建连接用户，并将通过默认的 `/cable` 地址和服务器建立连接。我们还需要从现有订阅中至少选择一个感兴趣的订阅，否则将无法建立连接。
+
+[[subscriber]]
+===== 订阅者
+
+一旦订阅了某个通道，用户也就成为了订阅者：
+
+[source,ruby]
+----
+# app/assets/javascripts/cable/subscriptions/chat.coffee
+App.cable.subscriptions.create { channel: "ChatChannel", room: "Best Room" }
+
+# app/assets/javascripts/cable/subscriptions/appearance.coffee
+App.cable.subscriptions.create { channel: "AppearanceChannel" }
+----
+
+上述代码创建了订阅，稍后我们还要描述如何处理接收到的数据。
+
+作为订阅者，用户可以多次订阅同一个通道。例如，用户可以同时订阅多个聊天室：
+
+[source,ruby]
+----
+App.cable.subscriptions.create { channel: "ChatChannel", room: "1st Room" }
+App.cable.subscriptions.create { channel: "ChatChannel", room: "2nd Room" }
+----
+
+[[client-server-interactions]]
+=== 客户端-服务器的交互
+
+[[streams]]
+==== 流（stream）
+
+通道把已发布内容（即广播）发送给订阅者，是通过所谓的“流”机制实现的。
+
+[source,ruby]
+----
+# app/channels/chat_channel.rb
+class ChatChannel < ApplicationCable::Channel
+  def subscribed
+    stream_from "chat_#{params[:room]}"
+  end
+end
+----
+
+有了和模型关联的流，就可以从模型和通道生成所需的广播。下面的例子用于订阅评论通道，以接收 `Z2lkOi8vVGVzdEFwcC9Qb3N0LzE` 这样的广播：
+
+[source,ruby]
+----
+class CommentsChannel < ApplicationCable::Channel
+  def subscribed
+    post = Post.find(params[:id])
+    stream_for post
+  end
+end
+----
+
+向评论通道发送广播的方式如下：
+
+[source,ruby]
+----
+CommentsChannel.broadcast_to(@post, @comment)
+----
+
+[[broadcasting]]
+==== 广播
+
+广播是指发布/订阅的链接，也就是说，当通道订阅者使用流接收某个广播时，发布者发布的内容会被直接发送给订阅者。
+
+广播也是时间相关的在线队列。如果用户未使用流（即未订阅通道），稍后就无法接收到广播。
+
+在 Rails 应用的其他部分也可以发送广播：
+
+[source,ruby]
+----
+WebNotificationsChannel.broadcast_to(
+  current_user,
+  title: 'New things!',
+  body: 'All the news fit to print'
+)
+----
+
+调用 `WebNotificationsChannel.broadcast_to` 将向当前订阅适配器（默认为 Redis）的发布-订阅队列推送一条消息，并为每个用户设置不同的广播名。对于 ID 为 1 的用户，广播名是 `web_notifications_1`。
+
+通过调用 `received` 回调方法，通道会使用流把到达 `web_notifications_1` 的消息直接发送给客户端。
+
+[[subscriptions]]
+==== 订阅
+
+用户订阅通道，被称为订阅者。用户创建的连接被称为（通道）订阅。订阅基于连接用户（订阅者）发送的标识符创建，收到的消息将被发送到这些订阅。
+
+[source,ruby]
+----
+# app/assets/javascripts/cable/subscriptions/chat.coffee
+# 假设我们已经获得了发送 Web 通知的权限
+App.cable.subscriptions.create { channel: "ChatChannel", room: "Best Room" },
+  received: (data) ->
+    @appendLine(data)
+
+  appendLine: (data) ->
+    html = @createLine(data)
+    $("[data-chat-room='Best Room']").append(html)
+
+  createLine: (data) ->
+    """
+    <article class="chat-line">
+      <span class="speaker">#{data["sent_by"]}</span>
+      <span class="body">#{data["body"]}</span>
+    </article>
+    """
+----
+
+[[passing-parameters-to-channels]]
+==== 向通道传递参数
+
+在创建订阅时，我们可以从客户端向服务器端传递参数。例如：
+
+[source,ruby]
+----
+# app/channels/chat_channel.rb
+class ChatChannel < ApplicationCable::Channel
+  def subscribed
+    stream_from "chat_#{params[:room]}"
+  end
+end
+----
+
+传递给 `subscriptions.create` 方法并作为第一个参数的对象，将成为通道的参数散列。其中必需包含 `channel` 关键字：
+
+[source,ruby]
+----
+# app/assets/javascripts/cable/subscriptions/chat.coffee
+App.cable.subscriptions.create { channel: "ChatChannel", room: "Best Room" },
+  received: (data) ->
+    @appendLine(data)
+
+  appendLine: (data) ->
+    html = @createLine(data)
+    $("[data-chat-room='Best Room']").append(html)
+
+  createLine: (data) ->
+    """
+    <article class="chat-line">
+      <span class="speaker">#{data["sent_by"]}</span>
+      <span class="body">#{data["body"]}</span>
+    </article>
+    """
+----
+
+[source,ruby]
+----
+# Somewhere in your app this is called, perhaps
+# from a NewCommentJob.
+ChatChannel.broadcast_to(
+  "chat_#{room}",
+  sent_by: 'Paul',
+  body: 'This is a cool chat app.'
+)
+----
+
+[[rebroadcasting-a-message]]
+==== 消息重播
+
+一个客户端向其他已连接客户端重播自己收到的消息，是一种常见用法。
+
+[source,ruby]
+----
+# app/channels/chat_channel.rb
+class ChatChannel < ApplicationCable::Channel
+  def subscribed
+    stream_from "chat_#{params[:room]}"
+  end
+
+  def receive(data)
+    ActionCable.server.broadcast("chat_#{params[:room]}", data)
+  end
+end
+----
+
+[source,ruby]
+----
+# app/assets/javascripts/cable/subscriptions/chat.coffee
+App.chatChannel = App.cable.subscriptions.create { channel: "ChatChannel", room: "Best Room" },
+  received: (data) ->
+    # data => { sent_by: "Paul", body: "This is a cool chat app." }
+
+App.chatChannel.send({ sent_by: "Paul", body: "This is a cool chat app." })
+----
+
+所有已连接的客户端，包括发送消息的客户端在内，都将收到重播的消息。注意，重播时使用的参数与订阅通道时使用的参数相同。
+
+[[full-stack-examples]]
+=== 完整的例子
