@@ -1055,22 +1055,22 @@ end
 默认情况下，为了保证数据库安全，`deep_munge` 方法会把某些值替换为 `nil`。下述表格列出了经过替换处理后 JSON 请求和查询参数的对应关系：
 
 |===
-|JSON	|Parameters
+|JSON	|参数
 
 |`{ "person": null }`
-|`{ :person => nil }`
+|`pass:[{ :person => nil }]`
 
 |`{ "person": [] }`
-|`{ :person => [] }`
+|`pass:[{ :person => [] }]`
 
 |`{ "person": [null] }`
-|`{ :person => [] }`
+|`pass:[{ :person => [] }]`
 
 |`{ "person": [null, null, ...] }`
-|`{ :person => [] }`
+|`pass:[{ :person => [] }]`
 
 |`{ "person": ["foo", null] }`
-|`{ :person => ["foo"] }`
+|`pass:[{ :person => ["foo"] }]`
 |===
 
 当然，如果我们非常了解这类安全风险并知道如何处理，也可以通过设置禁用 `deep_munge` 方法：
