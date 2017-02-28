@@ -27,7 +27,7 @@ link:https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern[Pub/Sub]，
 [[server-side-components]]
 === 服务器端组件
 
-[[connections]]
+[[server-side-connections]]
 ==== 连接
 
 连接是客户端-服务器通信的基础。每当服务器接受一个 WebSocket，就会实例化一个连接对象。所有频道订阅（channel subscription）都是在继承连接对象的基础上创建的。连接本身并不处理身份验证和授权之外的任何应用逻辑。WebSocket 连接的客户端被称为连接用户（connection consumer）。每当用户新打开一个浏览器标签、窗口或设备，对应地都会新建一个用户-连接对（consumer-connection pair）。
@@ -116,7 +116,7 @@ end
 [[client-side-components]]
 === 客户端组件
 
-[[connections]]
+[[client-side-connections]]
 ==== 连接
 
 用户需要在客户端创建连接实例。下面这段由 Rails 默认生成的 JavaScript 代码，正是用于在客户端创建连接实例：
@@ -223,7 +223,7 @@ WebNotificationsChannel.broadcast_to(
 
 通过调用 `received` 回调方法，频道会使用流把到达 `web_notifications_1` 的消息直接发送给客户端。
 
-[[subscriptions]]
+[[client-server-interactions-subscriptions]]
 ==== 订阅
 
 订阅频道的用户，称为订阅者。用户创建的连接称为（频道）订阅。订阅基于连接用户（订阅者）发送的标识符创建，收到的消息将被发送到这些订阅。

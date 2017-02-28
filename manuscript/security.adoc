@@ -637,12 +637,12 @@ NOTE: 对于净化、保护和验证操作，白名单优于黑名单。
 
 使用黑名单时有可能因为人为因素造成遗漏，使用白名单则能有效避免这种情况。
 
-[[sql-jnjection]]
+[[sql-injection]]
 ==== SQL 注入
 
 TIP: Rails 为我们提供的方法足够智能，绝大多数情况下都能防止 SQL 注入。但对 Web 应用而言，SQL 注入是常见并具有毁灭性的攻击方式，因此了解这种攻击方式十分重要。
 
-[[introduction]]
+[[sql-injection-introduction]]
 ===== 简介
 
 SQL 注入攻击的原理是，通过纂改传入 Web 应用的参数来影响数据库查询。SQL 注入攻击的一个常见目标是绕过授权，另一个常见目标是执行数据操作或读取任意数据。下面的例子说明了为什么要避免在查询中使用用户输入的数据：
@@ -708,7 +708,7 @@ SELECT * FROM projects WHERE (name = '') UNION
 
 此外，第二个查询还通过 `AS` 语句对某些字段进行了重命名，这样 Web 应用就会显示从用户数据表中查询到的数据。出于安全考虑，请把 Rails 升级至 link:http://www.rorsecurity.info/2008/09/08/sql-injection-issue-in-limit-and-offset-parameter/[2.1.1 或更高版本]。
 
-[[countermeasures]]
+[[sql-injection-countermeasures]]
 ===== 对策
 
 Ruby on Rails 内置了针对特殊 SQL 字符的过滤器，用于转义 `'`、`"`、`NULL` 和换行符。当我们使用 `Model.find(id)` 和 `Model.find_by_something(something)` 方法时，Rails 会自动应用这个过滤器。但在 SQL 片段中，尤其是在条件片段（`where("...")`）中，需要为 `connection.execute()` 和 `Model.find_by_sql()` 方法手动应用这个过滤器。
@@ -913,7 +913,7 @@ script:eval(document.all.mycode.expr)')">
 
 对于 Gecko 内核的浏览器（例如 Firefox），link:http://www.securiteam.com/securitynews/5LP051FHPE.html[moz-binding] CSS 属性也已被证明可用于把 JavaScript 植入 CSS 中。
 
-[[countermeasures]]
+[[css-injection-countermeasures]]
 ===== 对策
 
 这个例子再次说明，黑名单永远做不到万无一失。不过，在 Web 应用中使用自定义 CSS 是一个非常罕见的特性，为这个特性编写好用的 CSS 白名单过滤器可能会很难。如果想要允许用户自定义颜色或图片，我们可以让用户在 Web 应用中选择所需的颜色或图片，然后自动生成对应的 CSS。如果确实需要编写 CSS 白名单过滤器，可以参照 Rails 提供的 `sanitize()` 进行设计。
@@ -947,7 +947,7 @@ RedCloth.new("<a href='javascript:alert(1)'>hello</a>", [:filter_html]).to_html
 # => "<p><a href="javascript:alert(1)">hello</a></p>"
 ----
 
-[[countermeasures]]
+[[textile-injection-countermeasures]]
 ===== 对策
 
 建议将 RedCloth 和白名单输入过滤器结合使用，具体操作请参考 <<cross-site-scripting-xss-countermeasures>>。
