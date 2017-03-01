@@ -1,2 +1,27 @@
 [[the-rails-initialization-process]]
 == Rails 初始化过程
+:imagesdir: ../images
+:numbered:
+
+// chinakr 翻译
+
+[.chapter-abstract]
+--
+本文介绍 Rails 初始化过程的内部细节，内容较深，建议 Rails 高级开发者阅读。
+
+读完本文后，您将学到：
+
+* 如何使用 `rails server`；
+* Rails 初始化过程的时间表；
+* 引导过程中所需的不同文件的所在位置；
+* `Rails::Server` 接口的定义和使用方式。
+--
+
+本文介绍默认情况下，Rails 应用初始化过程中的每一个方法调用，详细解释各个步骤的具体细节。本文将聚焦于使用 `rails server` 启动 Rails 应用时发生的事情。
+
+NOTE: 除非另有说明，本文中出现的路径都是相对于 Rails 或 Rails 应用所在目录的相对路径。
+
+TIP: 如果想一边阅读本文一边查看 link:$$https://github.com/rails/rails$$[Rails 源代码]，推荐在 GitHub 中使用 `t` 快捷键打开文件查找器，以便快速查找相关文件。
+
+[[launch]]
+### 启动
