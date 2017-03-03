@@ -488,7 +488,7 @@ require ::File.expand_path('../config/environment', __FILE__)
 
 `config.ru` 文件（`rails server`）和 Passenger 都需要加载此文件。这两种运行服务器的方式直到这里才出现了交集，此前的一切工作都只是围绕 Rack 和 Rails 的设置进行的。
 
-此文件的内容以加载 `config/application.rb` 文件开始：
+此文件以加载 `config/application.rb` 文件开始：
 
 [source,ruby]
 ----
@@ -511,3 +511,180 @@ require File.expand_path('../boot', __FILE__)
 
 [[loading-rails]]
 === 加载 Rails
+
+`config/application.rb` 文件的下一行是：
+
+[source,ruby]
+----
+require 'rails/all'
+----
+
+[[railties-lib-rails-all-rb]]
+==== `railties/lib/rails/all.rb` 文件
+
+此文件负责加载 Rails 中所有独立的框架：
+
+[source,ruby]
+----
+
+require "rails"
+
+%w(
+  active_record/railtie
+  action_controller/railtie
+  action_view/railtie
+  action_mailer/railtie
+  active_job/railtie
+  action_cable/engine
+  rails/test_unit/railtie
+  sprockets/railtie
+).each do |railtie|
+  begin
+    require "#{railtie}"
+  rescue LoadError
+  end
+end
+----
+
+这些框架加载完成后，就可以在 Rails 应用中使用了。这里不会深入介绍每个框架，而是鼓励读者自己动手试验和探索。
+
+现在，我们只需记住，Rails 的常见功能，例如 Rails 引擎、I18n 和 Rails 配置，都在这里定义好了。
+
+[[config-environment-rb]]
+==== 回到 `config/environment.rb` 文件
+
+`config/application.rb` 文件的其余部分定义了 `Rails::Application` 的配置，当应用的初始化全部完成后就会使用这些配置。当 `config/application.rb` 文件完成了 Rails 的加载和应用命名空间的定义后，程序执行流程再次回到 `config/environment.rb` 文件。在这里会通过 `rails/application.rb` 文件中定义的 `Rails.application.initialize!` 方法完成应用的初始化。
+
+[[railties-lib-rails-application-rb]]
+==== `railties/lib/rails/application.rb` 文件
+
+`initialize!` 方法的定义如下：
+
+[source,ruby]
+----
+def initialize!(group=:default) #:nodoc:
+  raise "Application has been already initialized." if @initialized
+  run_initializers(group, self)
+  @initialized = true
+  self
+end
+----
+
+我们看到，一个应用只能初始化一次。`railties/lib/rails/initializable.rb` 文件中定义的 `run_initializers` 方法负责运行初始化程序：
+
+[source,ruby]
+----
+def run_initializers(group=:default, *args)
+  return if instance_variable_defined?(:@ran)
+  initializers.tsort_each do |initializer|
+    initializer.run(*args) if initializer.belongs_to?(group)
+  end
+  @ran = true
+end
+----
+
+`run_initializers` 方法的代码比较复杂，Rails 会遍历所有类的祖先，以查找能够响应 `initializers` 方法的类。对于找到的类，首先按名称排序，然后依次调用 `initializers` 方法。例如，`Engine` 类通过为所有的引擎提供 `initializers` 方法而使它们可用。
+
+`railties/lib/rails/application.rb` 文件中定义的 `Rails::Application` 类，定义了 `bootstrap`、`railtie` 和 `finisher` 初始化程序。`bootstrap` 初始化程序负责完成应用初始化的准备工作（例如初始化记录器），而 `finisher` 初始化程序（例如创建中间件栈）总是最后运行。`railtie` 初始化程序在 `Rails::Application` 类自身中定义，在 `bootstrap` 之后、`finishers` 之前运行。
+
+应用初始化完成后，程序执行流程再次回到 `Rack::Server` 类。
+
+[[rack-lib-rack-server-rb]]
+==== Rack: `lib/rack/server.rb` 文件
+
+程序执行流程上一次离开此文件是在定义 `app` 方法时：
+
+[source,ruby]
+----
+def app
+  @app ||= options[:builder] ? build_app_from_string : build_app_and_options_from_config
+end
+...
+private
+  def build_app_and_options_from_config
+    if !::File.exist? options[:config]
+      abort "configuration #{options[:config]} not found"
+    end
+
+    app, options = Rack::Builder.parse_file(self.options[:config], opt_parser)
+    self.options.merge! options
+    app
+  end
+
+  def build_app_from_string
+    Rack::Builder.new_from_string(self.options[:builder])
+  end
+----
+
+此时，`app` 就是 Rails 应用本身（一个中间件），接下来 Rack 会调用所有已提供的中间件：
+
+[source,ruby]
+----
+def build_app(app)
+  middleware[options[:environment]].reverse_each do |middleware|
+    middleware = middleware.call(self) if middleware.respond_to?(:call)
+    next unless middleware
+    klass = middleware.shift
+    app = klass.new(app, *middleware)
+  end
+  app
+end
+----
+
+记住，在 `Server#start` 方法定义的最后一行代码中，通过 `wrapped_app` 方法调用了 `build_app` 方法。让我们回顾一下这行代码：
+
+[source,ruby]
+----
+server.run wrapped_app, options, &blk
+----
+
+此时，`server.run` 方法的实现方式取决于我们所使用的服务器。例如，如果使用的是 Puma，`run` 方法的实现方式如下：
+
+[source,ruby]
+----
+...
+DEFAULT_OPTIONS = {
+  :Host => '0.0.0.0',
+  :Port => 8080,
+  :Threads => '0:16',
+  :Verbose => false
+}
+
+def self.run(app, options = {})
+  options  = DEFAULT_OPTIONS.merge(options)
+
+  if options[:Verbose]
+    app = Rack::CommonLogger.new(app, STDOUT)
+  end
+
+  if options[:environment]
+    ENV['RACK_ENV'] = options[:environment].to_s
+  end
+
+  server   = ::Puma::Server.new(app)
+  min, max = options[:Threads].split(':', 2)
+
+  puts "Puma #{::Puma::Const::PUMA_VERSION} starting..."
+  puts "* Min threads: #{min}, max threads: #{max}"
+  puts "* Environment: #{ENV['RACK_ENV']}"
+  puts "* Listening on tcp://#{options[:Host]}:#{options[:Port]}"
+
+  server.add_tcp_listener options[:Host], options[:Port]
+  server.min_threads = min
+  server.max_threads = max
+  yield server if block_given?
+
+  begin
+    server.run.join
+  rescue Interrupt
+    puts "* Gracefully stopping, waiting for requests to finish"
+    server.stop(true)
+    puts "* Goodbye!"
+  end
+
+end
+----
+
+我们不会深入介绍服务器配置本身，不过这已经是 Rails 初始化过程的最后一步了。
+
+本文高度概括的介绍，旨在帮助读者理解 Rails 应用的代码何时执行、如何执行，从而使读者成为更优秀的 Rails 开发者。要想掌握更多这方面的知识，Rails 源代码本身也许是最好的研究对象。
