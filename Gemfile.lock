@@ -1,10 +1,10 @@
 PATH
-  remote: ../../../../Users/andor/Projects/persie_theme_rails_guides
+  remote: ../../Projects/persie_theme_rails_guides
   specs:
     persie_theme_rails_guides (0.0.1)
 
 PATH
-  remote: ../../../../Users/andor/Projects/persie
+  remote: ../../Projects/persie
   specs:
     persie (0.0.3.beta.2)
       asciidoctor (= 1.5.5)

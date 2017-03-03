@@ -10,3 +10,4 @@
 | mass assignment | 批量赋值 | |
 | redirect | 重定向 | |
 | authentication | 身份验证 | |
+| header | 首部 | |

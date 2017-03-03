@@ -24,7 +24,7 @@
 | Action Mailer Basics                      | ✔   | ✔   |
 | Active Job Basics                         | ✔   | ✔   |
 | Testing Rails Applications                | ✔   | ✔   |
-| Securing Rails Applications               | ✔   |      |
+| Securing Rails Applications               | ✔   | ✔    |
 | Debugging Rails Applications              | ✔   | ✔   |
 | Configuring Rails Applications             | ✔   | ✔   |
 | Rails Command Line Tools and Rake Tasks   | ✔   | ✔   |
@@ -36,7 +36,7 @@
 | Active Support Instrumentation            | ✔   | ✔   |
 | Profiling Rails Applications               | ✔   | ✔   |
 | Using Rails for API-only Applications     | ✔   | ✔   |
-| Action Cable Overview                     | ✔   |      |
+| Action Cable Overview                     | ✔   | ✔    |
 | The Basics of Creating Rails Plugins      | ✔   | ✔   |
 | Rails on Rack                             | ✔   | ✔   |
 | Creating and Customizing Rails Generators | ✔   | ✔   |

@@ -1,9 +1,9 @@
 = Rails 指南
-:slug: rails-guides-cn
+:slug: railsguides
 :translator: 安道/chinakr
 :translator-email: andor.chen.27@email.com
-:revnumber: 5.0.1.1
-:revdate: 2017-01-05T20:00:00+08:00
+:revnumber: 5.0.1.2
+:revdate: 2017-02-28T20:00:00+08:00
 :lang: zh-CN
 :description: Rails 全方位解读。
 :keywords: rails, guide, guides, 指南
