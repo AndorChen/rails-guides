@@ -1,2 +1,22 @@
 [[the-asset-pipeline]]
 == Asset Pipeline
+:imagesdir: ../images
+:numbered:
+
+// chinakr 翻译
+
+[.chapter-abstract]
+--
+本文介绍 Asset Pipeline。
+
+读完本文后，您将学到：
+
+* Asset Pipeline 是什么，有什么用处；
+* 如何合理组织程序的静态资源文件；
+* 使用 Asset Pipeline 的好处；
+* 如何为 Asset Pipeline 添加预处理器；
+* 如何用 gem 打包静态资源文件。
+--
+
+[[what-is-the-asset-pipeline]]
+=== Asset Pipeline 是什么
