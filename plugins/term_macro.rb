@@ -16,7 +16,6 @@ module RailsGuides
 
     named :term
     using_format :short
-    name_attributes 'term'
 
     def process parent, target, attributes
       %(<span class="terminology">#{target}</span>)
