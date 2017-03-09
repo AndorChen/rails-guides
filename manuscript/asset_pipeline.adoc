@@ -20,3 +20,93 @@
 
 [[what-is-the-asset-pipeline]]
 === Asset Pipeline 是什么
+
+Asset Pipeline 提供了用于连接、缩小或压缩 JavaScript 和 CSS 静态资源文件的框架。有了 Asset Pipeline，我们还可以使用其他语言和预处理器，例如 CoffeeScript、Sass 和 ERB，编写这些静态资源文件。应用中的静态资源文件还可以自动和其他 gem 中的静态资源文件合并。例如，和 `jquery-rails` gem 中包含的 `jquery.js` 文件合并，从而使 Rails 能够支持 AJAX 特性。
+
+Asset Pipeline 是通过 link:$$https://github.com/rails/sprockets-rails$$[sprockets-rails] gem 实现的，Rails 默认启用了这个 gem。在新建 Rails 应用时，通过 `--skip-sprockets` 选项可以禁用这个 gem。
+
+[source,shell]
+----
+rails new appname --skip-sprockets
+----
+
+在新建 Rails 应用时，Rails 自动在 Gemfile 中添加了 `sass-rails`、`coffee-rails` 和 `uglifier` gem，Sprockets 通过这些 gem 来压缩静态资源文件：
+
+[source,ruby]
+----
+gem 'sass-rails'
+gem 'uglifier'
+gem 'coffee-rails'
+----
+
+使用 `--skip-sprockets` 选项时，Rails 不会在 Gemfile 中添加这些 gem。因此，之后如果想要启用 Asset Pipeline，就需要手动在 Gemfile 中添加这些 gem。此外，使用 `--skip-sprockets` 选项时生成的 `config/application.rb` 也略有不同，用于加载 `sprockets/railtie` 的代码被注释掉了，因此要启用 Asset Pipeline，还需要取消注释：
+
+[source,ruby]
+----
+# require "sprockets/railtie"
+----
+
+在 `production.rb` 配置文件中，通过 `config.assets.css_compressor` 和 `config.assets.js_compressor` 选项可以分别为 CSS 和 JavaScript 静态资源文件设置压缩方式：
+
+[source,ruby]
+----
+config.assets.css_compressor = :yui
+config.assets.js_compressor = :uglifier
+----
+
+NOTE: 如果 Gemfile 中包含了 `sass-rails` gem，Rails 就会自动使用这个 gem 压缩 CSS 静态资源文件，而无需设置 `config.assets.css_compressor` 选项。
+
+[[main-features]]
+==== 主要特性
+
+Asset Pipeline 的特性之一是连接静态资源文件，目的是减少渲染网页时浏览器发起的请求次数。Web 浏览器能够同时发起的请求次数是有限的，因此更少的请求次数可能意味着更快的应用加载速度。
+
+Sprockets 把所有 JavaScript 文件连接为一个主 `.js` 文件，把所有 CSS文 件连接为一个主 `.css` 文件。后文会介绍，我们可以按需定制连接文件的方式。在生产环境中，Rails 会在每个文件名中插入 MD5 指纹，以便 Web 浏览器缓存文件。当我们修改了文件内容，Rails 会自动修改文件名中的指纹，从而让原有缓存失效。
+
+Asset Pipeline 的特性之二是缩小或压缩静态资源文件。对于 CSS 文件，会删除空格和注释。对于 JavaScript 文件，可以进行更复杂的处理，我们可以从内置选项中选择处理方式，也可以自定义处理方式。
+
+Asset Pipeline 的特性之三是可以使用更高级的语言编写静态资源文件，再通过预编译转换为实际的静态资源文件。默认支持的高级语言有：用于编写 CSS 的 Sass，用于编写 JavaScript 的 CoffeeScript，以及 ERB。
+
+[[what-is-fingerprinting-and-why-should-i-care]]
+==== 指纹识别是什么，为什么要关心指纹？
+
+指纹是一项根据文件内容修改文件名的技术。一旦文件内容发生变化，文件名就会发生变化。对于静态文件或内容很少发生变化的文件，这项技术提供了确定文件的两个版本是否相同的简单方法，特别是在跨服务器和多次部署的情况下。
+
+当一个文件的文件名能够根据文件内容发生变化，并且能够保证不会出现重名时，就可以通过设置 HTTP 请求头来建议所有缓存（CDN、ISP、网络设备或 Web 浏览器的缓存）都保存该文件的副本。一旦文件内容更新，文件名中的指纹就会发生变化，从而使远程客户端发起对文件新副本的请求。这项技术被称为“缓存清除”（cache busting）。
+
+Sprockets 使用指纹的方式是在文件名中添加文件内容的哈希值，并且通常会添加到文件名末尾。例如，对于 CSS 文件 `global.css`，添加哈希值后文件名可能变为：
+
+----
+global-908e25f4bf641868d8683022a5b62f54.css
+----
+
+Rails 的 Asset Pipeline 也采取了这种策略。
+
+以前 Rails 采用的策略是，通过内置的辅助方法，为每一个指向静态资源文件的链接，添加基于日期生成的查询字符串。在网页源代码中，会生成下面这样的链接：
+
+----
+/stylesheets/global.css?1309495796
+----
+
+使用查询字符串的策略有如下缺点：
+
+1.如果一个文件的两个版本只是文件名的查询参数不同，这时不是所有缓存都能可靠地更新该文件的缓存。::
+  link:$$http://www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/$$[Steve Souders] 建议，“……避免在可缓存的资源上使用查询字符串”。他发现，在使用查询字符串的情况下，有 5—20% 的请求不会被缓存。对于某些 CDN，通过修改查询字符串根本无法使缓存失效。
+
+2.在多服务器环境中，不同节点上的文件名有可能发生变化。::
+  在 Rails 2.x 中，默认基于文件修改时间生成查询字符串。当静态资源文件被部署到某个节点上时，无法保证文件的时间戳保持不变，这样，对于同一个文件的请求，不同服务器可能返回不同的文件名。
+
+3.缓存失效的情况过多。::
+  每次部署代码的新版本时，静态资源文件都会被重新部署，这些文件的最后修改时间也会发生变化。这样，不管其内容是否发生变化，客户端都不得不重新获取这些文件。
+
+使用指纹可以避免使用查询字符串的这些缺点，并且能够确保文件内容相同时文件名也相同。
+
+在开发环境和生产环境中，指纹都是默认启用的。通过 `config.assets.digest` 配置选项，可以启用或禁用指纹。
+
+扩展阅读：
+
+* link:$$http://code.google.com/speed/page-speed/docs/caching.html$$[优化缓存]
+* link:$$http://www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/$$[为文件名添加版本号：请不要使用查询字符串]
+
+[[how-to-use-the-asset-pipeline]]
+=== 如何使用 Asset Pipeline
