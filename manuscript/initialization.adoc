@@ -10,16 +10,18 @@
 读完本文后，您将学到：
 
 * 如何使用 `rails server`；
-* Rails 初始化过程的时间表；
+* Rails 初始化过程的时间线；
 * 引导过程中所需的不同文件的所在位置；
 * `Rails::Server` 接口的定义和使用方式。
 --
+
+NOTE: 本文原文尚未完工！
 
 本文介绍默认情况下，Rails 应用初始化过程中的每一个方法调用，详细解释各个步骤的具体细节。本文将聚焦于使用 `rails server` 启动 Rails 应用时发生的事情。
 
 NOTE: 除非另有说明，本文中出现的路径都是相对于 Rails 或 Rails 应用所在目录的相对路径。
 
-TIP: 如果想一边阅读本文一边查看 link:$$https://github.com/rails/rails$$[Rails 源代码]，推荐在 GitHub 中使用 `t` 快捷键打开文件查找器，以便快速查找相关文件。
+TIP: 如果想一边阅读本文一边查看 link:https://github.com/rails/rails[Rails 源代码]，推荐在 GitHub 中使用 `t` 快捷键打开文件查找器，以便快速查找相关文件。
 
 [[launch]]
 === 启动
@@ -29,7 +31,7 @@ TIP: 如果想一边阅读本文一边查看 link:$$https://github.com/rails/rai
 [[railties-exe-rails]]
 ==== `railties/exe/rails` 文件
 
-`rails server` 命令中的 `rails` 是位于加载路径中的 Ruby 可执行文件。这个文件包含如下内容：
+`rails server` 命令中的 `rails` 是位于加载路径中的一个 Ruby 可执行文件。这个文件包含如下内容：
 
 [source,ruby]
 ----
@@ -37,7 +39,7 @@ version = ">= 0"
 load Gem.bin_path('railties', 'rails', version)
 ----
 
-在 Rails 控制台中运行上述代码，可以看到加载的是 `railties/exe/rails` 文件（译者注：在 Rails 5.0.1 中看到的是 `rails` 命令的使用帮助）。`railties/exe/rails` 文件的部分内容如下：
+在 Rails 控制台中运行上述代码，可以看到加载的是 `railties/exe/rails` 文件。footnote:[在 Rails 5.0.1 中看到的是 `rails` 命令的使用帮助。——译者注]`railties/exe/rails` 文件的部分内容如下：
 
 [source,ruby]
 ----
@@ -148,7 +150,7 @@ TIP: 我们看到，如果 `ARGV` 为空，Rails 就会显示帮助信息。
 [[rails-commands-commands-tasks-rb]]
 ==== `rails/commands/commands_tasks.rb` 文件
 
-如果输入的是合法的 Rails 命令，Rails 就会通过 `run_command!` 方法调用命令的同名方法。如果 Rails 不能识别该命令，Rails 就会尝试执行同名的 Rake 任务。
+如果输入的是有效的 Rails 命令，Rails 会通过 `run_command!` 方法调用命令的同名方法。如果 Rails 不能识别命令，会尝试执行同名的 Rake 任务。
 
 [source,ruby]
 ----
@@ -204,12 +206,12 @@ module Rails
   class Server < ::Rack::Server
 ----
 
-`fileutils` 和 `optparse` 是 Ruby 标准库，分别提供了用于处理文件和解析选项的帮助方法。
+`fileutils` 和 `optparse` 是 Ruby 标准库，分别提供用于处理文件和解析选项的辅助方法。
 
 [[actionpack-lib-action-dispatch-rb]]
 ==== `actionpack/lib/action_dispatch.rb` 文件
 
-Action Dispatch 是 Rails 框架的路由组件，提供了路由、会话、常用中间件等功能。
+Action Dispatch 是 Rails 框架的路由组件，提供路由、会话、常用中间件等功能。
 
 [[rails-commands-server-rb]]
 ==== `rails/commands/server.rb` 文件
@@ -227,7 +229,7 @@ end
 首先调用的 `super` 方法，会调用 `Rack::Server` 类的 `initialize` 方法。
 
 [[rack-lib-rack-server-rb]]
-==== `Rack: lib/rack/server.rb` 文件
+==== Rack：`lib/rack/server.rb` 文件
 
 `Rack::Server` 类负责为所有基于 Rack 的应用（包括 Rails）提供通用服务器接口。
 
@@ -327,7 +329,7 @@ def parse!(args)
 [[config-application]]
 ==== `config/application.rb` 文件
 
-执行 `require APP_PATH` 时，会加载 `config/application.rb` 文件（前文说过 `APP_PATH` 已经在 `bin/rails` 中定义）。这个文件也是应用的一部分，我们可以根据需要对文件内容进行修改。
+执行 `require APP_PATH` 时，会加载 `config/application.rb` 文件（前文说过 `APP_PATH` 已经在 `bin/rails` 中定义）。这个文件也是应用的一部分，我们可以根据需要修改这个文件的内容。
 
 [[rails-server-start]]
 ==== `Rails::Server#start` 方法
@@ -453,6 +455,7 @@ private
 
 `options[:config]` 的默认值为 `config.ru`，此文件包含如下内容：
 
+[source,ruby]
 ----
 # 基于 Rack 的服务器使用此文件来启动应用。
 
@@ -505,7 +508,7 @@ require File.expand_path('../boot', __FILE__)
 
 对于 `rails server` 这种启动服务器的方式，之前并未加载过 `config/boot.rb` 文件，因此这里会加载该文件；对于 Passenger，之前已经加载过该文件，这里就不会重复加载了。
 
-接下来，有趣的故事就要开始了！
+接下来，有趣的事情就要开始了！
 
 [[loading-rails]]
 === 加载 Rails
@@ -588,7 +591,7 @@ end
 应用初始化完成后，程序执行流程再次回到 `Rack::Server` 类。
 
 [[rack-lib-rack-server-rb]]
-==== Rack: `lib/rack/server.rb` 文件
+==== Rack：`lib/rack/server.rb` 文件
 
 程序执行流程上一次离开此文件是在定义 `app` 方法时：
 
