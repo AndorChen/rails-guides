@@ -387,3 +387,85 @@ CSS 清单文件中指令的执行顺序类似于前文介绍的 JavaScript 清�
 
 [[in-development]]
 === 在开发环境中
+
+在开发环境中，Asset Pipeline 会按照清单文件中指定的顺序处理静态资源文件。
+
+对于清单文件 `pp/assets/javascripts/application.js`：
+
+[source,javascript]
+----
+//= require core
+//= require projects
+//= require tickets
+----
+
+会生成下面的 HTML：
+
+[source,html]
+----
+<script src="/assets/core.js?body=1"></script>
+<script src="/assets/projects.js?body=1"></script>
+<script src="/assets/tickets.js?body=1"></script>
+----
+
+其中 `body` 参数是使用 Sprockets 时必须使用的参数。
+
+[[runtime-error-checking]]
+==== 检查运行时错误
+
+在生产环境中，Asset Pipeline 默认会在运行时检查潜在错误。要想禁用此行为，可以设置：
+
+[source,ruby]
+----
+config.assets.raise_runtime_errors = false
+----
+
+当此选项设置为 `true` 时，Asset Pipeline 会检查应用中加载的所有静态资源文件是否都已包含在 `config.assets.precompile` 列表中。如果此时 `config.assets.digest` 也设置为 `true`，Asset Pipeline 会要求所有对静态资源文件的请求都包含摘要（digest）。
+
+[[turning-digests-off]]
+==== 关闭摘要
+
+通过修改 `config/environments/development.rb` 配置文件，我们可以关闭摘要：
+
+[source,ruby]
+----
+config.assets.digest = false
+----
+
+当此选项设置为 `true` 时，Rails 会为静态资源文件的 URL 生成摘要。
+
+[[turning-debugging-off]]
+==== 关闭调试
+
+通过修改 `config/environments/development.rb` 配置文件，我们可以关闭调式模式：
+
+[source,ruby]
+----
+config.assets.debug = false
+----
+
+当调试模式关闭时，Sprockets 会对所有文件进行必要的预处理，然后把它们连接起来。此时，前文的清单文件会生成下面的 HTML：
+
+[source,html]
+----
+<script src="/assets/application.js"></script>
+----
+
+当服务器启动后，静态资源文件将在第一次请求时进行编译和缓存。Sprockets 通过设置 `must-revalidate Cache-Control` HTTP 请求头，来减少后续请求造成的开销，此时对于后续请求浏览器会得到 304（未修改）响应。
+
+如果清单文件中的某个文件在两次请求之间发生了变化，服务器会使用新编译的文件作为响应。
+
+还可以通过 Rails 辅助方法启用调试模式：
+
+[source,erb]
+----
+<%= stylesheet_link_tag "application", debug: true %>
+<%= javascript_include_tag "application", debug: true %>
+----
+
+当然，如果已经启用了调式模式，再使用 `:debug` 选项就完全是多余的了。
+
+在开发模式中，我们也可以启用压缩功能以检查其工作是否正常，在需要进行调试时再禁用压缩功能。
+
+[[in-production]]
+=== 在生产环境中
