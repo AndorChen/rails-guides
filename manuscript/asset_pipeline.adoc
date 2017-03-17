@@ -25,7 +25,7 @@ Asset Pipeline 提供了用于连接、缩小或压缩 JavaScript 和 CSS 静态
 
 Asset Pipeline 是通过 link:$$https://github.com/rails/sprockets-rails$$[sprockets-rails] gem 实现的，Rails 默认启用了这个 gem。在新建 Rails 应用时，通过 `--skip-sprockets` 选项可以禁用这个 gem。
 
-[source,shell]
+[source,sh]
 ----
 rails new appname --skip-sprockets
 ----
@@ -420,19 +420,19 @@ CSS 清单文件中指令的执行顺序类似于前文介绍的 JavaScript 清�
 config.assets.raise_runtime_errors = false
 ----
 
-当此选项设置为 `true` 时，Asset Pipeline 会检查应用中加载的所有静态资源文件是否都已包含在 `config.assets.precompile` 列表中。如果此时 `config.assets.digest` 也设置为 `true`，Asset Pipeline 会要求所有对静态资源文件的请求都包含摘要（digest）。
+当此选项设置为 `true` 时，Asset Pipeline 会检查应用中加载的所有静态资源文件是否都已包含在 `config.assets.precompile` 列表中。如果此时 `config.assets.digest` 也设置为 `true`，Asset Pipeline 会要求所有对静态资源文件的请求都包含指纹（digest）。
 
 [[turning-digests-off]]
-==== 关闭摘要
+==== 关闭指纹
 
-通过修改 `config/environments/development.rb` 配置文件，我们可以关闭摘要：
+通过修改 `config/environments/development.rb` 配置文件，我们可以关闭指纹：
 
 [source,ruby]
 ----
 config.assets.digest = false
 ----
 
-当此选项设置为 `true` 时，Rails 会为静态资源文件的 URL 生成摘要。
+当此选项设置为 `true` 时，Rails 会为静态资源文件的 URL 生成指纹。
 
 [[turning-debugging-off]]
 ==== 关闭调试
@@ -469,3 +469,327 @@ config.assets.debug = false
 
 [[in-production]]
 === 在生产环境中
+
+在生产环境中，Sprockets 会使用前文介绍的指纹机制。默认情况下，Rails 假定静态资源文件都经过了预编译，并将由 Web 服务器处理。
+
+在预编译阶段，Sprockets 会根据静态资源文件的内容生成 MD5，并在保存文件时把这个 MD5 添加到文件名中。Rails 辅助方法会用这些包含指纹的文件名代替清单文件中的文件名。
+
+例如，下面的代码：
+
+[source,erb]
+----
+<%= javascript_include_tag "application" %>
+<%= stylesheet_link_tag "application" %>
+----
+
+会生成下面的 HTML：
+
+[source,html]
+----
+<script src="/assets/application-908e25f4bf641868d8683022a5b62f54.js"></script>
+<link href="/assets/application-4dd5b109ee3439da54f5bdfd78a80473.css" media="screen"
+rel="stylesheet" />
+----
+
+NOTE: Rails 开始使用 Asset Pipeline 后，不再使用 `:cache` 和 `:concat` 选项，因此在调用 `javascript_include_tag` 和 `stylesheet_link_tag` 辅助方法时需要删除这些选项。
+
+可以通过 `config.assets.digest` 初始化选项（默认为 `true`）启用或禁用指纹功能。
+
+NOTE: 在正常情况下，请不要修改默认的 `config.assets.digest` 选项（默认为 `true`）。如果文件名中未包含指纹，并且 HTTP 头信息的过期时间设置为很久以后，远程客户端将无法在文件内容发生变化时重新获取文件。
+
+[[precompiling-assets]]
+==== 预编译静态资源文件
+
+Rails 提供了一个 Rake 任务，用于编译 Asset Pipeline 清单文件中的静态资源文件和其他相关文件。
+
+经过编译的静态资源文件将储存在 `config.assets.prefix` 选项指定的路径中，默认为 `/assets` 文件夹。
+
+部署 Rails 应用时可以在服务器上执行这个 Rake 任务，以便直接在服务器上完成静态资源文件的编译。关于本地编译的介绍，请参阅下一节。
+
+这个 Rake 任务是：
+
+[source,sh]
+----
+$ RAILS_ENV=production bin/rails assets:precompile
+----
+
+Capistrano（v2.15.1 及更高版本）提供了对这个 Rake 任务的支持。只需把下面这行代码添加到 `Capfile` 中：
+
+[source,ruby]
+----
+load 'deploy/assets'
+----
+
+就会把 `config.assets.prefix` 选项指定的文件夹链接到 `shared/assets` 文件夹。当然，如果 `shared/assets` 文件夹已经用于其他用途，我们就得自己编写部署任务了。
+
+需要注意的是，`shared/assets` 文件夹会在多次部署之间共享，这样引用了这些静态资源文件的远程客户端的缓存页面在其生命周期中就能正常工作。
+
+编译文件时的默认匹配器（matcher）包括 `application.js`、`application.css`，以及 `app/assets` 文件夹和 gem 中的所有非 JS/CSS 文件（会自动包含所有图片）：
+
+[source,ruby]
+----
+[ Proc.new { |filename, path| path =~ /app\/assets/ && !%w(.js .css).include?(File.extname(filename)) },
+/application.(css|js)$/ ]
+----
+
+NOTE: 这个匹配器（及预编译数组的其他成员；见后文）会匹配编译后的文件名，这意味着无论是 JS/CSS 文件，还是能够编译为 JS/CSS 的文件，都将被排除在外。例如，`.coffee` 和 `.scss` 文件能够编译为 JS/CSS，因此被排除在默认的编译范围之外。
+
+要想包含其他清单文件，或单独的 JavaScript 和 CSS 文件，可以把它们添加到 `config/initializers/assets.rb` 配置文件的 `precompile` 数组中：
+
+[source,ruby]
+----
+Rails.application.config.assets.precompile += ['admin.js', 'admin.css', 'swfObject.js']
+----
+
+NOTE: 添加到 `precompile` 数组的文件名应该以 `.js` 或 `.css` 结尾，即便实际添加的是 CoffeeScript 或 Sass 文件也是如此。
+
+`assets:precompile` 这个 Rake 任务还会成生 `manifest-md5hash.json` 文件，其内容是所有静态资源文件及其指纹的列表。有了这个文件，Rails 辅助方法不需要 Sprockets 就能获得静态资源文件对应的指纹。下面是一个典型的 `manifest-md5hash.json` 文件的例子：
+
+[source,json]
+----
+{"files":{"application-723d1be6cc741a3aabb1cec24276d681.js":{"logical_path":"application.js","mtime":"2013-07-26T22:55:03-07:00","size":302506,
+"digest":"723d1be6cc741a3aabb1cec24276d681"},"application-12b3c7dd74d2e9df37e7cbb1efa76a6d.css":{"logical_path":"application.css","mtime":"2013-07-26T22:54:54-07:00","size":1560,
+"digest":"12b3c7dd74d2e9df37e7cbb1efa76a6d"},"application-1c5752789588ac18d7e1a50b1f0fd4c2.css":{"logical_path":"application.css","mtime":"2013-07-26T22:56:17-07:00","size":1591,
+"digest":"1c5752789588ac18d7e1a50b1f0fd4c2"},"favicon-a9c641bf2b81f0476e876f7c5e375969.ico":{"logical_path":"favicon.ico","mtime":"2013-07-26T23:00:10-07:00","size":1406,
+"digest":"a9c641bf2b81f0476e876f7c5e375969"},"my_image-231a680f23887d9dd70710ea5efd3c62.png":{"logical_path":"my_image.png","mtime":"2013-07-26T23:00:27-07:00","size":6646,
+"digest":"231a680f23887d9dd70710ea5efd3c62"}},"assets":{"application.js":
+"application-723d1be6cc741a3aabb1cec24276d681.js","application.css":
+"application-1c5752789588ac18d7e1a50b1f0fd4c2.css",
+"favicon.ico":"favicona9c641bf2b81f0476e876f7c5e375969.ico","my_image.png":
+"my_image-231a680f23887d9dd70710ea5efd3c62.png"}}
+----
+
+`manifest-md5hash.json` 文件默认位于 `config.assets.prefix` 选项所指定的位置的根目录（默认为 `/assets` 文件夹）。
+
+NOTE: 在生产环境中，如果有些预编译后的文件丢失了，Rails 就会抛出 `Sprockets::Helpers::RailsHelper::AssetPaths::AssetNotPrecompiledError` 异常，提示所丢失文件的文件名。
+
+[[far-future-expires-header]]
+===== 很久以后才过期的 HTTP 请求头
+
+预编译后的静态资源文件储存在文件系统中，并由 Web 服务器直接处理。默认情况下，这些文件的 HTTP 请求头并不会在很久以后才过期，为了充分发挥指纹的作用，我们需要修改服务器配置中的请求头过期时间。
+
+对于 Apache：
+
+----
+# The Expires* directives requires the Apache module
+# `mod_expires` to be enabled.
+<Location /assets/>
+  # Use of ETag is discouraged when Last-Modified is present
+  Header unset ETag
+  FileETag None
+  # RFC says only cache for 1 year
+  ExpiresActive On
+  ExpiresDefault "access plus 1 year"
+</Location>
+----
+
+对于 Nginx：
+
+----
+location ~ ^/assets/ {
+  expires 1y;
+  add_header Cache-Control public;
+
+  add_header ETag "";
+}
+----
+
+[[local-precompilation]]
+==== 本地预编译
+
+在本地预编译静态资源文件的理由如下：
+
+* 可能没有生产环境服务器文件系统的写入权限；
+* 可能需要部署到多台服务器，并希望避免重复编译；
+* 部署可能很频繁，但静态资源文件很少变化。
+
+本地编译允许我们把编译后的静态资源文件纳入源代码版本控制，并按常规方式部署。
+
+有三个注意事项：
+
+* 不要运行用于预编译静态资源文件的 Capistrano 部署任务；
+* 开发环境中必须安装压缩或缩小静态资源文件所需的工具；
+* 必须修改下面这个设置：
+
+在 `config/environments/development.rb` 配置文件中添加下面这行代码：
+
+[source,ruby]
+----
+config.assets.prefix = "/dev-assets"
+----
+
+在开发环境中，通过修改 `prefix`，可以让 Sprockets 使用不同的 URL 处理静态资源文件，并把所有请求都交给 Sprockets 处理。在生产环境中，`prefix` 仍然应该设置为 `/assets`。在开发环境中，如果不修改 `prefix`，应用就会优先读取 `/assets` 文件夹中预编译后的静态资源文件，这样对静态资源文件进行修改后，除非重新编译，否则看不到任何效果。
+
+实际上，通过修改 `prefix`，我们可以在本地预编译静态资源文件，并把这些文件储存在工作目录中，同时可以根据需要随时将其纳入源代码版本控制。开发模式将按我们的预期正常工作。
+
+[[live-compilation]]
+==== 实时编译
+
+在某些情况下，我们需要使用实时编译。在实时编译模式下，Asset Pipeline 中的所有静态资源文件都由 Sprockets 直接处理。
+
+通过如下设置可以启用实时编译：
+
+[source,ruby]
+----
+config.assets.compile = true
+----
+
+如前文所述，静态资源文件会在首次请求时被编译和缓存，辅助方法会把清单文件中的文件名转换为带 MD5 哈希的版本。
+
+Sprockets 还会把 `Cache-Control` HTTP 请求头设置为 `max-age=31536000`，意思是服务器和客户端浏览器的所有缓存的过期时间是 1 年。这样在本地浏览器缓存或中间缓存中找到所需静态资源文件的可能性会大大增加，从而减少从服务器上获取静态资源文件的请求次数。
+
+但是实时编译模式会使用更多内存，性能也比默认设置更差，因此并不推荐使用。
+
+如果部署应用的生产服务器没有预装 JavaScript 运行时，我们可以在 Gemfile 中添加一个：
+
+[source,ruby]
+----
+group :production do
+  gem 'therubyracer'
+end
+----
+
+[[cdns]]
+==== CDN
+
+CDN 表示 link:$$http://en.wikipedia.org/wiki/Content_delivery_network$$[内容分发网络]，主要用于缓存全世界的静态资源文件。当 Web 浏览器请求静态资源文件时，CDN 会从地理位置最近的 CDN 服务器上发送缓存的文件副本。如果我们在生产环境中让 Rails 直接处理静态资源文件，那么在应用前端使用 CDN 将是最好的选择。
+
+使用 CDN 的常见模式是把生产环境中的应用设置为“源”服务器，也就是说，当浏览器从 CDN 请求静态资源文件但缓存未命中时，CDN 将立即从“源”服务器中抓取该文件，并对其进行缓存。例如，假设我们在 `example.com` 上运行 Rails 应用，并在 `mycdnsubdomain.fictional-cdn.com` 上配置了 CDN，在处理对 `mycdnsubdomain.fictional-cdn.com/assets/smile.png` 的首次请求时，CDN 会抓取 `example.com/assets/smile.png` 并进行缓存。之后再请求 `mycdnsubdomain.fictional-cdn.com/assets/smile.png` 时，CDN 会直接提供缓存中的文件副本。对于任何请求，只要 CDN 能够直接处理，就不会访问 Rails 服务器。由于 CDN 提供的静态资源文件由地理位置最近的 CDN 服务器提供，因此对请求的响应更快，同时 Rails 服务器不再需要花费大量时间处理静态资源文件，因此可以专注于更快地处理应用代码。
+
+[[set-up-a-cdn-to-serve-static-assets]]
+===== 设置用于处理静态资源文件的 CDN
+
+要设置 CDN，首先必须在公开的互联网 URL 地址上（例如 `example.com`）以生产环境运行 Rails 应用。下一步，注册云服务提供商的 CDN 服务。然后配置 CDN 的“源”服务器，把它指向我们的网站 `example.com`，具体配置方法请参考云服务提供商的文档。
+
+CDN 提供商会为我们的应用提供一个自定义子域名，例如 `mycdnsubdomain.fictional-cdn.com`（注意 `fictional-cdn.com` 只是撰写本文时杜撰的一个 CDN 提供商）。完成 CDN 服务器配置后，还需要告诉浏览器从 CDN 抓取静态资源文件，而不是直接从 Rails 服务器抓取。为此，需要在 Rails 配置中，用静态资源文件的主机代替相对路径。通过 `config/environments/production.rb` 配置文件的 `config.action_controller.asset_host` 选项，我们可以设置静态资源文件的主机：
+
+[source,ruby]
+----
+config.action_controller.asset_host = 'mycdnsubdomain.fictional-cdn.com'
+----
+
+NOTE: 这里只需提供“主机”，即前文提到的子域名，而不需要指定 HTTP 协议，例如 `http://` 或 `https://`。默认情况下，Rails 会使用网页请求的 HTTP 协议作为指向静态资源文件链接的协议。
+
+还可以通过link:$$http://en.wikipedia.org/wiki/Environment_variable$$[环境变量]设置静态资源文件的主机，这样可以方便地在不同的运行环境中使用不同的静态资源文件：
+
+[source,ruby]
+----
+config.action_controller.asset_host = ENV['CDN_HOST']
+----
+
+NOTE: 这里还需要把服务器上的 `CDN_HOST` 环境变量设置为 `mycdnsubdomain.fictional-cdn.com`。
+
+服务器和 CDN 配置好后，就可以像下面这样引用静态资源文件：
+
+[source,erb]
+----
+<%= asset_path('smile.png') %>
+----
+
+这时返回的不再是相对路径 `/assets/smile.png`（出于可读性考虑省略了文件名中的指纹），而是指向 CDN 的完整路径：
+
+----
+http://mycdnsubdomain.fictional-cdn.com/assets/smile.png
+----
+
+如果 CDN 上有 `smile.png` 文件的副本，就会直接返回给浏览器，而 Rails 服务器甚至不知道有浏览器请求了 `smile.png` 文件。如果 CDN 上没有 `smile.png` 文件的副本，就会先从“源”服务器上抓取 `example.com/assets/smile.png` 文件，再返回给浏览器，同时保存文件的副本以备将来使用。
+
+如果只想让 CDN 处理部分静态资源文件，可以在调用静态资源文件辅助方法时使用 `:host` 选项，以覆盖 `config.action_controller.asset_host` 选项中设置的值：
+
+[source,erb]
+----
+<%= asset_path 'image.png', host: 'mycdnsubdomain.fictional-cdn.com' %>
+----
+
+[[customize-cdn-caching-behavior]]
+===== 自定义 CDN 缓存行为
+
+CDN 的作用是为内容提供缓存。如果 CDN 上有过期或不良内容，那么不仅不能对应用有所助益，反而会造成负面影响。本小节将介绍大多数 CDN 的一般缓存行为，而我们使用的 CDN 在特性上可能会略有不同。
+
+[[cdn-request-caching]]
+====== CDN 请求缓存
+
+我们常说 CDN 对于缓存静态资源文件非常有用，但实际上 CDN 缓存的是整个请求。其中既包括了静态资源文件的请求体，也包括了其请求头。在请求头中 `Cache-Control` 是最重要的，用于告知 CDN（和 Web 浏览器）如何缓存文件内容。假设用户请求了 `/assets/i-dont-exist.png` 这个并不存在的静态资源文件，并且 Rails 应用返回的是 404，那么只要设置了合法的 `Cache-Control` 请求头，CDN 就会缓存 404 页面。
+
+[[cdn-header-debugging]]
+====== 调试 CDN 头信息
+
+检查 CDN 是否正确缓存了请求头的方法之一是使用 link:$$http://explainshell.com/explain?cmd=curl+-I+http%3A%2F%2Fwww.example.com$$[curl]。我们可以分别从 Rails 服务器和 CDN 获取请求头，然后验证两个请求头是否相同：
+
+[source,sh]
+----
+$ curl -I http://www.example/assets/application-
+d0e099e021c95eb0de3615fd1d8c4d83.css
+HTTP/1.1 200 OK
+Server: Cowboy
+Date: Sun, 24 Aug 2014 20:27:50 GMT
+Connection: keep-alive
+Last-Modified: Thu, 08 May 2014 01:24:14 GMT
+Content-Type: text/css
+Cache-Control: public, max-age=2592000
+Content-Length: 126560
+Via: 1.1 vegur
+----
+
+CDN 上的请求头副本：
+
+[source,sh]
+----
+$ curl -I http://mycdnsubdomain.fictional-cdn.com/application-
+d0e099e021c95eb0de3615fd1d8c4d83.css
+HTTP/1.1 200 OK Server: Cowboy Last-
+Modified: Thu, 08 May 2014 01:24:14 GMT Content-Type: text/css
+Cache-Control:
+public, max-age=2592000
+Via: 1.1 vegur
+Content-Length: 126560
+Accept-Ranges:
+bytes
+Date: Sun, 24 Aug 2014 20:28:45 GMT
+Via: 1.1 varnish
+Age: 885814
+Connection: keep-alive
+X-Served-By: cache-dfw1828-DFW
+X-Cache: HIT
+X-Cache-Hits:
+68
+X-Timer: S1408912125.211638212,VS0,VE0
+----
+
+在 CDN 文档中可以查询 CDN 提供的附加请求头，例如 `X-Cache` 请求头。
+
+[[cdns-and-the-cache-control-header]]
+====== CDN 和 `Cache-Control` 请求头
+
+link:$$http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9$$[Cache-Control 请求头] 是一个 W3C 规范，用于描述如何缓存请求。当未使用 CDN 时，浏览器会根据 `Cache-Control` 请求头来缓存文件内容。在静态资源文件未修改的情况下，浏览器就不必重新下载 CSS 或 JavaScript 这些文件了。通常，Rails 服务器需要告诉 CDN（和浏览器）这些静态资源文件是“公共的”，这样任何缓存都可以保存这些文件的副本。此外，通常还会通过 `max-age` 请求头来设置缓存失效前储存对象的时间。`max-age` 请求头的单位是秒，最大设置为 31536000，即一年。在 Rails 应用中设置 `Cache-Control` 请求头的方法如下：
+
+[source,ruby]
+----
+config.public_file_server.headers = {
+  'Cache-Control' => 'public, max-age=31536000'
+}
+----
+
+现在，在生产环境中，Rails 应用的静态资源文件在 CDN 上会被缓存长达 1 年之久。由于大多数 CDN 会缓存请求头，静态资源文件的 `Cache-Control` 请求头会被传递给请求该静态资源文件的所有浏览器，这样浏览器就会长期缓存该静态资源文件，直到缓存过期后才会重新请求该文件。
+
+[[cdns-and-url-based-cache-invalidation]]
+====== CDN 和基于 URL 地址的缓存失效
+
+大多数 CDN 会根据完整的 URL 地址来缓存静态资源文件的内容。因此，缓存
+
+----
+http://mycdnsubdomain.fictional-cdn.com/assets/smile-123.png
+----
+
+和缓存
+
+----
+http://mycdnsubdomain.fictional-cdn.com/assets/smile.png
+----
+
+被认为是两个完全不同的静态资源文件的缓存。
+
+如果我们把 `Cache-Control` HTTP 请求头的 `max-age` 值设置得很大，那么当静态资源文件的内容发生变化时，应同时使原有缓存失效。例如，当我们把黄色笑脸图片更换为蓝色笑脸图片时，我们希望网站的所有访客看到的都是新的蓝色笑脸图片。如果我们使用了 CDN，并使用了 Rails Asset Pipeline `config.assets.digest` 选项的默认值 `true`，一旦静态资源文件的内容发生变化，其文件名就会发生变化。这样，我们就不需要每次手动使某个静态资源文件的缓存失效。通过使用唯一的新文件名，我们就能确保用户访问的总是静态资源文件的最新版本。
+
+[[customizing-the-pipeline]]
+=== 自定义 Asset Pipeline
