@@ -1,7 +1,5 @@
 [[the-asset-pipeline]]
 == Asset Pipeline
-:imagesdir: ../images
-:numbered:
 
 // chinakr 翻译
 
@@ -132,7 +130,7 @@ Rails 的 Asset Pipeline 也采取了这种策略。
 
 WARNING: 在进行静态资源文件预编译时，请确保针对控制器的静态文件是在按页加载时进行预编译的。默认情况下，Rails 不会自动对 `.coffee` 和 `.scss` 文件进行预编译。关于预编译工作原理的更多介绍，请参阅<<asset_pipeline#precompiling-assets,预编译静态资源文件>>一节。
 
-NOTE: 要想使用 CoffeeScript，就必须安装支持 ExecJS 的运行时。Mac OS X 和 Windows 已经预装了这样的运行时。关于所有可用运行时的更多介绍，请参阅 link:$$https://github.com/rails/execjs#readme$$[ExecJS] 文档。
+NOTE: 要使用 CoffeeScript，就必须安装支持 ExecJS 的运行时。Mac OS X 和 Windows 已经预装了此类运行时。关于所有可用运行时的更多介绍，请参阅 link:$$https://github.com/rails/execjs#readme$$[ExecJS] 文档。
 
 通过在 `config/application.rb` 配置文件中添加下述代码，可以禁止生成针对控制器的静态资源文件：
 
@@ -571,13 +569,13 @@ NOTE: 在生产环境中，如果有些预编译后的文件丢失了，Rails �
 对于 Apache：
 
 ----
-# The Expires* directives requires the Apache module
-# `mod_expires` to be enabled.
+# 在启用 Apache 模块 `mod_expires` 的情况下，才能使用
+# Expires* 系列指令。
 <Location /assets/>
-  # Use of ETag is discouraged when Last-Modified is present
+  # 在使用 Last-Modified 的情况下，不推荐使用 ETag
   Header unset ETag
   FileETag None
-  # RFC says only cache for 1 year
+  # RFC 规定缓存时间为 1 年
   ExpiresActive On
   ExpiresDefault "access plus 1 year"
 </Location>
@@ -793,3 +791,214 @@ http://mycdnsubdomain.fictional-cdn.com/assets/smile.png
 
 [[customizing-the-pipeline]]
 === 自定义 Asset Pipeline
+
+[[css-compression]]
+==== 压缩 CSS
+
+压缩 CSS 的可选方式之一是使用 YUI。通过 link:$$http://yui.github.io/yuicompressor/css.html$$[YUI CSS 压缩器]可以缩小 CSS 文件的大小。
+
+在 Gemfile 中添加 `yui-compressor` gem 后，通过下面的设置可以启用 YUI 压缩：
+
+[source,ruby]
+----
+config.assets.css_compressor = :yui
+----
+
+如果我们在 Gemfile 中添加了 `sass-rails` gem，那么也可以使用 Sass 压缩：
+
+[source,ruby]
+----
+config.assets.css_compressor = :sass
+----
+
+[[javascript-compression]]
+==== 压缩 JavaScript
+
+压缩 JavaScript 的可选方式有 `:closure`、`:uglifier` 和 `:yui`，分别要求在 Gemfile 中添加 `closure-compiler`、`uglifier` 和 `yui-compressor` gem。
+
+默认情况下，Gemfile 中包含了 link:$$https://github.com/lautis/uglifier$$[uglifier] gem，这个 gem 使用 Ruby 包装 link:$$https://github.com/mishoo/UglifyJS$$[UglifyJS]（使用 NodeJS 开发），作用是通过删除空白和注释、缩短局部变量名及其他微小优化（例如在可能的情况下把 `if...else` 语句修改为三元运算符）压缩 JavaScript 代码。
+
+使用 `uglifier` 压缩 JavaScript 需进行如下设置：
+
+[source,ruby]
+----
+config.assets.js_compressor = :uglifier
+----
+
+NOTE: 要使用 `uglifier` 压缩 JavaScript，就必须安装支持 link:$$https://github.com/rails/execjs#readme$$[ExecJS] 的运行时。Mac OS X 和 Windows 已经预装了此类运行时。
+
+[[serving-gzipped-version-of-assets]]
+==== 用 GZip 压缩静态资源文件
+
+默认情况下，Sprockets 会用 GZip 压缩编译后的静态资源文件，同时也会保留未压缩的版本。通过 GZip 压缩可以减少对带宽的占用。设置 GZip 压缩的方式如下：
+
+[source,ruby]
+----
+config.assets.gzip = false # 禁止用 GZip 压缩静态资源文件
+----
+
+[[using-your-own-compressor]]
+==== 自定义压缩工具
+
+在设置 CSS 和 JavaScript 压缩工具时还可以使用对象。这个对象要能响应 `compress` 方法，这个方法接受一个字符串作为唯一参数，并返回一个字符串。
+
+[source,ruby]
+----
+class Transformer
+  def compress(string)
+    do_something_returning_a_string(string)
+  end
+end
+----
+
+要使用这个压缩工具，需在 `application.rb` 配置文件中进行如下设置：
+
+[source,ruby]
+----
+config.assets.css_compressor = Transformer.new
+----
+
+[[changing-the-assets-path]]
+==== 修改静态资源文件的路径
+
+默认情况下，Sprockets 使用 `/assets` 作为静态资源文件的公开路径。
+
+我们可以修改这个路径：
+
+[source,ruby]
+----
+config.assets.prefix = "/some_other_path"
+----
+
+通过这种方式，在升级未使用 Asset Pipeline 但使用了 `/assets` 路径的老项目时，我们就可以轻松为新的静态资源文件设置另一个公开路径。
+
+[[x-sendfile-headers]]
+==== `X-Sendfile` 请求头
+
+`X-Sendfile` 请求头的作用是让 Web 服务器忽略应用对请求的响应，直接返回硬盘上的指定文件。默认情况下 Rails 不会发送这个请求头，但在支持这个请求头的服务器上可以启用这一特性，以提供更快的响应速度。关于这一特性的更多介绍，请参阅 link:$$http://api.rubyonrails.org/classes/ActionController/DataStreaming.html#method-i-send_file$$[send_file 方法]的文档。
+
+Apache 和 NGINX支持 `X-Sendfile` 请求头，启用方法是在 `config/environments/production.rb` 配置文件中进行设置：
+
+[source,ruby]
+----
+# config.action_dispatch.x_sendfile_header = "X-Sendfile" # 用于 Apache
+# config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # 用于 NGINX
+----
+
+WARNING: 要想在升级已有应用时使用上述选项，可以把这两行代码粘贴到 `production.rb` 配置文件中，或其他类似的生产环境配置文件中。
+
+TIP: 更多介绍请参阅生产服务器的相关文档：link:$$https://tn123.org/mod_xsendfile/$$[Apache]、link:$$http://wiki.nginx.org/XSendfile$$[NGINX]。
+
+[[assets-cache-store]]
+=== 静态资源文件缓存的存储方式
+
+在开发环境和生产环境中，Sprockets 默认在 `tmp/cache/assets` 文件夹中缓存静态资源文件。修改这一设置的方式如下：
+
+[source,ruby]
+----
+config.assets.configure do |env|
+  env.cache = ActiveSupport::Cache.lookup_store(:memory_store,
+                                                { size: 32.megabytes })
+end
+----
+
+禁用静态资源文件缓存的方式如下：
+
+[source,ruby]
+----
+config.assets.configure do |env|
+  env.cache = ActiveSupport::Cache.lookup_store(:null_store)
+end
+----
+
+[[adding-assets-to-your-gems]]
+=== 通过 gem 添加静态资源文件
+
+我们还可以通过 gem 添加静态资源文件。
+
+为 Rails 提供标准 JavaScript 库的 `jquery-rails` gem 就是很好的例子。这个 gem 中包含了继承自 `Rails::Engine` 类的引擎类，这样 Rails 就知道这个 gem 中可能包含静态资源文件，于是会把其中的 `app/assets`、`lib/assets` 和 `vendor/assets` 文件夹添加到 Sprockets 搜索路径中。
+
+[[making-your-library-or-gem-a-pre-processor]]
+=== 使用代码库或 gem 作为预处理器
+
+由于 Sprockets 使用 link:$$https://github.com/rtomayko/tilt$$[Tilt] 作为不同模板引擎的通用接口，一个 gem 只要实现了 Tilt 的模板引擎协议就可以用作预处理器。通常的做法是，继承 `Tilt::Template` 类并重新实现 `prepare` 方法（用于初始化模板）和 `evaluate` 方法（返回处理后的内容）。原始内容储存在 `data` 中。更多介绍请参阅 link:$$https://github.com/rtomayko/tilt/blob/master/lib/tilt/template.rb$$[Tilt::Template 类] 的源代码。
+
+[source,ruby]
+----
+module BangBang
+  class Template < ::Tilt::Template
+    def prepare
+      # 在此处进行初始化操作
+    end
+
+    # 为源模板添加 "!"
+    def evaluate(scope, locals, &block)
+      "#{data}!"
+    end
+  end
+end
+----
+
+在添加 `Template` 类后，就可以把这个类和模板文件的扩展名关联起来：
+
+[source,ruby]
+----
+Sprockets.register_engine '.bang', BangBang::Template
+----
+
+[[upgrading-from-old-versions-of-rails]]
+=== 从旧版本的 Rails 升级
+
+从 Rails 3.0 或 Rails 2.x 升级时有一些问题需要解决。首先，要把 `public/` 文件夹中的文件移动到新位置。关于不同类型文件储存位置的介绍，请参阅前文中<<asset_pipeline#asset-organization,静态资源文件的组织方式>>一节。
+
+其次，要避免出现重复的 JavaScript 文件。从 Rails 3.1 开始，jQuery 成为默认的 JavaScript 库，Rails 会自动加载 `jquery.js`，不再需要手动把 `jquery.js` 复制到 `app/assets` 文件夹中。
+
+再次，要使用正确的默认选项更新各种环境配置文件。
+
+在 `application.rb` 配置文件中：
+
+[source,ruby]
+----
+# 静态资源文件的版本，通过修改这个选项可以使原有的静态资源文件缓存全部过期
+config.assets.version = '1.0'
+
+# 通过 onfig.assets.prefix = "/assets" 修改静态资源文件的路径
+----
+
+在 `development.rb` 配置文件中：
+
+[source,ruby]
+----
+# 展开用于加载静态资源文件的代码
+config.assets.debug = true
+----
+
+在 `production.rb` 配置文件中：
+
+[source,rugy]
+----
+# 选择（可用的）压缩工具
+config.assets.js_compressor = :uglifier
+# config.assets.css_compressor = :yui
+
+# 在找不到已编译的静态资源文件的情况下，不退回到 Asset Pipeline
+config.assets.compile = false
+
+# 为静态资源文件的 URL 地址生成指纹。新版 Rails 将不推荐使用此选项
+config.assets.digest = true
+
+# 预编译附加的静态资源文件（application.js、application.css 和所有
+# 已添加的非 JS/CSS 文件）
+# config.assets.precompile += %w( search.js )
+----
+
+Rails 4 及更高版本不会再在 `test.rb` 配置文件中添加 Sprockets 的默认设置，因此需要手动完成。需要添加的默认设置包括 `config.assets.compile = true`、`config.assets.compress = false`、`config.assets.debug = false` 和 `config.assets.digest = false`。
+
+最后，还要在 Gemfile 中加入下列 gem：
+
+[source,ruby]
+----
+gem 'sass-rails',   "~> 3.2.3"
+gem 'coffee-rails', "~> 3.2.1"
+gem 'uglifier'
+----

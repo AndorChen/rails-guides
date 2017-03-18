@@ -28,7 +28,7 @@
 | Debugging Rails Applications              | ✔   | ✔   |
 | Configuring Rails Applications             | ✔   | ✔   |
 | Rails Command Line Tools and Rake Tasks   | ✔   | ✔   |
-| Asset Pipeline                            |      |      |
+| Asset Pipeline                            | ✔   |      |
 | Working with JavaScript in Rails          | ✔   | ✔   |
 | The Rails Initialization Process          | ✔   | ✔    |
 | Autoloading and Reloading Constants       | ✔   | ✔   |
