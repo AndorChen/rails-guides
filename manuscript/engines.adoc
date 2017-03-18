@@ -214,3 +214,268 @@ end
 
 [[providing-engine-functionality]]
 === 为引擎添加功能
+
+本文创建的“blorgh”示例引擎，和<<getting_started,新手入门>>一文中的 Blog 应用类似，具有添加文章和评论的功能。
+
+[[generating-an-article-resource]]
+==== 生成文章资源
+
+创建博客引擎的第一步是生成 `Article` 模型和相关控制器。为此，我们可以使用 Rails 的脚手架生成器：
+
+[source,sh]
+----
+$ bin/rails generate scaffold article title:string text:text
+----
+
+上述命令输出的提示信息为：
+
+----
+invoke  active_record
+create    db/migrate/[timestamp]_create_blorgh_articles.rb
+create    app/models/blorgh/article.rb
+invoke    test_unit
+create      test/models/blorgh/article_test.rb
+create      test/fixtures/blorgh/articles.yml
+invoke  resource_route
+ route    resources :articles
+invoke  scaffold_controller
+create    app/controllers/blorgh/articles_controller.rb
+invoke    erb
+create      app/views/blorgh/articles
+create      app/views/blorgh/articles/index.html.erb
+create      app/views/blorgh/articles/edit.html.erb
+create      app/views/blorgh/articles/show.html.erb
+create      app/views/blorgh/articles/new.html.erb
+create      app/views/blorgh/articles/_form.html.erb
+invoke    test_unit
+create      test/controllers/blorgh/articles_controller_test.rb
+invoke    helper
+create      app/helpers/blorgh/articles_helper.rb
+invoke  assets
+invoke    js
+create      app/assets/javascripts/blorgh/articles.js
+invoke    css
+create      app/assets/stylesheets/blorgh/articles.css
+invoke  css
+create    app/assets/stylesheets/scaffold.css
+----
+
+脚手架生成器完成的第一项工作是调用 `active_record` 生成器，这个生成器会为文章资源生成迁移和模型。但请注意，这里生成的迁移是 `create_blorgh_articles` 而不是通常的 `create_articles`，这是因为我们在 `Blorgh::Engine` 类的定义中调用了 `isolate_namespace` 方法。同样，这里生成的模型也带有命名空间，模型文件储存在 `app/models/blorgh/article.rb` 文件夹而不是 `app/models/article.rb` 文件夹中。
+
+接下来，脚手架生成器会为此模型调用 `test_unit` 生成器，这个生成器会生成模型测试 `test/models/blorgh/article_test.rb`（而不是 `test/models/article_test.rb`）和测试固件 `test/fixtures/blorgh/articles.yml`（而不是 `test/fixtures/articles.yml`）。
+
+之后，脚手架生成器会在引擎的 `config/routes.rb` 文件中为文章资源添加路由，也即 `resources :articles`，修改后的 `config/routes.rb` 文件的内容如下：
+
+[source,ruby]
+----
+Blorgh::Engine.routes.draw do
+  resources :articles
+end
+----
+
+注意，这里的路由是通过 `Blorgh::Engine` 对象而非 `YourApp::Application` 类定义的。正如<<engines#test-directory,测试目录>>一节中介绍的那样，这样的做的目的是把引擎路由限制在引擎中，这样就可以根据需要把引擎路由挂载到不同位置，同时也把引擎路由和应用中的其他路由隔离开来。关于这个问题的更多介绍，请参阅<<engines#routes,路由>>一节。
+
+接下来，脚手架生成器会调用 `scaffold_controller` 生成器，以生成 `Blorgh::ArticlesController`（即 `app/controllers/blorgh/articles_controller.rb` 控制器文件）以及对应的视图（位于 `app/views/blorgh/articles` 文件夹中）、测试（即 `test/controllers/blorgh/articles_controller_test.rb` 测试文件）和辅助方法（即 `app/helpers/blorgh/articles_helper.rb` 文件）。
+
+脚手架生成器生成的上述所有组件都带有命名空间。其中控制器类在 `Blorgh` 模块中定义：
+
+[source,ruby]
+----
+module Blorgh
+  class ArticlesController < ApplicationController
+    ...
+  end
+end
+----
+
+NOTE: 这里的 `ArticlesController` 类继承自 `Blorgh::ApplicationController` 类，而不是应用的 `ApplicationController` 类。
+
+在 `app/helpers/blorgh/articles_helper.rb` 文件中定义的辅助方法也带有命名空间：
+
+[source,ruby]
+----
+module Blorgh
+  module ArticlesHelper
+    ...
+  end
+end
+----
+
+这样，即便其他引擎或应用中定义了同名的文章资源，也不会发生冲突。
+
+最后，脚手架生成器会生成两个静态资源文件 `app/assets/javascripts/blorgh/articles.js` 和 `app/assets/stylesheets/blorgh/articles.css`，其用法将在后文介绍。
+
+我们可以在引擎的根目录中通过 `bin/rails db:migrate` 命令运行前文中生成的迁移，然后在 `test/dummy` 文件夹中运行 `rails server` 命令以查看迄今为止的工作成果。打开 pass:[http://localhost:3000/blorgh/articles] 页面，可以看到刚刚生成的默认脚手架。随意点击页面中的链接吧！这是我们为引擎添加的第一项功能。
+
+我们也可以在 Rails 控制台中对引擎的功能进行一些测试，其效果和 Rails 应用类似。注意，因为引擎的 `Article` 模型带有命名空间，所以调用时应使用 `Blorgh::Article`：
+
+[source,irb]
+----
+>> Blorgh::Article.find(1)
+=> #<Blorgh::Article id: 1 ...>
+----
+
+最后一个需要注意的问题是，引擎的 `articles` 资源应作为引擎的根路径。当用户访问挂载引擎的根路径时，看到的应该是文章列表。具体的设置方法是在引擎的 `config/routes.rb` 文件中添加下面这行代码：
+
+[source,ruby]
+----
+root to: "articles#index"
+----
+
+这样，用户只需访问引擎的根路径，而无需访问 `/articles`，就可以看到所有文章的列表。也就是说，现在应该访问 pass:[http://localhost:3000/blorgh] 页面，而不是 pass:[http://localhost:3000/blorgh/articles] 页面。
+
+[[generating-a-comments-resource]]
+==== 生成评论资源
+
+到目前为止，我们的“blorgh”引擎已经能够新建文章了，下一步应该为文章添加评论。为此，我们需要生成评论模型和评论控制器，同时修改文章脚手架，以显示文章的已有评论并提供添加评论的表单。
+
+在引擎的根目录中运行模型生成器，以生成 `Comment` 模型，此模型具有 `article_id` 整型字段和 `text` 文本字段：
+
+[source,sh]
+----
+$ bin/rails generate model Comment article_id:integer text:text
+----
+
+上述命令输出的提示信息为：
+
+----
+invoke  active_record
+create    db/migrate/[timestamp]_create_blorgh_comments.rb
+create    app/models/blorgh/comment.rb
+invoke    test_unit
+create      test/models/blorgh/comment_test.rb
+create      test/fixtures/blorgh/comments.yml
+----
+
+通过运行模型生成器，我们生成了必要的模型文件，这些文件都储存在 `blorgh` 文件夹中（用作模型的命名空间），同时创建了 `Blorgh::Comment` 模型类。接下来，在引擎的根目录中运行迁移，以创建 `blorgh_comments` 数据表：
+
+[source,sh]
+----
+$ bin/rails db:migrate
+----
+
+为了显示文章评论，我们需要修改 `app/views/blorgh/articles/show.html.erb` 文件，在“修改”链接之前添加下面的代码：
+
+[source,erb]
+----
+<h3>Comments</h3>
+<%= render @article.comments %>
+----
+
+上述代码要求在 `Blorgh::Article` 模型上定义到 `comments` 的 `has_many` 关联，这项工作目前还未进行。为此，我们需要打开 `app/models/blorgh/article.rb` 文件，在模型定义中添加下面这行代码：
+
+[source,ruby]
+----
+has_many :comments
+----
+
+修改后的模型定义如下：
+
+[source,ruby]
+----
+module Blorgh
+  class Article < ApplicationRecord
+    has_many :comments
+  end
+end
+----
+
+NOTE: 这里的 `has_many` 关联是在 `Blorgh` 模块内的类中定义的，因此 Rails 知道应该为关联对象使用 `Blorgh::Comment` 模型，而无需指定 `:class_name` 选项。
+
+接下来，还需要提供添加评论的表单。为此，我们需要打开 `app/views/blorgh/articles/show.html.erb` 文件，在 `render @article.comments` 之后添加下面这行代码：
+
+[source,erb]
+----
+<%= render "blorgh/comments/form" %>
+----
+
+接下来需要添加上述代码中使用的局部视图。新建 `app/views/blorgh/comments` 文件夹，在其中新建 `called _form.html.erb` 文件并添加下面的局部视图代码：
+
+[source,erb]
+----
+<h3>New comment</h3>
+<%= form_for [@article, @article.comments.build] do |f| %>
+  <p>
+    <%= f.label :text %><br>
+    <%= f.text_area :text %>
+  </p>
+  <%= f.submit %>
+<% end %>
+----
+
+此表单在提交时，会向引擎的 `/articles/:article_id/comments` 地址发起 `POST` 请求。此地址对应的路由还不存在，为此需要打开 `config/routes.rb` 文件，修改其中的 `resources :articles` 相关代码：
+
+[source,ruby]
+----
+resources :articles do
+  resources :comments
+end
+----
+
+上述代码创建了表单所需的嵌套路由。
+
+我们刚刚添加了路由，但路由指向的控制器还不存在。为此，需要在引擎的根目录中运行下面的命令：
+
+[source,sh]
+----
+$ bin/rails g controller comments
+----
+
+上述命令输出的提示信息为：
+
+----
+create  app/controllers/blorgh/comments_controller.rb
+invoke  erb
+ exist    app/views/blorgh/comments
+invoke  test_unit
+create    test/controllers/blorgh/comments_controller_test.rb
+invoke  helper
+create    app/helpers/blorgh/comments_helper.rb
+invoke  assets
+invoke    js
+create      app/assets/javascripts/blorgh/comments.js
+invoke    css
+create      app/assets/stylesheets/blorgh/comments.css
+----
+
+提交表单时向 `/articles/:article_id/comments` 地址发起的 `POST` 请求，将由 `Blorgh::CommentsController` 的 `create` 动作处理。我们需要创建此动作，为此需要打开 `app/controllers/blorgh/comments_controller.rb` 文件，并在类定义中添加下面的代码：
+
+[source,ruby]
+----
+def create
+  @article = Article.find(params[:article_id])
+  @comment = @article.comments.create(comment_params)
+  flash[:notice] = "Comment has been created!"
+  redirect_to articles_path
+end
+
+private
+  def comment_params
+    params.require(:comment).permit(:text)
+  end
+----
+
+这是提供评论表单的最后一步。但是仍有问题需要解决，如果我们添加一条评论，将会遇到下面的错误：
+
+----
+Missing partial blorgh/comments/_comment with {:handlers=>[:erb, :builder],
+:formats=>[:html], :locale=>[:en, :en]}. Searched in:   *
+"/Users/ryan/Sites/side_projects/blorgh/test/dummy/app/views"   *
+"/Users/ryan/Sites/side_projects/blorgh/app/views"
+----
+
+引擎无法找到渲染评论所需的局部视图。Rails 首先会在测试应用（`test/dummy`）的 `app/views` 文件夹中进行查找，然在在引擎的 `app/views` 文件夹中进行查找。如果找不到，就会抛出上述错误。因为引擎接收的模型对象来自 `Blorgh::Comment` 类，所以引擎知道应该查找 `blorgh/comments/_comment` 局部视图。
+
+目前，`blorgh/comments/_comment` 局部视图只需渲染评论文本。为此，我们可以新建 `app/views/blorgh/comments/_comment.html.erb` 文件，并添加下面这行代码：
+
+[source,erb]
+----
+<%= comment_counter + 1 %>. <%= comment.text %>
+----
+
+上述代码中的 `comment_counter` 局部变量由 `<%= render @article.comments %>` 调用提供，此调用会遍历每条评论并自动增加计数器的值。这里的 `comment_counter` 局部变量用于为每条评论添加序号。
+
+到此为止，我们完成了博客引擎的评论功能。接下来我们就可以在应用中使用这项功能了。
+
+[[hooking-into-an-application]]
+=== 把引擎挂载到应用中
