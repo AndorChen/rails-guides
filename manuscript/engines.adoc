@@ -14,7 +14,7 @@
 * 引擎由什么组成；
 * 如何生成引擎；
 * 如何为引擎创建特性；
-* 如何把引擎挂接到应用中；
+* 如何把引擎挂载到应用中；
 * 如何在应用中覆盖引擎的功能。
 --
 
@@ -27,7 +27,7 @@
 
 引擎还和插件密切相关。两者具有相同的 `lib` 目录结构，并且都使用 `rails plugin new` 生成器来生成。区别在于，引擎被 Rails 视为“完整插件”（通过传递给生成器的 `--full` 选项我们可以看到这一点）。在这里我们实际使用的是 `--mountable` 选项，这个选项包含了 `--full` 选项的所有特性。本文把这类“完整插件”简称为“引擎”。也就是说，引擎可以是插件，插件也可以是引擎。
 
-本文将创建名为“blorgh”的引擎，用于为宿主应用提供博客功能，即新建文章和评论的功能。在本文的开头部分，我们将看到引擎的内部工作原理，在之后的部分中，我们将看到如何把引擎挂接到应用中。
+本文将创建名为“blorgh”的引擎，用于为宿主应用提供博客功能，即新建文章和评论的功能。在本文的开头部分，我们将看到引擎的内部工作原理，在之后的部分中，我们将看到如何把引擎挂载到应用中。
 
 我们还可以把引擎和宿主应用隔离开来。也就是说，应用和引擎可以使用同名的 `articles_path` 路由辅助方法而不会发生冲突。除此之外，应用和引擎的控制器、模型和表名也具有不同的命名空间。后文将介绍这些特性是如何实现的。
 
@@ -39,3 +39,178 @@
 
 [[generating-an-engine]]
 === 生成引擎
+
+通过运行插件生成器并传递必要的选项就可以生成引擎。在“blorgh”引擎的例子中，我们需要创建“可挂载”的引擎，为此可以在终端中运行下面的命令：
+
+[source,sh]
+----
+$ rails plugin new blorgh --mountable
+----
+
+通过下面的命令可以查看插件生成器选项的完整列表：
+
+[source,sh]
+----
+$ rails plugin --help
+----
+
+通过 `--mountable` 选项，生成器会创建“可挂载”和具有独立命名空间的引擎。此选项和 `--full` 选项会为引擎生成相同的程序骨架。通过 `--full` 选项，生成器会在创建引擎的同时生成的下面的程序骨架：
+
+* `app` 目录树
+* `config/routes.rb` 文件：
+
+[source,ruby]
+----
+Rails.application.routes.draw do
+end
+----
+
+* `lib/blorgh/engine.rb` 文件，相当于 Rails 应用的 `config/application.rb` 配置文件：
+
+[source,ruby]
+----
+module Blorgh
+  class Engine < ::Rails::Engine
+  end
+end
+----
+
+`--mountable` 选项在 `--full` 选项的基础上增加了如下特性：
+
+* 静态资源文件的清单文件（`application.js` 和 `application.css`）
+* 具有独立命名空间的 `ApplicationController`
+* 具有独立命名空间的 `ApplicationHelper`
+* 引擎的布局视图模板
+* 在 `config/routes.rb` 文件中为引擎设置独立的命名空间：
+
+[source,ruby]
+----
+Blorgh::Engine.routes.draw do
+end
+----
+
+* 在 `lib/blorgh/engine.rb` 文件中为引擎设置独立的命名空间：
+
+[source,ruby]
+----
+module Blorgh
+  class Engine < ::Rails::Engine
+    isolate_namespace Blorgh
+  end
+end
+----
+
+此外，通过 `--mountable` 选项，生成器会在位于 `test/dummy` 的 dummy 测试应用中挂载 blorgh 引擎，具体做法是把下面这行代码添加到 dummy 应用的路由文件 `test/dummy/config/routes.rb` 中：
+
+[source,ruby]
+----
+mount Blorgh::Engine => "/blorgh"
+----
+
+[[inside-an-engine]]
+==== 深入引擎内部
+
+[[critical-files]]
+===== 关键文件
+
+在新建引擎的文件夹中有一个 `blorgh.gemspec` 文件。通过在 Rails 应用的 Gemfile 文件中添加下面的代码，可以把引擎挂载到应用中：
+
+[source,ruby]
+----
+gem 'blorgh', path: 'engines/blorgh'
+----
+
+和往常一样，别忘了运行 `bundle install` 命令。通过在 Gemfile 中添加 `blorgh` gem，Bundler 将加载此 gem，解析其中的 `blorgh.gemspec` 文件，并加载 `lib/blorgh.rb` 文件。`lib/blorgh.rb` 文件会加载 `lib/blorgh/engine.rb` 文件，其中定义了 `Blorgh` 基础模块。
+
+[source,ruby]
+----
+require "blorgh/engine"
+
+module Blorgh
+end
+----
+
+TIP: 有些引擎会通过 `lib/blorgh/engine.rb` 文件提供全局配置选项。相对而言这是个不错的主意，因此我们可以优先选择在定义引擎模块的 `lib/blorgh/engine.rb` 文件中定义全局配置选项，也就是在引擎模块中定义相关方法。
+
+在 `lib/blorgh/engine.rb` 文件中定义引擎的基类：
+
+[source,ruby]
+----
+module Blorgh
+  class Engine < ::Rails::Engine
+    isolate_namespace Blorgh
+  end
+end
+----
+
+通过继承 `Rails::Engine` 类，`blorgh` gem 告知 Rails 在指定路径上有一个引擎，Rails 会把该引擎正确挂载到应用中，并执行相关任务，例如把 `app` 文件夹添加到模型、邮件程序、控制器和视图的加载路径中。
+
+这里的 `isolate_namespace` 方法尤其需要注意。通过调用此方法，可以把引擎的控制器、模型、路由和其他组件隔离到各自的命名空间中，以便和应用中的类似组件隔离开来。要是没有这个方法，引擎的组件就可能“泄漏”到应用中，从而引起意外的混乱，引擎的重要组件也可能被应用中的同名组件覆盖。这类冲突的一个例子是辅助方法。在未调用 `isolate_namespace` 方法的情况下，引擎的辅助方法会被包含到应用的控制器中。
+
+NOTE: 强烈建议在 `Engine` 类的定义中调用 `isolate_namespace` 方法。在未调用此方法的情况下，引擎中生成的类有可能和应用发生冲突。
+
+命名空间隔离的意思是，通过 `bin/rails g model` 生成的模型，例如 `bin/rails g model article`，不会被命名为 `Article`，而会被命名为带有命名空间的 `Blorgh::Article`。此外，模型的表名同样带有命名空间，也就是说表名不是 `articles`，而是 `blorgh_articles`。和模型的命名规则类似，控制器不会被命名为 `ArticlesController`，而会被命名为 `Blorgh::ArticlesController`，控制器对应的视图不是 `app/views/articles`，而是 `app/views/blorgh/articles`。邮件程序的情况类似。
+
+最后，路由也会被隔离在引擎中。这是命名空间最重要的内容之一，稍后将在本文的<<engines#routes,路由>>一节中介绍。
+
+[[app-directory]]
+===== `app` 文件夹
+
+和应用类似，引擎的 `app` 文件夹中包含了标准的 `assets`、`controllers`、`helpers`、`mailers`、`models` 和 `views` 文件夹。其中 `helpers`、`mailers` 和 `models` 是空文件夹，因此本节不作介绍。后文介绍引擎编写时，会详细介绍 `models` 文件夹。
+
+同样，和应用类似，引擎的 `app/assets` 文件夹中包含了 `images`、`javascripts` 和 `stylesheets` 文件夹。不过两者有一个区别，引擎的这三个文件夹中还包含了和引擎同名的文件夹。因为引擎位于命名空间中，所以引擎的静态资源文件也位于命名空间中。
+
+`app/controllers` 文件夹中包含 `blorgh` 文件夹，其中包含 `application_controller.rb` 文件。此文件中包含了引擎控制器的通用功能。其他控制器文件也应该放在 `blorgh` 文件夹中。通过把引擎的控制器文件放在 `blorgh` 文件夹（作为控制器的命名空间）中，就可以避免和其他引擎甚至应用中的同名控制器发生冲突。
+
+NOTE: 引擎的 `ApplicationController` 类采用了和 Rails 应用相同的命名规则，这样便于把应用转换为引擎。
+
+NOTE: 鉴于 Ruby 进行常量查找的方式，我们可能会遇到引擎的控制器继承自应用的 `ApplicationController`，而不是继承自引擎的 `ApplicationController` 的情况。此时 Ruby 能够解析 `ApplicationController`，因此不会触发自动加载机制。关于这个问题的更多介绍，请参阅<<autoloading_and_reloading_constants#when-constants-aren-t-missed,当常量存在时>>和<<autoloading_and_reloading_constants,常量的自动加载和重新加载>>两节的内容。避免出现这种情况的最好办法是使用 `require_dependency` 方法，以确保加载的是引擎的 `ApplicationController`。例如：
+
+[source,ruby]
+----
+# app/controllers/blorgh/articles_controller.rb:
+require_dependency "blorgh/application_controller"
+
+module Blorgh
+  class ArticlesController < ApplicationController
+    ...
+  end
+end
+----
+
+WARNING: 不要使用 `require` 方法，否则会破坏开发环境中类的自动重新加载——使用 `require_dependency` 方法才能确保以正确的方式加载和卸载类。
+
+最后，`app/views` 文件夹中包含 `layouts` 文件夹，其中包含 `blorgh/application.html.erb` 文件。此文件用于为引擎指定布局。如果此引擎要作为独立引擎使用，那么应该在此文件而不是 `app/views/layouts/application.html.erb` 文件中自定义引擎布局。
+
+如果不想强制用户使用引擎布局，那么可以删除此文件，并在引擎控制器中引用不同的布局。
+
+[[bin-directory]]
+===== `bin` 文件夹
+
+引擎的 `bin` 文件夹中包含 `bin/rails` 文件。和应用类似，此文件提供了对 `rails` 子命令和生成器的支持。也就是说，我们可以像下面这样通过命令生成引擎的控制器和模型：
+
+[source,sh]
+----
+$ bin/rails g model
+----
+
+记住，在 Engine 类中调用 isolate_namespace 方法后，通过这些命令生成的引擎控制器和模型都将位于命名空间中。
+
+[[test-directory]]
+===== `test` 文件夹
+
+引擎的 `test` 文件夹用于储存引擎测试文件。在 `test/dummy` 文件夹中有一个内嵌于引擎中的精简版 Rails 测试应用，可用于测试引擎。此测试应用会挂载 `test/dummy/config/routes.rb` 文件中的引擎：
+
+[source,ruby]
+----
+Rails.application.routes.draw do
+  mount Blorgh::Engine => "/blorgh"
+end
+----
+
+上述代码会挂载 `/blorgh` 文件夹中的引擎，在应用中只能通过此路径访问该引擎。
+
+`test/integration` 文件夹用于储存引擎的集成测试文件。在 `test` 文件夹中还可以创建其他文件夹。例如，我们可以为引擎的模型测试创建 `test/models` 文件夹。
+
+[[providing-engine-functionality]]
+=== 为引擎添加功能
