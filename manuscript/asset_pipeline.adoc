@@ -132,7 +132,7 @@ Rails 的 Asset Pipeline 也采取了这种策略。
 
 WARNING: 在进行静态资源文件预编译时，请确保针对控制器的静态文件是在按页加载时进行预编译的。默认情况下，Rails 不会自动对 `.coffee` 和 `.scss` 文件进行预编译。关于预编译工作原理的更多介绍，请参阅<<asset_pipeline#precompiling-assets,预编译静态资源文件>>一节。
 
-NOTE: 要想使用 CoffeeScript，就必须安装支持 ExecJS 的运行时。Mac OS X 和 Windows 已经预装了这样的运行时。关于所有可用运行时的更多介绍，请参阅 link:$$https://github.com/rails/execjs#readme$$[ExecJS] 文档。
+NOTE: 要使用 CoffeeScript，就必须安装支持 ExecJS 的运行时。Mac OS X 和 Windows 已经预装了此类运行时。关于所有可用运行时的更多介绍，请参阅 link:$$https://github.com/rails/execjs#readme$$[ExecJS] 文档。
 
 通过在 `config/application.rb` 配置文件中添加下述代码，可以禁止生成针对控制器的静态资源文件：
 
@@ -793,3 +793,103 @@ http://mycdnsubdomain.fictional-cdn.com/assets/smile.png
 
 [[customizing-the-pipeline]]
 === 自定义 Asset Pipeline
+
+[[css-compression]]
+==== 压缩 CSS
+
+压缩 CSS 的可选方式之一是使用 YUI。通过 link:$$http://yui.github.io/yuicompressor/css.html$$[YUI CSS 压缩器]可以缩小 CSS 文件的大小。
+
+在 Gemfile 中添加 `yui-compressor` gem 后，通过下面的设置可以启用 YUI 压缩：
+
+[source,ruby]
+----
+config.assets.css_compressor = :yui
+----
+
+如果我们在 Gemfile 中添加了 `sass-rails` gem，那么也可以使用 Sass 压缩：
+
+[source,ruby]
+----
+config.assets.css_compressor = :sass
+----
+
+[[javascript-compression]]
+==== 压缩 JavaScript
+
+压缩 JavaScript 的可选方式有 `:closure`、`:uglifier` 和 `:yui`，分别要求在 Gemfile 中添加 `closure-compiler`、`uglifier` 和 `yui-compressor` gem。
+
+默认情况下，Gemfile 中包含了 link:$$https://github.com/lautis/uglifier$$[uglifier] gem，这个 gem 使用 Ruby 包装 link:$$https://github.com/mishoo/UglifyJS$$[UglifyJS]（使用 NodeJS 开发），作用是通过删除空白和注释、缩短局部变量名及其他微小优化（例如在可能的情况下把 `if...else` 语句修改为三元运算符）压缩 JavaScript 代码。
+
+使用 `uglifier` 压缩 JavaScript 需进行如下设置：
+
+[source,ruby]
+----
+config.assets.js_compressor = :uglifier
+----
+
+NOTE: 要使用 `uglifier` 压缩 JavaScript，就必须安装支持 link:$$https://github.com/rails/execjs#readme$$[ExecJS] 的运行时。Mac OS X 和 Windows 已经预装了此类运行时。
+
+[[serving-gzipped-version-of-assets]]
+==== 用 GZip 压缩静态资源文件
+
+默认情况下，Sprockets 会用 GZip 压缩编译后的静态资源文件，同时也会保留未压缩的版本。通过 GZip 压缩可以减少对带宽的占用。设置 GZip 压缩的方式如下：
+
+[source,ruby]
+----
+config.assets.gzip = false # 禁止用 GZip 压缩静态资源文件
+----
+
+[[using-your-own-compressor]]
+==== 自定义压缩工具
+
+在设置 CSS 和 JavaScript 压缩工具时还可以使用对象。这个对象要能响应 `compress` 方法，这个方法接受一个字符串作为唯一参数，并返回一个字符串。
+
+[source,ruby]
+----
+class Transformer
+  def compress(string)
+    do_something_returning_a_string(string)
+  end
+end
+----
+
+要使用这个压缩工具，需在 `application.rb` 配置文件中进行如下设置：
+
+[source,ruby]
+----
+config.assets.css_compressor = Transformer.new
+----
+
+[[changing-the-assets-path]]
+==== 修改静态资源文件的路径
+
+默认情况下，Sprockets 使用 `/assets` 作为静态资源文件的公开路径。
+
+我们可以修改这个路径：
+
+[source,ruby]
+----
+config.assets.prefix = "/some_other_path"
+----
+
+通过这种方式，在升级未使用 Asset Pipeline 但使用了 `/assets` 路径的老项目时，我们就可以轻松为新的静态资源文件设置另一个公开路径。
+
+[[x-sendfile-headers]]
+==== `X-Sendfile` 请求头
+
+`X-Sendfile` 请求头的作用是让 Web 服务器忽略应用对请求的响应，直接返回硬盘上的指定文件。默认情况下 Rails 不会发送这个请求头，但在支持这个请求头的服务器上可以启用这一特性，以提供更快的响应速度。关于这一特性的更多介绍，请参阅 link:$$http://api.rubyonrails.org/classes/ActionController/DataStreaming.html#method-i-send_file$$[send_file 方法]的文档。
+
+Apache 和 NGINX支持 `X-Sendfile` 请求头，启用方法是在 `config/environments/production.rb` 配置文件中进行设置：
+
+[source,ruby]
+----
+# config.action_dispatch.x_sendfile_header = "X-Sendfile" # for Apache
+# config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
+----
+
+WARNING: 要想在升级已有应用时使用上述选项，可以把这两行代码粘贴到 `production.rb` 配置文件中，或其他类似的生产环境配置文件中。
+
+TIP: 更多介绍请参阅生产服务器的相关文档：link:$$https://tn123.org/mod_xsendfile/$$[Apache]、link:$$http://wiki.nginx.org/XSendfile$$[NGINX]。
+
+[[assets-cache-store]]
+=== 静态资源文件缓存的存储方式
