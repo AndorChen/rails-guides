@@ -1,2 +1,22 @@
 [[getting-started-with-engines]]
 == 引擎入门
+:imagesdir: ../images
+:numbered:
+
+// chinakr 翻译
+
+[.chapter-abstract]
+--
+本文介绍引擎及其用法，即如何通过引擎这个干净、易用的接口，为宿主应用提供附加功能。
+
+读完本文后，您将学到：
+
+* 引擎由什么组成；
+* 如何生成引擎；
+* 如何为引擎创建特性；
+* 如何把引擎挂接到应用中；
+* 如何在应用中覆盖引擎的功能。
+--
+
+[[what-are-engines]]
+=== 引擎是什么
