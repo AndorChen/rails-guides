@@ -1,7 +1,5 @@
 [[the-asset-pipeline]]
 == Asset Pipeline
-:imagesdir: ../images
-:numbered:
 
 // chinakr 翻译
 
