@@ -40,7 +40,7 @@
 [[generating-an-engine]]
 === 生成引擎
 
-通过运行插件生成器并传递必要的选项就可以生成引擎。在“blorgh”引擎的例子中，我们需要创建“可挂载”的引擎，为此可以在终端中运行下面的命令：
+通过运行插件生成器并传递必要的选项就可以生成引擎。在 Blorgh 引擎的例子中，我们需要创建“可挂载”的引擎，为此可以在终端中运行下面的命令：
 
 [source,sh]
 ----
@@ -327,7 +327,7 @@ root to: "articles#index"
 [[generating-a-comments-resource]]
 ==== 生成评论资源
 
-到目前为止，我们的“blorgh”引擎已经能够新建文章了，下一步应该为文章添加评论。为此，我们需要生成评论模型和评论控制器，同时修改文章脚手架，以显示文章的已有评论并提供添加评论的表单。
+到目前为止，我们的 Blorgh 引擎已经能够新建文章了，下一步应该为文章添加评论。为此，我们需要生成评论模型和评论控制器，同时修改文章脚手架，以显示文章的已有评论并提供添加评论的表单。
 
 在引擎的根目录中运行模型生成器，以生成 `Comment` 模型，此模型具有 `article_id` 整型字段和 `text` 文本字段：
 
@@ -479,3 +479,290 @@ Missing partial blorgh/comments/_comment with {:handlers=>[:erb, :builder],
 
 [[hooking-into-an-application]]
 === 把引擎挂载到应用中
+
+要想在应用中使用引擎非常容易。本节介绍如何把引擎挂载到应用中并完成必要的初始化设置，以及如何把引擎连接到应用中的 `User` 类上，以便使应用中的用户拥有引擎中的文章及其评论。
+
+[[mounting-the-engine]]
+==== 挂载引擎
+
+首先，需要在应用的 Gemfile 中指定引擎。我们需要新建一个应用用于测试，为此可以在引擎文件夹之外执行 `rails new` 命令：
+
+[source,sh]
+----
+$ rails new unicorn
+----
+
+通常，只需在 Gemfile 中以普通 gem 的方式指定引擎。
+
+[source,ruby]
+----
+gem 'devise'
+----
+
+由于我们是在本地开发 `blorgh` 引擎，因此需要在 Gemfile 中指定 `:path` 选项：
+
+[source,ruby]
+----
+gem 'blorgh', path: 'engines/blorgh'
+----
+
+然后通过 `bundle` 命令安装 gem。
+
+如前文所述，Gemfile 中的 gem 将在 Rails 启动时加载。上述代码首先加载引擎中的 `lib/blorgh.rb` 文件，然后加载 `lib/blorgh/engine.rb` 文件，后者定义了引擎的主要功能。
+
+要想在应用中访问引擎的功能，我们需要在应用的 `config/routes.rb` 文件中挂载该引擎：
+
+[source,ruby]
+----
+mount Blorgh::Engine, at: "/blog"
+----
+
+上述代码会在应用的 `/blog` 路径上挂载引擎。通过 `rails server` 命令运行应用后，我们就可以通过 pass:[http://localhost:3000/blog] 访问引擎了。
+
+NOTE: 其他一些引擎，例如 Devise，工作原理略有不同，这些引擎会在路由中自定义辅助方法（例如 `devise_for`）。这些辅助方法的作用都是在预定义路径（可以自定义）上挂载引擎的功能。
+
+[[engine-setup]]
+==== 引擎设置
+
+引擎中包含了 `blorgh_articles` 和 `blorgh_comments` 数据表的迁移。通过这些迁移在应用数据库中创建数据表之后，引擎模型才能正确查询对应的数据表。在引擎的 `test/dummy` 文件夹中运行下面的命令，可以把这些迁移复制到应用中：
+
+[source,sh]
+----
+$ bin/rails blorgh:install:migrations
+----
+
+如果需要从多个引擎中复制迁移，可以使用 `railties:install:migrations`：
+
+[source,sh]
+----
+$ bin/rails railties:install:migrations
+----
+
+第一次运行上述命令时，Rails 会从所有引擎中复制迁移。再次运行时，只会复制尚未复制的迁移。第一次运行上述命令时输出的提示信息为：
+
+----
+Copied migration [timestamp_1]_create_blorgh_articles.blorgh.rb from blorgh
+Copied migration [timestamp_2]_create_blorgh_comments.blorgh.rb from blorgh
+----
+
+其中第一个时间戳（`[timestamp_1]`）是当前时间，第二个时间戳（`[timestamp_2]`）是当前时间加上 1 秒。这样就能确保引擎的迁移总是在应用的现有迁移之后运行。
+
+通过 `bin/rails db:migrate` 命令即可在应用的上下文中运行引擎的迁移。此时访问 pass:[http://localhost:3000/blog] 会看到文章列表是空的，这是因为在应用中和在引擎中创建的数据表有所不同。继续浏览刚刚挂载的这个引擎的其他页面，我们会发现引擎和应用看起来并没有什么区别。
+
+通过指定 `SCOPE` 选项，我们可以只运行指定引擎的迁移：
+
+[source,sh]
+----
+bin/rails db:migrate SCOPE=blorgh
+----
+
+在需要还原并删除引擎的迁移时常常采取这种做法。通过下面的命令可以还原 `blorgh` 引擎的所有迁移：
+
+[source,sh]
+----
+bin/rails db:migrate SCOPE=blorgh VERSION=0
+----
+
+[[using-a-class-provided-by-the-application]]
+==== 使用应用提供的类
+
+[[using-a-model-provided-by-the-application]]
+===== 使用应用提供的模型
+
+在创建引擎时，有时需要通过应用提供的类把引擎和应用连接起来。在 `blorgh` 引擎的例子中，我们需要把文章及其评论和作者关联起来。
+
+一个典型的应用可能包含 `User` 类，可用于表示文章和评论的作者。但有的应用包含的可能是 `Person` 类而不是 `User` 类。因此，我们不能通过硬编码直接在引擎中建立和 `User` 类的关联。
+
+为了避免例子变得复杂，我们假设应用包含的是 `User` 类（后文将对这个类进行配置）。通过下面的命令可以在应用中生成这个 `User` 类：
+
+[source,sh]
+----
+rails g model user name:string
+----
+
+然后执行 `bin/rails db:migrate` 命令以创建 `users` 数据表。
+
+同样，为了避免例子变得复杂，我们会在文章表单中添加 `author_name` 文本字段，用于输入作者名称。引擎会根据作者名称新建或查找已有的 `User` 对象，然后建立此 `User` 对象和其文章的关联。
+
+具体操作的第一步是在引擎的 `app/views/blorgh/articles/_form.html.erb` 局部视图中添加 `author_name` 文本字段，添加的位置是在 `title` 字段之前：
+
+[source,erb]
+----
+<div class="field">
+  <%= f.label :author_name %><br>
+  <%= f.text_field :author_name %>
+</div>
+----
+
+接下来，需要更新 `Blorgh::ArticleController#article_params` 方法，以便使用新增的表单参数：
+
+[source,ruby]
+----
+def article_params
+  params.require(:article).permit(:title, :text, :author_name)
+end
+----
+
+然后还要在 `Blorgh::Article` 模型中添加相关代码，以便把 `author_name` 字段转换为实际的 `User` 对象，并在保存文章之前把 `User` 对象和其文章关联起来。为此，需要为 `author_name` 字段设置 `attr_accessor`，也就是为其定义设值方法（setter）和读值方法（getter）。
+
+为此，我们不仅需要为 `author_name` 添加 `attr_accessor`，还需要为 `author` 建立关联，并在 `app/models/blorgh/article.rb` 文件中添加 `before_validation` 调用。这里，我们暂时通过硬编码直接把 `author` 关联到 `User` 类上。
+
+[source,ruby]
+----
+attr_accessor :author_name
+belongs_to :author, class_name: "User"
+
+before_validation :set_author
+
+private
+  def set_author
+    self.author = User.find_or_create_by(name: author_name)
+  end
+----
+
+通过把 `author` 对象关联到 `User` 类上，我们成功地把引擎和应用连接起来。接下来还需要通过某种方式把 `blorgh_articles` 和 `users` 数据表中的记录关联起来。由于关联的名称是 `author`，我们应该为 `blorgh_articles` 数据表添加 `author_id` 字段。
+
+在引擎中运行下面的命令可以生成 `author_id` 字段：
+
+[source,sh]
+----
+$ bin/rails g migration add_author_id_to_blorgh_articles author_id:integer
+----
+
+NOTE: 通过迁移名称和所提供的字段信息，Rails 知道需要向数据表中添加哪些字段，并会将相关代码写入迁移中，因此无需手动编写迁移代码。
+
+我们应该在应用中运行迁移，因此需要通过下面的命令把引擎的迁移复制到应用中：
+
+[source,sh]
+----
+$ bin/rails blorgh:install:migrations
+----
+
+注意，上述命令实际只复制了一个迁移，因为之前的两个迁移在上一次执行此命令时已经复制过了。
+
+----
+NOTE Migration [timestamp]_create_blorgh_articles.blorgh.rb from blorgh has been skipped. Migration with the same name already exists.
+NOTE Migration [timestamp]_create_blorgh_comments.blorgh.rb from blorgh has been skipped. Migration with the same name already exists.
+Copied migration [timestamp]_add_author_id_to_blorgh_articles.blorgh.rb from blorgh
+----
+
+然后通过下面的命令运行迁移：
+
+[source,sh]
+----
+$ bin/rails db:migrate
+----
+
+现在，一切都已各就各位，我们完成了作者（用应用的 `users` 数据表中的记录表示）和文章（用引擎的 `blorgh_articles` 数据表中的记录表示）的关联。
+
+最后，还需要把作者名称显示在文章页面上。为此，需要在 `app/views/blorgh/articles/show.html.erb` 文件中把下面的代码添加到“Title”之前：
+
+[source,erb]
+----
+<p>
+  <b>Author:</b>
+  <%= @article.author.name %>
+</p>
+----
+
+[[using-a-controller-provided-by-the-application]]
+===== 使用应用提供的控制器
+
+默认情况下，Rails 控制器通常会通过继承 `ApplicationController` 类实现功能共享，例如身份验证和会话变量的访问。而引擎的作用域是和宿主应用隔离开的，因此其 `ApplicationController` 类具有独立的命名空间。独立的命名空间避免了代码冲突，但是引擎的控制器常常需要访问宿主应用的 `ApplicationController` 类中的方法，为此我们可以让引擎的 `ApplicationController` 类继承自宿主应用的 `ApplicationController` 类。在 Blorgh 引擎的例子中，我们可以对 `app/controllers/blorgh/application_controller.rb` 文件进行如下修改：
+
+[source,ruby]
+----
+module Blorgh
+  class ApplicationController < ::ApplicationController
+  end
+end
+----
+
+默认情况下，引擎的控制器继承自 `Blorgh::ApplicationController` 类，因此通过上述修改，这些控制器将能够访问宿主应用的 `ApplicationController` 类中的方法，就好像它们是宿主应用的一部分一样。
+
+当然，进行上述修改的前提是，宿主应用必须是具有 `ApplicationController` 类的应用。
+
+[[configuring-an-engine]]
+==== 配置引擎
+
+本节介绍如何使 `User` 类成为可配置的，然后介绍引擎的基本配置中的注意事项。
+
+[[setting-configuration-settings-in-the-application]]
+==== 在引擎中配置所使用的应用中的类
+
+接下来我们需要想办法在引擎中配置所使用的应用中的用户类。如前文所述，应用中的用户类有可能是 `User`，也有可能是 `Person` 或其他类，因此这个用户类必须是可配置的。为此，我们需要在引擎中通过 `author_class` 选项指定所使用的应用中的用户类。
+
+具体操作是在引擎的 `Blorgh` 模块中使用 `mattr_accessor` 方法，也就是把下面这行代码添加到引擎的 `lib/blorgh.rb` 文件中：
+
+[source,ruby]
+----
+mattr_accessor :author_class
+----
+
+`mattr_accessor` 方法的工作原理与 `attr_accessor` 和 `cattr_accessor` 方法类似，其作用是根据指定名称为模块提供设值方法和读值方法。使用时直接调用 `Blorgh.author_class` 方法即可。
+
+接下来需要把 `Blorgh::Article` 模型切换到新配置，具体操作是在 `app/models/blorgh/article.rb` 中修改模型的 `belongs_to` 关联：
+
+[source,ruby]
+----
+belongs_to :author, class_name: Blorgh.author_class
+----
+
+`Blorgh::Article` 模型的 `set_author` 方法的定义也调用了 `Blorgh.author_class` 方法：
+
+[source,ruby]
+----
+self.author = Blorgh.author_class.constantize.find_or_create_by(name: author_name)
+----
+
+为了避免在每次调用 `Blorgh.author_class` 方法时调用 `constantize` 方法，我们可以在 `lib/blorgh.rb` 文件中重载 `Blorgh` 模块的 `author_class` 读值方法，在返回 `author_class` 前调用 `constantize` 方法：
+
+[source,ruby]
+----
+def self.author_class
+  @@author_class.constantize
+end
+----
+
+这时上述 `set_author` 方法的定义将变为：
+
+[source,ruby]
+----
+self.author = Blorgh.author_class.find_or_create_by(name: author_name)
+----
+
+修改后的代码更短，意义更明确。`author_class` 方法本来就应该返回 `Class` 对象。
+
+因为修改后的 `author_class` 方法返回的是 `Class`，而不是原来的 `String`，我们还需要修改 `Blorgh::Article` 模型中 `belongs_to` 关联的定义：
+
+[source,ruby]
+----
+belongs_to :author, class_name: Blorgh.author_class.to_s
+----
+
+为了配置引擎所使用的应用中的类，我们需要使用初始化程序。只有通过初始化程序，我们才能在应用启动并调用引擎模型前完成相关配置。
+
+在安装 `blorgh` 引擎的应用中，打开 `config/initializers/blorgh.rb` 文件，创建新的初始化程序并添加如下代码：
+
+[source,ruby]
+----
+Blorgh.author_class = "User"
+----
+
+WARNING: 注意这里使用的是类的字符串版本，而非类本身。如果我们使用了类本身，Rails 就会尝试加载该类并引用对应的数据表。如果对应的数据表还未创建，就会抛出错误。因此，这里只能使用类的字符串版本，然后在引擎中通过 `constantize` 方法把类的字符串版本转换为类本身。
+
+接下来我们试着添加一篇文章，整个过程和之前并无差别，只不过这次引擎使用的是我们在 `config/initializers/blorgh.rb` 文件中配置的类。
+
+这样，我们再也不必关心应用中的用户类到底是什么，而只需关心该用户类是否实现了我们所需要的 API。`blorgh` 引擎只要求应用中的用户类实现了 `find_or_create_by` 方法，此方法需返回该用户类的对象，以便和对应的文章关联起来。当然，用户类的对象必需具有某种标识符，以便引用。
+
+[[general-engine-configuration]]
+===== 引擎的基本配置
+
+在引擎中，有时我们也需要使用初始化程序、国际化或其他配置选项。一般来说这些都可以实现，因为 Rails 引擎和 Rails 应用共享了相当多的功能。事实上，Rails 应用的功能就是 Rails 引擎的功能的超集。
+
+引擎的初始化程序包含了需要在加载引擎之前运行的代码，其存储位置是引擎的 `config/initializers` 文件夹。“配置 Rails 应用”一文的<<configuring#initializers,初始化程序>>一节介绍了应用的 `config/initializers` 文件夹的功能，而引擎和应用的 `config/initializers` 文件夹的功能完全相同。对于标准的初始化程序，需要完成的工作都是一样的。
+
+引擎的区域设置也和应用相同，只需把区域设置文件放在引擎的 `config/locales` 文件夹中即可。
+
+[[testing-an-engine]]
+=== 测试引擎
