@@ -1,7 +1,5 @@
 [[getting-started-with-engines]]
 == 引擎入门
-:imagesdir: ../images
-:numbered:
 
 // chinakr 翻译
 
