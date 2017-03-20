@@ -1,5 +1,7 @@
 ### master
 
+### v5.0.2.1, 2017-3-20
+
 - 更新到 Rails 5.0.2
 - 增加“Rails 初始化过程”
 - 增加“Asset Pipeline”
