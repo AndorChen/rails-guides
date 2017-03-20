@@ -2,7 +2,7 @@
 :slug: railsguides
 :translator: 安道/chinakr
 :translator-email: andor.chen.27@email.com
-:revnumber: 5.0.1.2
+:revnumber: 5.0.2.1
 :revdate: 2017-02-28T20:00:00+08:00
 :lang: zh-CN
 :description: Rails 全方位解读。
