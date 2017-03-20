@@ -715,7 +715,7 @@ belongs_to :author, class_name: Blorgh.author_class
 self.author = Blorgh.author_class.constantize.find_or_create_by(name: author_name)
 ----
 
-为了避免在每次调用 `Blorgh.author_class` 方法时调用 `constantize` 方法，我们可以在 `lib/blorgh.rb` 文件中重载 `Blorgh` 模块的 `author_class` 读值方法，在返回 `author_class` 前调用 `constantize` 方法：
+为了避免在每次调用 `Blorgh.author_class` 方法时调用 `constantize` 方法，我们可以在 `lib/blorgh.rb` 文件中覆盖 `Blorgh` 模块的 `author_class` 读值方法，在返回 `author_class` 前调用 `constantize` 方法：
 
 [source,ruby]
 ----
@@ -753,12 +753,12 @@ WARNING: 注意这里使用的是类的字符串版本，而非类本身。如�
 
 接下来我们试着添加一篇文章，整个过程和之前并无差别，只不过这次引擎使用的是我们在 `config/initializers/blorgh.rb` 文件中配置的类。
 
-这样，我们再也不必关心应用中的用户类到底是什么，而只需关心该用户类是否实现了我们所需要的 API。`blorgh` 引擎只要求应用中的用户类实现了 `find_or_create_by` 方法，此方法需返回该用户类的对象，以便和对应的文章关联起来。当然，用户类的对象必需具有某种标识符，以便引用。
+这样，我们再也不必关心应用中的用户类到底是什么，而只需关心该用户类是否实现了我们所需要的 API。`blorgh` 引擎只要求应用中的用户类实现了 `find_or_create_by` 方法，此方法需返回该用户类的对象，以便和对应的文章关联起来。当然，用户类的对象必须具有某种标识符，以便引用。
 
 [[general-engine-configuration]]
 ===== 引擎的基本配置
 
-在引擎中，有时我们也需要使用初始化程序、国际化或其他配置选项。一般来说这些都可以实现，因为 Rails 引擎和 Rails 应用共享了相当多的功能。事实上，Rails 应用的功能就是 Rails 引擎的功能的超集。
+有时我们需要在引擎中使用初始化程序、国际化和其他配置选项。一般来说这些都可以实现，因为 Rails 引擎和 Rails 应用共享了相当多的功能。事实上，Rails 应用的功能就是 Rails 引擎的功能的超集。
 
 引擎的初始化程序包含了需要在加载引擎之前运行的代码，其存储位置是引擎的 `config/initializers` 文件夹。“配置 Rails 应用”一文的<<configuring#initializers,初始化程序>>一节介绍了应用的 `config/initializers` 文件夹的功能，而引擎和应用的 `config/initializers` 文件夹的功能完全相同。对于标准的初始化程序，需要完成的工作都是一样的。
 
@@ -766,3 +766,342 @@ WARNING: 注意这里使用的是类的字符串版本，而非类本身。如�
 
 [[testing-an-engine]]
 === 测试引擎
+
+在使用生成器创建引擎时，Rails 会在引擎的 `test/dummy` 文件夹中创建一个小型的虚拟应用，作为测试引擎时的挂载点。通过在 `test/dummy` 文件夹中生成控制器、模型和视图，我们可以扩展这个应用，以更好地满足测试需求。
+
+`test` 文件夹和典型的 Rails 测试环境一样，支持单元测试、功能测试和集成测试。
+
+[[functional-tests]]
+==== 功能测试
+
+在编写功能测试时，我们需要思考如何在 `test/dummy` 应用上运行测试，而不是在引擎上运行测试。这是由测试环境的设置决定的，只有通过引擎的宿主应用我们才能测试引擎的功能（尤其是引擎控制器）。也就是说，在编写引擎控制器的功能测试时，我们应该像下面这样处理典型的 `GET` 请求：
+
+[source,ruby]
+----
+module Blorgh
+  class FooControllerTest < ActionDispatch::IntegrationTest
+    include Engine.routes.url_helpers
+
+    def test_index
+      get foos_url
+      ...
+    end
+  end
+end
+----
+
+上述代码还无法正常工作，这是因为宿主应用不知道如何处理引擎的路由，因此我们需要手动指定路由。具体操作是把 `@routes` 实例变量的值设置为引擎的路由：
+
+[source,ruby]
+----
+module Blorgh
+  class FooControllerTest < ActionDispatch::IntegrationTest
+    include Engine.routes.url_helpers
+
+    setup do
+      @routes = Engine.routes
+    end
+
+    def test_index
+      get foos_url
+      ...
+    end
+  end
+end
+----
+
+上述代码告诉应用，用户对 `Foo` 控制器的 `index` 动作发起了 `GET` 请求，这个请求应该由引擎的路由来处理，而不是由应用的路由来处理。
+
+`include Engine.routes.url_helpers` 这行代码可以确保引擎的 URL 辅助方法能够在测试中正常工作。
+
+[[improving-engine-functionality]]
+=== 改进引擎的功能
+
+本节介绍如何在宿主应用中添加或覆盖引擎的 MVC 功能。
+
+[[overriding-models-and-controllers]]
+==== 覆盖模型和控制器
+
+要想扩展引擎的模型类和控制器类，我们可以在宿主应用中直接打开它们（因为模型类和控制器类只不过是继承了特定 Rails 功能的 Ruby 类）。通过打开类的技术，我们可以根据宿主应用的需求对引擎的类进行自定义，实际操作中通常会使用装饰器模式。
+
+通过 `Class#class_eval` 方法可以对类进行简单修改，通过 `ActiveSupport::Concern` 模块可以完成对类的复杂修改。
+
+[[a-note-on-decorators-and-loading-code]]
+===== 使用装饰器以及加载代码时的注意事项
+
+打开类时使用的装饰器并未在 Rails 应用中引用，因此 Rails 的自动加载系统不会加载这些装饰器。换句话说，我们需要手动加载这些装饰器。
+
+下面是一些示例代码：
+
+[source,ruby]
+----
+# lib/blorgh/engine.rb
+module Blorgh
+  class Engine < ::Rails::Engine
+    isolate_namespace Blorgh
+
+    config.to_prepare do
+      Dir.glob(Rails.root + "app/decorators/**/*_decorator*.rb").each do |c|
+        require_dependency(c)
+      end
+    end
+  end
+end
+----
+
+不光是装饰器，对于添加到引擎中但没有在宿主应用中引用的任何东西，都需要进行这样的处理。
+
+[[implementing-decorator-pattern-using-class-class-eval]]
+===== 通过 `Class#class_eval` 实现装饰器模式
+
+添加 `Article#time_since_created` 方法：
+
+[source,ruby]
+----
+# MyApp/app/decorators/models/blorgh/article_decorator.rb
+
+Blorgh::Article.class_eval do
+  def time_since_created
+    Time.current - created_at
+  end
+end
+----
+
+[source,ruby]
+----
+# Blorgh/app/models/article.rb
+
+class Article < ApplicationRecord
+  has_many :comments
+end
+----
+
+覆盖 `Article#summary` 方法：
+
+[source,ruby]
+----
+# MyApp/app/decorators/models/blorgh/article_decorator.rb
+
+Blorgh::Article.class_eval do
+  def summary
+    "#{title} - #{truncate(text)}"
+  end
+end
+----
+
+[source,ruby]
+----
+# Blorgh/app/models/article.rb
+
+class Article < ApplicationRecord
+  has_many :comments
+  def summary
+    "#{title}"
+  end
+end
+----
+
+[[implementing-decorator-pattern-using-activesupport-concern]]
+===== 通过 `ActiveSupport::Concern` 模块实现装饰器模式
+
+对类进行简单修改时，使用 `Class#class_eval` 方法很方便，但对于复杂的修改，就应该考虑使用 link:$$http://api.rubyonrails.org/classes/ActiveSupport/Concern.html$$[ActiveSupport::Concern 模块] 了。`ActiveSupport::Concern` 模块能够管理互相关联、依赖的模块和类运行时的加载顺序，这样我们就可以放心地实现代码的模块化。
+
+添加 `Article#time_since_created` 方法并覆盖 `Article#summary` 方法：
+
+[source,ruby]
+----
+# MyApp/app/models/blorgh/article.rb
+
+class Blorgh::Article < ApplicationRecord
+  include Blorgh::Concerns::Models::Article
+
+  def time_since_created
+    Time.current - created_at
+  end
+
+  def summary
+    "#{title} - #{truncate(text)}"
+  end
+end
+----
+
+[source,ruby]
+----
+# Blorgh/app/models/article.rb
+
+class Article < ApplicationRecord
+  include Blorgh::Concerns::Models::Article
+end
+----
+
+[source,ruby]
+----
+# Blorgh/lib/concerns/models/article.rb
+
+module Blorgh::Concerns::Models::Article
+  extend ActiveSupport::Concern
+
+  # `included do` 中的代码可以在代码所在位置（article.rb）的上下文中执行，
+  # 而不是在模块的上下文中执行（blorgh/concerns/models/article）。
+  included do
+    attr_accessor :author_name
+    belongs_to :author, class_name: "User"
+
+    before_validation :set_author
+
+    private
+      def set_author
+        self.author = User.find_or_create_by(name: author_name)
+      end
+  end
+
+  def summary
+    "#{title}"
+  end
+
+  module ClassMethods
+    def some_class_method
+      'some class method string'
+    end
+  end
+end
+----
+
+[[overriding-views]]
+==== 覆盖视图
+
+Rails 在查找需要渲染的视图时，首先会在应用的 `app/views` 文件夹中进行查找。如果找不到，就会接着在所有引擎的 `app/views` 文件夹中进行查找。
+
+在渲染 `Blorgh::ArticlesController` 的 `index` 动作的视图时，Rails 首先会查找应用的 `app/views/blorgh/articles/index.html.erb` 文件。如果找不到，就会接着在引擎中进行查找。
+
+只要在应用中新建 `app/views/blorgh/articles/index.html.erb` 视图，就可覆盖引擎中的对应视图，这样我们就可以根据需要对视图的内容进行自定义。
+
+马上动手试一下，新建 `app/views/blorgh/articles/index.html.erb` 文件并添加下面的内容：
+
+[source,erb]
+----
+<h1>Articles</h1>
+<%= link_to "New Article", new_article_path %>
+<% @articles.each do |article| %>
+  <h2><%= article.title %></h2>
+  <small>By <%= article.author %></small>
+  <%= simple_format(article.text) %>
+  <hr>
+<% end %>
+----
+
+[[routes]]
+==== 路由
+
+默认情况下，引擎和应用的路由是隔离开的。这种隔离是通过在 `Engine` 类中调用 `isolate_namespace` 方法实现的。这样，应用和引擎中的同名路由就不会发生冲突。
+
+在 `config/routes.rb` 文件中，我们可以在 `Engine` 类上定义引擎的路由，例如：
+
+[source,ruby]
+----
+Blorgh::Engine.routes.draw do
+  resources :articles
+end
+----
+
+正因为引擎和应用的路由是隔离开的，当我们想要在应用中链接到引擎的某个位置时，就必须使用引擎的路由代理方法。如果像使用普通路由辅助方法那样直接使用 `articles_path` 辅助方法，将无法确定实际生成的链接，因为引擎和应用有可能都定义了这个辅助方法。
+
+例如，对于下面的例子，如果是在应用中渲染模板，就会调用应用的 `articles_path` 辅助方法，如果是在引擎中渲染模板，就会调用引擎的 `articles_path` 辅助方法：
+
+[source,erb]
+----
+<%= link_to "Blog articles", articles_path %>
+----
+
+要想确保使用的是引擎的 `articles_path` 辅助方法，我们必须通过路由代理方法来调用这个辅助方法：
+
+[source,erb]
+----
+<%= link_to "Blog articles", blorgh.articles_path %>
+----
+
+要想确保使用的是应用的 `articles_path` 辅助方法，我们可以使用 `main_app` 路由代理方法：
+
+[source,erb]
+----
+<%= link_to "Home", main_app.root_path %>
+----
+
+这样，当我们在引擎中渲染模板时，上述代码生成的链接将总是指向应用的根路径。要是不使用 `main_app` 路由代理方法，在不同位置渲染模板时，上述代码生成的链接就既有可能指向引擎的根路径，也有可能指向应用的根路径。
+
+当我们在引擎中渲染模板时，如果在模板中调用了应用的路由辅助方法，Rails 就有可能抛出未定义方法错误。如果遇到此类问题，请检查代码中是否存在未通过 `main_app` 路由代理方法直接调用应用的路由辅助方法的情况。
+
+[[assets]]
+==== 静态资源文件
+
+引擎和应用的静态资源文件的工作原理完全相同。由于引擎类继承自 `Rails::Engine` 类，应用知道应该在引擎的 `app/assets` 和 `lib/assets` 文件夹中查找静态资源文件。
+
+和引擎的所有其他组件一样，引擎的静态资源文件应该具有独立的命名空间。也就是说，引擎的静态资源文件 `style.css` 的路径应该是 `app/assets/stylesheets/[engine name]/style.css`，而不是 `app/assets/stylesheets/style.css`。如果引擎的静态资源文件不具有独立的命名空间，那么就有可能和宿主应用中的同名静态资源文件发生冲突，而一旦发生冲突，宿主应用中的静态资源文件将具有更高的优先级，引擎的静态资源文件将被忽略。
+
+假设引擎有 `app/assets/stylesheets/blorgh/style.css` 这么一个静态资源文件，要想在宿主应用中包含此文件，直接使用 `stylesheet_link_tag` 辅助方法即可：
+
+[source,erb]
+----
+<%= stylesheet_link_tag "blorgh/style.css" %>
+----
+
+同样，我们也可以使用 Asset Pipeline 的 `require` 语句加载引擎中的静态资源文件：
+
+[source,erb]
+----
+/*
+ *= require blorgh/style
+*/
+----
+
+TIP: 记住，为了使用 Sass 和 CoffeeScript 等语言，我们需要把相关的 gem 添加到引擎的 `.gemspec` 文件中。
+
+[[separate-assets-precompiling]]
+==== 独立的静态资源文件和预编译
+
+有时，宿主应用并不需要加载引擎的静态资源文件。例如，假设我们创建了一个仅适用于某个引擎的管理后台，这时宿主应用就不需要加载引擎的 `admin.css` 和 `admin.js` 文件，因为只有引擎的管理后台才需要这些文件。也就是说，在宿主应用的样式表中包含 `blorgh/admin.css` 文件没有任何意义。对于这种情况，我们应该显式定义那些需要预编译的静态资源文件，这样在执行 `bin/rails assets:precompile` 命令时，Sprockets 就会预编译所指定的引擎的静态资源文件。
+
+我们可以在引擎的 `engine.rb` 文件中定义需要预编译的静态资源文件：
+
+[source,ruby]
+----
+initializer "blorgh.assets.precompile" do |app|
+  app.config.assets.precompile += %w(admin.css admin.js)
+end
+----
+
+关于这个问题的更多介绍，请参阅 <<asset_pipeline,Asset Pipeline>> 一文。
+
+[[other-gem-dependencies]]
+==== 其他 gem 依赖关系
+
+我们应该在引擎根目录中的 `.gemspec` 文件中声明引擎的 gem 依赖关系，因为我们可能会以 gem 的方式安装引擎。如果在引擎的 `Gemfile` 文件中声明 gem 依赖关系，在通过 `gem install` 命令安装引擎时，就无法识别并安装这些依赖关系，这样引擎安装后将无法正常工作。
+
+要想让 `gem install` 命令能够识别引擎的 gem 依赖关系，只需在引擎的 `.gemspec` 文件的 `Gem::Specification` 代码块中进行声明：
+
+[source,ruby]
+----
+s.add_dependency "moo"
+----
+
+还可以像下面这样声明用于开发环境的依赖关系：
+
+[source,ruby]
+----
+s.add_development_dependency "moo"
+----
+
+不管是用于所有环境的依赖关系，还是用于开发环境的依赖关系，在执行 `bundle install` 命令时都会被安装，只不过用于开发环境的依赖关系只会在运行引擎测试时用到。
+
+注意，如果有些依赖关系在加载引擎时就必须加载，那么应该在引擎初始化之前就加载它们，例如：
+
+[source,ruby]
+----
+require 'other_engine/engine'
+require 'yet_another_engine/engine'
+
+module MyEngine
+  class Engine < ::Rails::Engine
+  end
+end
+----
