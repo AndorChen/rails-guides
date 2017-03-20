@@ -551,7 +551,7 @@ end
 
 现在，我们只需记住，Rails 的常见功能，例如 Rails 引擎、I18n 和 Rails 配置，都在这里定义好了。
 
-[[config-environment-rb]]
+[[config-environment-rb-1]]
 ==== 回到 `config/environment.rb` 文件
 
 `config/application.rb` 文件的其余部分定义了 `Rails::Application` 的配置，当应用的初始化全部完成后就会使用这些配置。当 `config/application.rb` 文件完成了 Rails 的加载和应用命名空间的定义后，程序执行流程再次回到 `config/environment.rb` 文件。在这里会通过 `rails/application.rb` 文件中定义的 `Rails.application.initialize!` 方法完成应用的初始化。
@@ -590,7 +590,7 @@ end
 
 应用初始化完成后，程序执行流程再次回到 `Rack::Server` 类。
 
-[[rack-lib-rack-server-rb]]
+[[rack-lib-rack-server-rb-1]]
 ==== Rack：`lib/rack/server.rb` 文件
 
 程序执行流程上一次离开此文件是在定义 `app` 方法时：
