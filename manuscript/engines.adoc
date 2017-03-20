@@ -16,6 +16,8 @@
 * 如何在应用中覆盖引擎的功能。
 --
 
+NOTE: 本文原文尚未完工！
+
 [[what-are-engines]]
 === 引擎是什么
 
@@ -23,7 +25,7 @@
 
 因此，引擎和应用基本上可以看作同一个事物，通过本文的介绍，我们会看到两者之间只有细微差异。引擎和应用还具有相同的结构。
 
-引擎还和插件密切相关。两者具有相同的 `lib` 目录结构，并且都使用 `rails plugin new` 生成器来生成。区别在于，引擎被 Rails 视为“完整插件”（通过传递给生成器的 `--full` 选项我们可以看到这一点）。在这里我们实际使用的是 `--mountable` 选项，这个选项包含了 `--full` 选项的所有特性。本文把这类“完整插件”简称为“引擎”。也就是说，引擎可以是插件，插件也可以是引擎。
+引擎还和插件密切相关。两者具有相同的 `lib` 目录结构，并且都使用 `rails plugin new` 生成器来生成。区别在于，引擎被 Rails 视为“完整的插件”（通过传递给生成器的 `--full` 选项可以看出这一点）。在这里我们实际使用的是 `--mountable` 选项，这个选项包含了 `--full` 选项的所有特性。本文把这类“完整的插件”简称为“引擎”。也就是说，引擎可以是插件，插件也可以是引擎。
 
 本文将创建名为“blorgh”的引擎，用于为宿主应用提供博客功能，即新建文章和评论的功能。在本文的开头部分，我们将看到引擎的内部工作原理，在之后的部分中，我们将看到如何把引擎挂载到应用中。
 
@@ -31,7 +33,7 @@
 
 一定要记住，在任何时候，应用的优先级都应该比引擎高。应用对其环境中发生的事情拥有最终的决定权。引擎用于增强应用的功能，而不是彻底改变应用的功能。
 
-引擎的例子有 link:$$https://github.com/plataformatec/devise$$[Devise]（提供身份验证）、link:$$https://github.com/radar/forem$$[Forem]（提供论坛功能）、link:$$https://github.com/spree/spree$$[Spree]（提供电子商务平台） 和 link:$$https://github.com/refinery/refinerycms$$[RefineryCMS]（CMS 引擎）。
+引擎的例子有 link:https://github.com/plataformatec/devise[Devise]（提供身份验证）、link:https://github.com/radar/forem[Forem]（提供论坛功能）、link:https://github.com/spree/spree[Spree]（提供电子商务平台） 和 link:https://github.com/refinery/refinerycms[RefineryCMS]（CMS 引擎）。
 
 最后，如果没有 James Adam、Piotr Sarnacki、Rails 核心开发团队和其他许多人的努力，引擎就不可能实现。如果遇见他们，请不要忘记说声谢谢！
 
@@ -52,11 +54,11 @@ $ rails plugin new blorgh --mountable
 $ rails plugin --help
 ----
 
-通过 `--mountable` 选项，生成器会创建“可挂载”和具有独立命名空间的引擎。此选项和 `--full` 选项会为引擎生成相同的程序骨架。通过 `--full` 选项，生成器会在创建引擎的同时生成的下面的程序骨架：
+通过 `--mountable` 选项，生成器会创建“可挂载”和具有独立命名空间的引擎。此选项和 `--full` 选项会为引擎生成相同的程序骨架。通过 `--full` 选项，生成器会在创建引擎的同时生成下面的程序骨架：
 
 * `app` 目录树
 * `config/routes.rb` 文件：
-
++
 [source,ruby]
 ----
 Rails.application.routes.draw do
@@ -64,7 +66,7 @@ end
 ----
 
 * `lib/blorgh/engine.rb` 文件，相当于 Rails 应用的 `config/application.rb` 配置文件：
-
++
 [source,ruby]
 ----
 module Blorgh
@@ -80,7 +82,7 @@ end
 * 具有独立命名空间的 `ApplicationHelper`
 * 引擎的布局视图模板
 * 在 `config/routes.rb` 文件中为引擎设置独立的命名空间：
-
++
 [source,ruby]
 ----
 Blorgh::Engine.routes.draw do
@@ -88,7 +90,7 @@ end
 ----
 
 * 在 `lib/blorgh/engine.rb` 文件中为引擎设置独立的命名空间：
-
++
 [source,ruby]
 ----
 module Blorgh
@@ -149,7 +151,7 @@ NOTE: 强烈建议在 `Engine` 类的定义中调用 `isolate_namespace` 方法�
 
 命名空间隔离的意思是，通过 `bin/rails g model` 生成的模型，例如 `bin/rails g model article`，不会被命名为 `Article`，而会被命名为带有命名空间的 `Blorgh::Article`。此外，模型的表名同样带有命名空间，也就是说表名不是 `articles`，而是 `blorgh_articles`。和模型的命名规则类似，控制器不会被命名为 `ArticlesController`，而会被命名为 `Blorgh::ArticlesController`，控制器对应的视图不是 `app/views/articles`，而是 `app/views/blorgh/articles`。邮件程序的情况类似。
 
-最后，路由也会被隔离在引擎中。这是命名空间最重要的内容之一，稍后将在本文的<<engines#routes,路由>>一节中介绍。
+最后，路由也会被隔离在引擎中。这是命名空间最重要的内容之一，稍后将在 <<engines-routes>>介绍。
 
 [[app-directory]]
 ===== `app` 文件夹
@@ -162,7 +164,9 @@ NOTE: 强烈建议在 `Engine` 类的定义中调用 `isolate_namespace` 方法�
 
 NOTE: 引擎的 `ApplicationController` 类采用了和 Rails 应用相同的命名规则，这样便于把应用转换为引擎。
 
-NOTE: 鉴于 Ruby 进行常量查找的方式，我们可能会遇到引擎的控制器继承自应用的 `ApplicationController`，而不是继承自引擎的 `ApplicationController` 的情况。此时 Ruby 能够解析 `ApplicationController`，因此不会触发自动加载机制。关于这个问题的更多介绍，请参阅<<autoloading_and_reloading_constants#when-constants-aren-t-missed,当常量存在时>>和<<autoloading_and_reloading_constants,常量的自动加载和重新加载>>两节的内容。避免出现这种情况的最好办法是使用 `require_dependency` 方法，以确保加载的是引擎的 `ApplicationController`。例如：
+[NOTE]
+====
+鉴于 Ruby 进行常量查找的方式，我们可能会遇到引擎的控制器继承自应用的 `ApplicationController`，而不是继承自引擎的 `ApplicationController` 的情况。此时 Ruby 能够解析 `ApplicationController`，因此不会触发自动加载机制。关于这个问题的更多介绍，请参阅 <<autoloading_and_reloading_constants#when-constants-aren-t-missed>>。避免出现这种情况的最好办法是使用 `require_dependency` 方法，以确保加载的是引擎的 `ApplicationController`。例如：
 
 [source,ruby]
 ----
@@ -175,6 +179,7 @@ module Blorgh
   end
 end
 ----
+====
 
 WARNING: 不要使用 `require` 方法，否则会破坏开发环境中类的自动重新加载——使用 `require_dependency` 方法才能确保以正确的方式加载和卸载类。
 
@@ -192,7 +197,7 @@ WARNING: 不要使用 `require` 方法，否则会破坏开发环境中类的自
 $ bin/rails g model
 ----
 
-记住，在 Engine 类中调用 isolate_namespace 方法后，通过这些命令生成的引擎控制器和模型都将位于命名空间中。
+记住，在 `Engine` 的子类中调用 `isolate_namespace` 方法后，通过这些命令生成的引擎控制器和模型都将位于命名空间中。
 
 [[test-directory]]
 ===== `test` 文件夹
@@ -213,7 +218,7 @@ end
 [[providing-engine-functionality]]
 === 为引擎添加功能
 
-本文创建的“blorgh”示例引擎，和<<getting_started,新手入门>>一文中的 Blog 应用类似，具有添加文章和评论的功能。
+本文创建的“blorgh”示例引擎，和<<getting_started#getting-started-with-rails>>中的 Blog 应用类似，具有添加文章和评论的功能。
 
 [[generating-an-article-resource]]
 ==== 生成文章资源
@@ -271,7 +276,7 @@ Blorgh::Engine.routes.draw do
 end
 ----
 
-注意，这里的路由是通过 `Blorgh::Engine` 对象而非 `YourApp::Application` 类定义的。正如<<engines#test-directory,测试目录>>一节中介绍的那样，这样的做的目的是把引擎路由限制在引擎中，这样就可以根据需要把引擎路由挂载到不同位置，同时也把引擎路由和应用中的其他路由隔离开来。关于这个问题的更多介绍，请参阅<<engines#routes,路由>>一节。
+注意，这里的路由是通过 `Blorgh::Engine` 对象而非 `YourApp::Application` 类定义的。正如 <<test-directory>>介绍的那样，这样做的目的是把引擎路由限制在引擎中，这样就可以根据需要把引擎路由挂载到不同位置，同时也把引擎路由和应用中的其他路由隔离开来。关于这个问题的更多介绍，请参阅 <<engines-routes>>。
 
 接下来，脚手架生成器会调用 `scaffold_controller` 生成器，以生成 `Blorgh::ArticlesController`（即 `app/controllers/blorgh/articles_controller.rb` 控制器文件）以及对应的视图（位于 `app/views/blorgh/articles` 文件夹中）、测试（即 `test/controllers/blorgh/articles_controller_test.rb` 测试文件）和辅助方法（即 `app/helpers/blorgh/articles_helper.rb` 文件）。
 
@@ -387,7 +392,7 @@ NOTE: 这里的 `has_many` 关联是在 `Blorgh` 模块内的类中定义的，�
 <%= render "blorgh/comments/form" %>
 ----
 
-接下来需要添加上述代码中使用的局部视图。新建 `app/views/blorgh/comments` 文件夹，在其中新建 `called _form.html.erb` 文件并添加下面的局部视图代码：
+接下来需要添加上述代码中使用的局部视图。新建 `app/views/blorgh/comments` 文件夹，在其中新建 `_form.html.erb` 文件并添加下面的局部视图代码：
 
 [source,erb]
 ----
@@ -522,7 +527,7 @@ NOTE: 其他一些引擎，例如 Devise，工作原理略有不同，这些引�
 [[engine-setup]]
 ==== 引擎设置
 
-引擎中包含了 `blorgh_articles` 和 `blorgh_comments` 数据表的迁移。通过这些迁移在应用数据库中创建数据表之后，引擎模型才能正确查询对应的数据表。在引擎的 `test/dummy` 文件夹中运行下面的命令，可以把这些迁移复制到应用中：
+引擎中包含了 `blorgh_articles` 和 `blorgh_comments` 数据表的迁移。通过这些迁移在应用的数据库中创建数据表之后，引擎模型才能正确查询对应的数据表。在引擎的 `test/dummy` 文件夹中运行下面的命令，可以把这些迁移复制到应用中：
 
 [source,sh]
 ----
@@ -551,14 +556,14 @@ Copied migration [timestamp_2]_create_blorgh_comments.blorgh.rb from blorgh
 
 [source,sh]
 ----
-bin/rails db:migrate SCOPE=blorgh
+$ bin/rails db:migrate SCOPE=blorgh
 ----
 
 在需要还原并删除引擎的迁移时常常采取这种做法。通过下面的命令可以还原 `blorgh` 引擎的所有迁移：
 
 [source,sh]
 ----
-bin/rails db:migrate SCOPE=blorgh VERSION=0
+$ bin/rails db:migrate SCOPE=blorgh VERSION=0
 ----
 
 [[using-a-class-provided-by-the-application]]
@@ -575,7 +580,7 @@ bin/rails db:migrate SCOPE=blorgh VERSION=0
 
 [source,sh]
 ----
-rails g model user name:string
+$ bin/rails g model user name:string
 ----
 
 然后执行 `bin/rails db:migrate` 命令以创建 `users` 数据表。
@@ -686,7 +691,7 @@ end
 本节介绍如何使 `User` 类成为可配置的，然后介绍引擎的基本配置中的注意事项。
 
 [[setting-configuration-settings-in-the-application]]
-==== 在引擎中配置所使用的应用中的类
+===== 在引擎中配置所使用的应用中的类
 
 接下来我们需要想办法在引擎中配置所使用的应用中的用户类。如前文所述，应用中的用户类有可能是 `User`，也有可能是 `Person` 或其他类，因此这个用户类必须是可配置的。为此，我们需要在引擎中通过 `author_class` 选项指定所使用的应用中的用户类。
 
@@ -738,9 +743,9 @@ self.author = Blorgh.author_class.find_or_create_by(name: author_name)
 belongs_to :author, class_name: Blorgh.author_class.to_s
 ----
 
-为了配置引擎所使用的应用中的类，我们需要使用初始化程序。只有通过初始化程序，我们才能在应用启动并调用引擎模型前完成相关配置。
+为了配置引擎所使用的应用中的类，我们需要使用初始化脚本。只有通过初始化脚本，我们才能在应用启动并调用引擎模型前完成相关配置。
 
-在安装 `blorgh` 引擎的应用中，打开 `config/initializers/blorgh.rb` 文件，创建新的初始化程序并添加如下代码：
+在安装 `blorgh` 引擎的应用中，打开 `config/initializers/blorgh.rb` 文件，创建新的初始化脚本并添加如下代码：
 
 [source,ruby]
 ----
@@ -756,9 +761,9 @@ WARNING: 注意这里使用的是类的字符串版本，而非类本身。如�
 [[general-engine-configuration]]
 ===== 引擎的基本配置
 
-有时我们需要在引擎中使用初始化程序、国际化和其他配置选项。一般来说这些都可以实现，因为 Rails 引擎和 Rails 应用共享了相当多的功能。事实上，Rails 应用的功能就是 Rails 引擎的功能的超集。
+有时我们需要在引擎中使用初始化脚本、国际化和其他配置选项。一般来说这些都可以实现，因为 Rails 引擎和 Rails 应用共享了相当多的功能。事实上，Rails 应用的功能就是 Rails 引擎的功能的超集。
 
-引擎的初始化程序包含了需要在加载引擎之前运行的代码，其存储位置是引擎的 `config/initializers` 文件夹。“配置 Rails 应用”一文的<<configuring#initializers,初始化程序>>一节介绍了应用的 `config/initializers` 文件夹的功能，而引擎和应用的 `config/initializers` 文件夹的功能完全相同。对于标准的初始化程序，需要完成的工作都是一样的。
+引擎的初始化脚本包含了需要在加载引擎之前运行的代码，其存储位置是引擎的 `config/initializers` 文件夹。<<configuring#initializers>>介绍过应用的 `config/initializers` 文件夹的功能，而引擎和应用的 `config/initializers` 文件夹的功能完全相同。对于标准的初始化脚本，需要完成的工作都是一样的。
 
 引擎的区域设置也和应用相同，只需把区域设置文件放在引擎的 `config/locales` 文件夹中即可。
 
@@ -808,7 +813,7 @@ module Blorgh
 end
 ----
 
-上述代码告诉应用，用户对 `Foo` 控制器的 `index` 动作发起了 `GET` 请求，这个请求应该由引擎的路由来处理，而不是由应用的路由来处理。
+上述代码告诉应用，用户对 `Foo` 控制器的 `index` 动作发起的 `GET` 请求应该由引擎的路由来处理，而不是由应用的路由来处理。
 
 `include Engine.routes.url_helpers` 这行代码可以确保引擎的 URL 辅助方法能够在测试中正常工作。
 
@@ -902,7 +907,7 @@ end
 [[implementing-decorator-pattern-using-activesupport-concern]]
 ===== 通过 `ActiveSupport::Concern` 模块实现装饰器模式
 
-对类进行简单修改时，使用 `Class#class_eval` 方法很方便，但对于复杂的修改，就应该考虑使用 link:$$http://api.rubyonrails.org/classes/ActiveSupport/Concern.html$$[ActiveSupport::Concern 模块] 了。`ActiveSupport::Concern` 模块能够管理互相关联、依赖的模块和类运行时的加载顺序，这样我们就可以放心地实现代码的模块化。
+对类进行简单修改时，使用 `Class#class_eval` 方法很方便，但对于复杂的修改，就应该考虑使用 link:http://api.rubyonrails.org/classes/ActiveSupport/Concern.html[`ActiveSupport::Concern` 模块]了。`ActiveSupport::Concern` 模块能够管理互相关联、依赖的模块和类运行时的加载顺序，这样我们就可以放心地实现代码的模块化。
 
 添加 `Article#time_since_created` 方法并覆盖 `Article#summary` 方法：
 
@@ -968,11 +973,11 @@ end
 [[overriding-views]]
 ==== 覆盖视图
 
-Rails 在查找需要渲染的视图时，首先会在应用的 `app/views` 文件夹中进行查找。如果找不到，就会接着在所有引擎的 `app/views` 文件夹中进行查找。
+Rails 在查找需要渲染的视图时，首先会在应用的 `app/views` 文件夹中查找。如果找不到，就会接着在所有引擎的 `app/views` 文件夹中查找。
 
-在渲染 `Blorgh::ArticlesController` 的 `index` 动作的视图时，Rails 首先会查找应用的 `app/views/blorgh/articles/index.html.erb` 文件。如果找不到，就会接着在引擎中进行查找。
+在渲染 `Blorgh::ArticlesController` 的 `index` 动作的视图时，Rails 首先在应用中查找 `app/views/blorgh/articles/index.html.erb` 文件。如果找不到，就会接着在引擎中查找。
 
-只要在应用中新建 `app/views/blorgh/articles/index.html.erb` 视图，就可覆盖引擎中的对应视图，这样我们就可以根据需要对视图的内容进行自定义。
+只要在应用中新建 `app/views/blorgh/articles/index.html.erb` 视图，就可覆盖引擎中的对应视图，这样我们就可以根据需要自定义视图的内容。
 
 马上动手试一下，新建 `app/views/blorgh/articles/index.html.erb` 文件并添加下面的内容：
 
@@ -988,7 +993,7 @@ Rails 在查找需要渲染的视图时，首先会在应用的 `app/views` 文�
 <% end %>
 ----
 
-[[routes]]
+[[engines-routes]]
 ==== 路由
 
 默认情况下，引擎和应用的路由是隔离开的。这种隔离是通过在 `Engine` 类中调用 `isolate_namespace` 方法实现的。这样，应用和引擎中的同名路由就不会发生冲突。
@@ -1045,14 +1050,14 @@ end
 
 同样，我们也可以使用 Asset Pipeline 的 `require` 语句加载引擎中的静态资源文件：
 
-[source,erb]
+[source,css]
 ----
 /*
  *= require blorgh/style
 */
 ----
 
-TIP: 记住，为了使用 Sass 和 CoffeeScript 等语言，我们需要把相关的 gem 添加到引擎的 `.gemspec` 文件中。
+TIP: 记住，若想使用 Sass 和 CoffeeScript 等语言，要把相关的 gem 添加到引擎的 `.gemspec` 文件中。
 
 [[separate-assets-precompiling]]
 ==== 独立的静态资源文件和预编译
@@ -1068,30 +1073,30 @@ initializer "blorgh.assets.precompile" do |app|
 end
 ----
 
-关于这个问题的更多介绍，请参阅 <<asset_pipeline,Asset Pipeline>> 一文。
+关于这个问题的更多介绍，请参阅<<asset_pipeline#the-asset-pipeline>>。
 
 [[other-gem-dependencies]]
-==== 其他 gem 依赖关系
+==== 其他 gem 依赖
 
-我们应该在引擎根目录中的 `.gemspec` 文件中声明引擎的 gem 依赖关系，因为我们可能会以 gem 的方式安装引擎。如果在引擎的 `Gemfile` 文件中声明 gem 依赖关系，在通过 `gem install` 命令安装引擎时，就无法识别并安装这些依赖关系，这样引擎安装后将无法正常工作。
+我们应该在引擎根目录中的 `.gemspec` 文件中声明引擎的 gem 依赖，因为我们可能会以 gem 的方式安装引擎。如果在引擎的 `Gemfile` 文件中声明 gem 依赖，在通过 `gem install` 命令安装引擎时，就无法识别并安装这些依赖，这样引擎安装后将无法正常工作。
 
-要想让 `gem install` 命令能够识别引擎的 gem 依赖关系，只需在引擎的 `.gemspec` 文件的 `Gem::Specification` 代码块中进行声明：
+要想让 `gem install` 命令能够识别引擎的 gem 依赖，只需在引擎的 `.gemspec` 文件的 `Gem::Specification` 代码块中进行声明：
 
 [source,ruby]
 ----
 s.add_dependency "moo"
 ----
 
-还可以像下面这样声明用于开发环境的依赖关系：
+还可以像下面这样声明用于开发环境的依赖：
 
 [source,ruby]
 ----
 s.add_development_dependency "moo"
 ----
 
-不管是用于所有环境的依赖关系，还是用于开发环境的依赖关系，在执行 `bundle install` 命令时都会被安装，只不过用于开发环境的依赖关系只会在运行引擎测试时用到。
+不管是用于所有环境的依赖，还是用于开发环境的依赖，在执行 `bundle install` 命令时都会被安装，只不过用于开发环境的依赖只会在运行引擎测试时用到。
 
-注意，如果有些依赖关系在加载引擎时就必须加载，那么应该在引擎初始化之前就加载它们，例如：
+注意，如果有些依赖在加载引擎时就必须加载，那么应该在引擎初始化之前就加载它们，例如：
 
 [source,ruby]
 ----
