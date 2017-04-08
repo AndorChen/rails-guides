@@ -24,6 +24,7 @@
 :listing-caption: 代码清单 %NUM%-%SUBNUM%
 :image-caption: 图 %NUM%-%SUBNUM%
 :table-caption: 表 %NUM%-%SUBNUM%
+:table-caption-continued: （续）
 :sidebar-caption: 旁注 %NUM%-%SUBNUM%
 :caption-trailing: ：
 :chapter-caption: 第 %NUM% 章

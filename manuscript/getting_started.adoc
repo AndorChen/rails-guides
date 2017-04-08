@@ -97,7 +97,7 @@ $ rails --version
 [[creating-the-blog-application]]
 ==== 创建 Blog 应用
 
-Rails 提供了许多名为“生成器”（generator）的脚本，这些脚本可以为特定任务生成所需的全部文件，从而简化开发。其中包括新应用生成器，这个脚本用于创建 Rails 应用骨架，避免了手动编写基础代码。
+Rails 提供了许多名为term:[生成器（generator）]的脚本，这些脚本可以为特定任务生成所需的全部文件，从而简化开发。其中包括新应用生成器，这个脚本用于创建 Rails 应用骨架，避免了手动编写基础代码。
 
 要使用新应用生成器，请打开终端，进入具有写权限的文件夹，输入：
 
@@ -257,7 +257,7 @@ Rails.application.routes.draw do
 end
 ----
 
-这是应用的路由文件，使用特殊的 DSL（domain-specific language，领域专属语言）编写，告诉 Rails 把访问请求发往哪个控制器和动作。编辑这个文件，添加一行代码 `root 'welcome#index'`，此时文件内容应该变成下面这样：
+这是应用的路由文件，使用特殊的 DSL（Domain-Specific Language，term:[领域专属语言]）编写，告诉 Rails 把访问请求发往哪个控制器和动作。编辑这个文件，添加一行代码 `root 'welcome#index'`，此时文件内容应该变成下面这样：
 
 [source,ruby]
 ----
@@ -279,9 +279,9 @@ TIP: 关于路由的更多介绍，请参阅<<routing#rails-routing-from-the-out
 
 前文已经介绍了如何创建控制器、动作和视图，接下来我们要创建一些更具实用价值的东西。
 
-在 Blog 应用中创建一个资源（resource）。资源是一个术语，表示一系列类似对象的集合，如文章、人或动物。资源中的项目可以被创建、读取、更新和删除，这些操作简称 CRUD（Create, Read, Update, Delete）。
+在 Blog 应用中创建一个term:[资源（resource）]。资源是一个术语，表示一系列类似对象的集合，如文章、人或动物。资源中的项目可以被创建、读取、更新和删除，这些操作简称 CRUD（Create, Read, Update, Delete）。
 
-Rails 提供了 `resources` 方法，用于声明标准的 REST 资源。把 article 资源添加到 `config/routes.rb` 文件，此时文件内容应该变成下面这样：
+Rails 提供了 `resources` 方法，用于声明标准的 REST 资源。把 articles 资源添加到 `config/routes.rb` 文件，此时文件内容应该变成下面这样：
 
 [source,ruby]
 ----
@@ -490,7 +490,7 @@ def create
 end
 ----
 
-这里 `render` 方法接受了一个简单的散列（hash）作为参数，`:plain` 键的值是 `params[:article].inspect`。`params` 方法是代表表单提交的参数（或字段）的对象。`params` 方法返回 `ActionController::Parameters` 对象，这个对象允许使用字符串或符号访问散列的键。这里我们只关注通过表单提交的参数。
+这里 `render` 方法接受了一个简单的term:[散列（hash）]作为参数，`:plain` 键的值是 `params[:article].inspect`。`params` 方法是代表表单提交的参数（或字段）的对象。`params` 方法返回 `ActionController::Parameters` 对象，这个对象允许使用字符串或符号访问散列的键。这里我们只关注通过表单提交的参数。
 
 TIP: 请确保牢固掌握 `params` 方法，这个方法很常用。让我们看一个示例 URL：pass:[http://www.example.com/?username=dhh&email=dhh@email.com]。在这个 URL 中，`params[:username]` 的值是“dhh”，`params[:email]` 的值是“pass:[dhh@email.com]”。
 
@@ -587,7 +587,7 @@ TIP: 之后我们会看到，`@article.save` 返回布尔值，以表明文章�
 .禁用属性错误
 image::forbidden_attributes_for_new_article.png[禁用属性错误]
 
-Rails 提供了多种安全特性来帮助我们编写安全的应用，上面看到的就是一种安全特性。这个安全特性叫做 <<action_controller_overview#strong-parameters,健壮参数>>（strong parameter），要求我们明确地告诉 Rails 哪些参数允许在控制器动作中使用。
+Rails 提供了多种安全特性来帮助我们编写安全的应用，上面看到的就是一种安全特性。这个安全特性叫做 term:[<<action_controller_overview#strong-parameters,健壮参数>>（strong parameter）]，要求我们明确地告诉 Rails 哪些参数允许在控制器动作中使用。
 
 为什么我们要这样自找麻烦呢？一次性获取所有控制器参数并自动赋值给模型显然更简单，但这样做会造成恶意使用的风险。设想一下，如果有人对服务器发起了一个精心设计的请求，看起来就像提交了一篇新文章，但同时包含了能够破坏应用完整性的额外字段和值，会怎么样？这些恶意数据会批量赋值给模型，然后和正常数据一起进入数据库，这样就有可能破坏我们的应用或者造成更大损失。
 
