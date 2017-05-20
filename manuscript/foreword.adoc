@@ -41,4 +41,4 @@ link:https://ruby-china.org/[Ruby China]
 
 === 封面
 
-另外，本书封面使用的图片出自 http://www.freepik.com[Freepik]，特此感谢！
+本书封面使用的图片出自 http://www.freepik.com[Freepik]，特此感谢！
