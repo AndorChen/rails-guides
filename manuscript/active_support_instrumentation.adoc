@@ -319,6 +319,7 @@ Ruby on Rails 框架为很多常见的事件提供了钩子。下面详述。
 | `:name` | 操作的名称
 | `:connection_id` | `self.object_id`
 | `:binds` | 绑定的参数
+| `:cached` | 使用缓存的查询时为 `true`
 |===
 
 [TIP]

@@ -54,6 +54,50 @@ Section
 ##### The `:content_type` Option
 ----
 
+[[linking-to-the-api]]
+=== 指向 API 的链接
+
+指南生成程序使用下述方式处理指向 API（`api.rubyonrails.org`）的链接。
+
+包含版本号的链接原封不动。例如，下述链接不做修改：
+
+[source]
+----
+http://api.rubyonrails.org/v5.0.1/classes/ActiveRecord/Attributes/ClassMethods.html
+----
+
+请在发布记中使用这种链接，因为不管生成哪个版本的指南，发布记中的链接不应该变。
+
+如果链接中没有版本号，而且生成的是最新开发版的指南，域名会替换成 `edgeapi.rubyonrails.org`。例如：
+
+[source]
+----
+http://api.rubyonrails.org/classes/ActionDispatch/Response.html
+----
+
+会变成：
+
+[source]
+----
+http://edgeapi.rubyonrails.org/classes/ActionDispatch/Response.html
+----
+
+如果链接中没有版本号，而生成的是某个版本的指南，会在链接中插入版本号。例如，生成 v5.1.0 的指南时，下述链接：
+
+[source]
+----
+http://api.rubyonrails.org/classes/ActionDispatch/Response.html
+----
+
+会变成：
+
+[source]
+----
+http://api.rubyonrails.org/v5.1.0/classes/ActionDispatch/Response.html
+----
+
+请勿直接链接到 `edgeapi.rubyonrails.org`。
+
 [[ruby-on-rails-guides-guidelines-api-documentation-guidelines]]
 === API 文档指导方针
 
@@ -102,8 +146,6 @@ $ bundle exec rake guides:generate ONLY=my_guide
 默认情况下，没有改动的文章不会处理，因此实际使用中很少用到 `ONLY`。
 
 如果想强制处理所有文章，传入 `ALL=1`。
-
-此外，建议你加上 `WARNINGS=1`。这样能检测到重复的 ID，遇到死链还会提醒。
 
 如果想生成英语之外的指南，可以把译文放在 `source` 中的子目录里（如 `source/es`），然后使用 `GUIDES_LANGUAGE` 环境变量：
 

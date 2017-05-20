@@ -86,10 +86,9 @@ Active Record 提供了几个用于从数据库中检索对象的查找方法。
 * `reorder`
 * `reverse_order`
 * `select`
-* `distinct`
 * `where`
 
-上面的所有方法都会返回 `ActiveRecord::Relation` 实例。
+返回集合的查找方法，如 `where` 和 `group`，返回一个 `ActiveRecord::Relation` 实例。查找单个记录的方法，如 `find` 和 `first`，返回相应模型的一个实例。
 
 `Model.find(options)` 执行的主要操作可以概括为：
 
@@ -352,7 +351,7 @@ Client.where(first_name: 'does not exist').take!
 
 [source,ruby]
 ----
-# 如果 users 表有几千行记录，这样做效率很低
+# 如果表中记录很多，可能消耗大量内存
 User.all.each do |user|
   NewsMailer.weekly(user).deliver_now
 end
@@ -367,7 +366,7 @@ TIP: `find_each` 和 `find_in_batches` 方法用于大量记录的批处理，�
 [[find-each]]
 ===== `find_each` 方法
 
-`find_each` 方法检索一批记录，然后逐一把每条记录作为模型传入块。在下面的例子中，`find_each` 方法取回 1000 条记录（`find_each` 和 `find_in_batches` 方法都默认一次检索 1000 条记录），然后逐一把每条记录作为模型传入块。这一过程会不断重复，直到完成所有记录的处理：
+`find_each` 方法批量检索记录，然后逐一把每条记录作为模型传入块。在下面的例子中，`find_each` 方法取回 1000 条记录，然后逐一把每条记录作为模型传入块。
 
 [source,ruby]
 ----
@@ -376,7 +375,9 @@ User.find_each do |user|
 end
 ----
 
-要想为 `find_each` 操作添加条件，我们可以链接其他 Active Record 方法，例如 `where` 方法：
+这一过程会不断重复，直到处理完所有记录。
+
+如前所述，`find_each` 能处理模型类，此外它还能处理关系：
 
 [source,ruby]
 ----
@@ -385,12 +386,9 @@ User.where(weekly_subscriber: true).find_each do |user|
 end
 ----
 
-[[options-for-find-each]]
-====== `find_each` 方法的选项
+前提是关系不能有顺序，因为这个方法在迭代时有既定的顺序。
 
-`find_each` 方法可以使用 `find` 方法的大多数选项，但 `:order` 和 `:limit` 选项例外，它们是 `find_each` 方法内部使用的保留选项。
-
-`find_each` 方法还可以使用 `:batch_size`、`:start` 和 `:finish` 这三个附加选项。
+如果接收者定义了顺序，具体行为取决于 `config.active_record.error_on_ignored_order` 旗标。设为 `true` 时，抛出 `ArgumentError` 异常，否则忽略顺序，发出提醒（这是默认设置）。这一行为可使用 `:error_on_ignore` 选项覆盖，详情参见下文。
 
 **`:batch_size`**
 
@@ -407,11 +405,11 @@ end
 
 记录默认是按主键的升序方式取回的，这里的主键必须是整数。`:start` 选项用于配置想要取回的记录序列的第一个 ID，比这个 ID 小的记录都不会取回。这个选项有时候很有用，例如当需要恢复之前中断的批处理时，只需从最后一个取回的记录之后开始继续处理即可。
 
-下面的例子把时事通讯发送给主键从 2000 开始的用户，一次检索 5000 条用户记录：
+下面的例子把时事通讯发送给主键从 2000 开始的用户：
 
 [source,ruby]
 ----
-User.find_each(start: 2000, batch_size: 5000) do |user|
+User.find_each(start: 2000) do |user|
   NewsMailer.weekly(user).deliver_now
 end
 ----
@@ -420,16 +418,20 @@ end
 
 和 `:start` 选项类似，`:finish` 选项用于配置想要取回的记录序列的最后一个 ID，比这个 ID 大的记录都不会取回。这个选项有时候很有用，例如可以通过配置 `:start` 和 `:finish` 选项指明想要批处理的子记录集。
 
-下面的例子把时事通讯发送给主键从 2000 到 10000 的用户，一次检索 5000 条用户记录：
+下面的例子把时事通讯发送给主键从 2000 到 10000 的用户：
 
 [source,ruby]
 ----
-User.find_each(start: 2000, finish: 10000, batch_size: 5000) do |user|
+User.find_each(start: 2000, finish: 10000) do |user|
   NewsMailer.weekly(user).deliver_now
 end
 ----
 
 另一个例子是使用多个职程（worker）处理同一个进程队列。通过分别配置 `:start` 和 `:finish` 选项可以让每个职程每次都处理 10000 条记录。
+
+**`:error_on_ignore`**
+
+覆盖应用的配置，指定有顺序的关系是否抛出异常。
 
 [[find-in-batches]]
 ===== `find_in_batches` 方法
@@ -444,10 +446,21 @@ Invoice.find_in_batches do |invoices|
 end
 ----
 
+如前所述，`find_in_batches` 能处理模型，也能处理关系：
+
+[source,ruby]
+----
+Invoice.pending.find_in_batches do |invoice|
+  pending_invoices_export.add_invoices(invoices)
+end
+----
+
+但是关系不能有顺序，因为这个方法在迭代时有既定的顺序。
+
 [[options-for-find-in-batches]]
 ====== `find_in_batches` 方法的选项
 
-和 `find_each` 方法一样，`find_in_batches` 方法可以使用 `:batch_size`、`:start` 和 `:finish` 选项。
+`find_in_batches` 方法接受的选项与 `find_each` 方法一样。
 
 [[conditions]]
 === 条件查询
@@ -650,6 +663,11 @@ Client.order("orders_count ASC", "created_at DESC")
 Client.order("orders_count ASC").order("created_at DESC")
 # SELECT * FROM clients ORDER BY orders_count ASC, created_at DESC
 ----
+
+[WARNING]
+====
+使用 **MySQL 5.7.5** 及以上版本时，若想从结果集合中选择字段，要使用 `select`、`pluck` 和 `ids` 等方法。如果 `order` 子句中使用的字段不在选择列表中，`order` 方法抛出 `ActiveRecord::StatementInvalid` 异常。从结果集合中选择字段的方法参见下一节。
+====
 
 [[selecting-specific-fields]]
 === 选择特定字段
@@ -1107,14 +1125,14 @@ Active Record 提供了 `joins` 和 `left_outer_joins` 这两个查找方法，�
 
 [source,ruby]
 ----
-Author.joins("INNER JOIN posts ON posts.author_id = author.id AND posts.published = 't'")
+Author.joins("INNER JOIN posts ON posts.author_id = authors.id AND posts.published = 't'")
 ----
 
 上面的代码会生成下面的 SQL 语句：
 
 [source,sql]
 ----
-SELECT clients.* FROM clients INNER JOIN posts ON posts.author_id = author.id AND posts.published = 't'
+SELECT authors.* FROM authors INNER JOIN posts ON posts.author_id = authors.id AND posts.published = 't'
 ----
 
 [[using-array-hash-of-named-associations]]
@@ -1683,7 +1701,7 @@ SELECT people.id, people.name, comments.text
 FROM people
 INNER JOIN comments
   ON comments.person_id = people.id
-WHERE comments.created_at = '2015-01-01'
+WHERE comments.created_at > '2015-01-01'
 ----
 
 [[retrieving-specific-data-from-multiple-tables]]
@@ -2024,7 +2042,7 @@ Client.includes("orders").where(first_name: 'Ryan', orders: { status: 'received'
 [source,sql]
 ----
 SELECT count(DISTINCT clients.id) AS count_all FROM clients
-  LEFT OUTER JOIN orders ON orders.client_id = client.id WHERE
+  LEFT OUTER JOIN orders ON orders.client_id = clients.id WHERE
   (clients.first_name = 'Ryan' AND orders.status = 'received')
 ----
 

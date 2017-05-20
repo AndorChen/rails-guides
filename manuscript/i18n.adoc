@@ -78,11 +78,13 @@ I18n.l Time.now
 
 [source,ruby]
 ----
-load_path         # 自定义翻译文件的路径
-locale            # 获取或设置当前区域
-default_locale    # 获取或设置默认区域
-exception_handler # 使用其他异常处理程序
-backend           # 使用其他后端
+load_path                 # 自定义翻译文件的路径
+locale                    # 获取或设置当前区域
+default_locale            # 获取或设置默认区域
+available_locales         # 应用可用的区域设置白名单
+enforce_available_locales # 强制使用白名单（true 或 false）
+exception_handler         # 使用其他异常处理程序
+backend                   # 使用其他后端
 ----
 
 现在，我们已经掌握了 Rails I18n API 的基本用法，从下一节开始，我们将从头开始国际化一个简单的 Rails 应用。
@@ -117,13 +119,12 @@ Rails 会自动加载翻译文件加载路径（`I18n.load_path`），这是一�
 
 NOTE: I18n 库的后端采用了延迟加载技术，相关翻译信息仅在第一次查找时加载。我们可以根据需要，随时替换默认后端。
 
-默认的 `config/application.rb` 文件中有如何从其他目录添加区域设置，以及如何设置不同默认区域的说明。
+默认的区域设置和翻译的加载路径可以在 `config/application.rb` 文件中配置，如下所示：
 
 [source,ruby]
 ----
-# 默认区域设置是 :en，config/locales/ 文件夹下的 .rb 和 .yml 翻译文件会被自动加载
-# config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
-# config.i18n.default_locale = :de
+config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
+config.i18n.default_locale = :de
 ----
 
 在查找翻译文件之前，必须先指定翻译文件加载路径。应该通过初始化脚本修改默认区域设置，而不是 `config/application.rb` 文件：
@@ -134,6 +135,9 @@ NOTE: I18n 库的后端采用了延迟加载技术，相关翻译信息仅在第
 
 # 指定 I18n 库搜索翻译文件的路径
 I18n.load_path += Dir[Rails.root.join('lib', 'locale', '*.{rb,yml}')]
+
+# 应用可用的区域设置白名单
+I18n.available_locales = [:en, :pt]
 
 # 修改默认区域设置（默认是 :en）
 I18n.default_locale = :pt
@@ -441,6 +445,37 @@ NOTE: 添加新的区域设置文件后，需要重启服务器。
 
 要想把翻译储存在 SimpleStore 中，我们可以使用 YAML（`.yml`）或纯 Ruby（`.rb`）文件。大多数 Rails 开发者会优先选择 YAML。不过 YAML 有一个很大的缺点，它对空格和特殊字符非常敏感，因此有可能出现应用无法正确加载字典的情况。而 Ruby 文件如果有错误，在第一次加载时应用就会崩溃，因此我们很容易就能找出问题。（如果在使用 YAML 字典时遇到了“奇怪的问题”，可以尝试把字典的相关部分放入 Ruby 文件中。）
 
+如果翻译存储在 YAML 文件中，有些键必须转义：
+
+- true, on, yes
+- false, off, no
+
+例如：
+
+[source,yml]
+----
+# config/locales/en.yml
+en:
+  success:
+    'true':  'True!'
+    'on':    'On!'
+    'false': 'False!'
+  failure:
+    true:    'True!'
+    off:     'Off!'
+    false:   'False!'
+----
+
+[source,ruby]
+----
+I18n.t 'success.true' # => 'True!'
+I18n.t 'success.on' # => 'On!'
+I18n.t 'success.false' # => 'False!'
+I18n.t 'failure.false' # => Translation Missing
+I18n.t 'failure.off' # => Translation Missing
+I18n.t 'failure.true' # => Translation Missing
+----
+
 [[passing-variables-to-translations]]
 ==== 把变量传递给翻译
 
@@ -719,13 +754,14 @@ end
 [[pluralization]]
 ==== 复数转换
 
-在英语中，一个字符串只有一种单数形式和一种复数形式，例如，“1 message”和“2 messages”。其他语言（link:http://unicode.org/repos/cldr-tmp/trunk/diff/supplemental/language_plural_rules.html#ar[阿拉伯语]、link:http://unicode.org/repos/cldr-tmp/trunk/diff/supplemental/language_plural_rules.html#ja[日语]、link:http://unicode.org/repos/cldr-tmp/trunk/diff/supplemental/language_plural_rules.html#ru[俄语]等）则具有不同的语法，有更多或更少的复数形式。因此，I18n API 提供了灵活的复数转换功能。
+在英语中，一个字符串只有一种单数形式和一种复数形式，例如，“1 message”和“2 messages”。其他语言（link:http://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html#ar[阿拉伯语]、link:http://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html#ja[日语]、link:http://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html#ru[俄语]等）则具有不同的语法，有更多或更少的link:http://cldr.unicode.org/index/cldr-spec/plural-rules[复数形式]。因此，I18n API 提供了灵活的复数转换功能。
 
 `:count` 插值变量具有特殊作用，既可以把它插入翻译，又可以用于从翻译中选择复数形式（根据 CLDR 定义的复数转换规则）：
 
 [source,ruby]
 ----
 I18n.backend.store_translations :en, inbox: {
+  zero: 'no messages', # 可选
   one: 'one message',
   other: '%{count} messages'
 }
@@ -734,16 +770,21 @@ I18n.translate :inbox, count: 2
 
 I18n.translate :inbox, count: 1
 # => 'one message'
+
+I18n.translate :inbox, count: 0
+# => 'no messages'
 ----
 
 `:en` 区域设置的复数转换算法非常简单：
 
 [source,ruby]
 ----
-entry[count == 1 ? 0 : 1]
+lookup_key = :zero if count == 0 && entry.has_key?(:zero)
+lookup_key ||= count == 1 ? :one : :other
+entry[lookup_key]
 ----
 
-也就是说，表示为 `:one` 的翻译用作单数，另一个翻译用作复数（包括 `count` 等于 0 的情况）。
+也就是说，`:one` 标记的是单数，`:other` 标记的是复数。如果数量为零，而且有 `:zero` 元素，用它的值，而不用 `:other` 的值。
 
 如果查找键没能返回可转换为复数形式的散列，就会引发 `I18n::InvalidPluralizationData` 异常。
 
@@ -937,7 +978,7 @@ errors.messages.blank
 [[error-message-interpolation]]
 ===== 错误消息的插值
 
-翻译后的模型名、属性名，以及值，始终可用于插值。
+翻译后的模型名、属性名，以及值，始终可以通过 `model`、`attribute` 和 `value` 插值。
 
 因此，举例来说，我们可以用 `"Please fill in your %{attribute}"` 这样的属性名来代替默认的 `"cannot be blank"` 错误信息。
 
@@ -1015,6 +1056,11 @@ errors.messages.blank
 |-
 |`:invalid`
 |-
+
+| `non-optional association`
+| -
+| `:required`
+| -
 
 |`numericality`
 |-
@@ -1308,7 +1354,7 @@ I18n 是在 Ruby on Rails 2.2 中引入的，并且仍在不断发展。该项�
 
 因此，Rails 鼓励每个人在 gem 或其他库中试验新想法和新特性，并将它们贡献给社区。（别忘了在邮件列表上宣布我们的工作！）
 
-如果在 Ruby on Rails 的link:https://github.com/svenfuchs/rails-i18n/tree/master/rails/locale[示例翻译数据]库中没找到想要的区域设置（语言），可以link:https://github.com/guides/fork-a-project-and-submit-your-modifications[派生仓库]，添加翻译数据，然后发送link:https://github.com/guides/pull-requests[拉取请求]。
+如果在 Ruby on Rails 的link:https://github.com/svenfuchs/rails-i18n/tree/master/rails/locale[示例翻译数据]库中没找到想要的区域设置（语言），可以link:https://github.com/guides/fork-a-project-and-submit-your-modifications[派生仓库]，添加翻译数据，然后发送link:https://help.github.com/articles/about-pull-requests/[拉取请求]。
 
 [[resources]]
 === 资源

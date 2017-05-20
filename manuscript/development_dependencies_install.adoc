@@ -186,6 +186,11 @@ $ cd actionpack
 $ bundle exec ruby -Itest path/to/test.rb -n test_name
 ----
 
+[[railties-setup]]
+==== 为 Railties 做准备
+
+有些 Railties 测试依赖 JavaScript 运行时环境，因此要安装 https://nodejs.org/[Node.js]。
+
 [[active-record-setup]]
 ==== 为 Active Record 做准备
 
@@ -332,3 +337,54 @@ $ bundle exec rake db:drop
 ====
 
 如果使用其他数据库，默认的连接信息参见 `activerecord/test/config.yml` 或 `activerecord/test/config.example.yml` 文件。如果有必要，可以在你的设备中编辑 `activerecord/test/config.yml` 文件，提供不同的凭据。不过显然，不应该把这种改动推送回 Rails 仓库。
+
+[[action-cable-setup]]
+==== 为 Action Cable 做准备
+
+Action Cable 默认使用 Redis 作为订阅适配器（<<action_cable_overview#broadcasting,详情>>），因此为了运行 Action Cable 的测试，要安装并运行 Redis。
+
+[[install-redis-from-source]]
+===== 从源码安装 Redis
+
+Redis 的文档不建议通过包管理器安装，因为那里的包往往是过时的。link:http://redis.io/download#installation[Redis 的文档]详细说明了如何从源码安装，以及如何运行 Redis 服务器。
+
+[[install-redis-from-package-manager]]
+===== 使用包管理器安装
+
+在 macOS 中可以执行下述命令：
+
+[source,sh]
+----
+$ brew install redis
+----
+
+然后按照 Homebrew 给出的说明做。
+
+在 Ubuntu 中只需运行：
+
+[source,sh]
+----
+$ sudo apt-get install redis-server
+----
+
+在 Fedora 或 CentOS（要启用 EPEL）中运行：
+
+[source,sh]
+----
+$ sudo yum install redis
+----
+
+如果使用 Arch Linux，运行：
+
+[source,sh]
+----
+$ sudo pacman -S redis
+$ sudo systemctl start redis
+----
+
+FreeBSD 用户要运行下述命令：
+
+[source,sh]
+----
+# portmaster databases/redis
+----

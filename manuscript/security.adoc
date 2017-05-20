@@ -53,9 +53,9 @@ User.find(session[:user_id])
 [[session-id]]
 ==== 会话 ID
 
-NOTE: 会话 ID 是长度为 32 字节的 MD5 哈希值。
+NOTE: 会话 ID 是随机的 32 个十六进制字符。
 
-会话 ID 由随机字符串的哈希值组成。这个随机字符串包含当前时间、一个 0 到 1 之间的随机数、Ruby 解析器的进程 ID（基本上也是一个随机数），以及一个常量字符串。目前 Rails 会话 ID 还无法暴力破解。尽管直接破解 MD5 很难，但存在 MD5 碰撞的可能性，理论上可以创建具有相同哈希值的另一个输入文本。不过到目前为止，这个问题还未产生安全影响。
+会话 ID 由 `SecureRandom.hex` 生成，通过所在平台中生成加密安全随机数的方法（例如 OpenSSL、/dev/urandom 或 Win32）生成。目前还无法暴力破解 Rails 的会话 ID。
 
 [[session-hijacking]]
 ==== 会话劫持
@@ -272,7 +272,7 @@ protect_from_forgery with: :exception
 
 这行代码会在 Rails 生成的所有表单和 Ajax 请求中包含安全令牌。如果安全令牌验证失败，就会抛出异常。
 
-NOTE: 默认情况下，Rails 会包含 jQuery 和 jQuery 非侵入式适配器，后者会在 jQuery 的每个非 GET Ajax 调用中添加名为 `X-CSRF-Token` 的首部，其值为安全令牌。如果没有这个首部，Rails 不会接受非 GET Ajax 请求。使用其他库调用 Ajax 时，同样要在默认首部中添加 `X-CSRF-Token`。要想获取令牌，请查看应用视图中由 `<%= csrf_meta_tags %>` 这行代码生成的 `<meta name='csrf-token' content='THE-TOKEN'>` 标签。
+NOTE: 默认情况下，Rails 自带的https://github.com/rails/rails-ujs[非侵入式脚本适配器]会在每个非 GET Ajax 调用中添加名为 `X-CSRF-Token` 的首部，其值为安全令牌。如果没有这个首部，Rails 不会接受非 GET Ajax 请求。使用其他库调用 Ajax 时，同样要在默认首部中添加 `X-CSRF-Token`。要想获取令牌，请查看应用视图中由 `<%= csrf_meta_tags %>` 这行代码生成的 `<meta name='csrf-token' content='THE-TOKEN'>` 标签。
 
 通常我们会使用持久化 cookie 来储存用户信息，例如使用 `cookies.permanent`。在这种情况下，cookie 不会被清除，CSRF 保护也无法自动生效。如果使用其他 cookie 存储器而不是会话来保存用户信息，我们就必须手动解决这个问题：
 
@@ -399,7 +399,7 @@ send_file filename, disposition: 'inline'
 
 在局域网和管理界面中，只要有一个地方没有对输入进行过滤，整个应用就有可能受到 XSS 攻击。可能发生的攻击包括：窃取具有特权的管理员的 cookie、注入 iframe 以窃取管理员密码，以及通过浏览器漏洞安装恶意软件以控制管理员的计算机。
 
-关于 XSS 攻击的对策，请参阅 <<injection>>。在局域网和管理界面中同样推荐使用 `SafeErb` 插件。
+关于 XSS 攻击的对策，请参阅 <<injection>>。
 
 **CSRF**
 
@@ -613,7 +613,7 @@ WARNING: 只需纂改一个参数，就有可能使用户获得未经授权的�
 
 对于不同的 Web 应用，用户能够纂改的参数也不同。根据经验，未经验证的用户输入都是不安全的，来自用户的参数都有被纂改的潜在风险。
 
-通过混淆参数或 JavaScript 来实现安全性一点儿也不可靠。通过 Mozilla Firefox 的 Web 开发者工具栏，我们可以查看和修改表单的隐藏字段。JavaScript 常用于验证用户输入的数据，但无法防止攻击者发送带有不合法数据的恶意请求。Mozilla Firefox 的 Live Http Headers 插件，可以记录每次请求，而且可以重复发起并修改这些请求，这样就能轻易绕过 JavaScript 验证。还有一些客户端代理，允许拦截进出的任何网络请求和响应。
+通过混淆参数或 JavaScript 来实现安全性一点儿也不可靠。通过开发者工具，我们可以查看和修改表单的隐藏字段。JavaScript 常用于验证用户输入的数据，但无法防止攻击者发送带有不合法数据的恶意请求。Mozilla Firefox 的 Firebug 插件，可以记录每次请求，而且可以重复发起并修改这些请求，这样就能轻易绕过 JavaScript 验证。还有一些客户端代理，允许拦截进出的任何网络请求和响应。
 
 [[injection]]
 === 注入攻击
@@ -668,7 +668,7 @@ SELECT * FROM projects WHERE name = '' OR 1 --'
 
 [source,ruby]
 ----
-User.first("login = '#{params[:name]}' AND password = '#{params[:password]}'")
+User.find_by("login = '#{params[:name]}' AND password = '#{params[:password]}'")
 ----
 
 如果攻击者输入 `' OR '1'='1` 作为用户名，输入 `' OR '2'>'1` 作为密码，将会生成下面的 SQL 查询：
@@ -739,13 +739,11 @@ TIP: 对 Web 应用而言，XSS 是影响范围最广、破坏性最大的安全
 
 存在安全风险的 URL 及其参数，是攻击者发动攻击的切入点。
 
-最常见的切入点包括帖子、用户评论和留言本，但项目名称、文档名称和搜索结果同样存在安全风险，实际上凡是用户能够输入信息的地方都存在安全风险。而且，输入不仅来自网站上的输入框，也可能来自 URL 参数（公开参数、隐藏参数或内部参数）。记住，用户有可能拦截任何通信。通过 link:http://livehttpheaders.mozdev.org/[Firefox 的  Live HTTP Headers 插件]这样的工具或者客户端代理，用户可以轻易修改请求数据。
+最常见的切入点包括帖子、用户评论和留言本，但项目名称、文档名称和搜索结果同样存在安全风险，实际上凡是用户能够输入信息的地方都存在安全风险。而且，输入不仅来自网站上的输入框，也可能来自 URL 参数（公开参数、隐藏参数或内部参数）。记住，用户有可能拦截任何通信。有些工具和客户端代理可以轻易修改请求数据。此外还有横幅广告等攻击方式。
 
 XSS 攻击的工作原理是：攻击者注入代码，Web 应用保存并在页面中显示这些代码，受害者访问包含恶意代码的页面。本文给出的 XSS 示例大多数只是显示一个警告框，但 XSS 的威力实际上要大得多。XSS 可以窃取 cookie、劫持会话、把受害者重定向到假冒网站、植入攻击者的赚钱广告、纂改网站元素以窃取登录用户名和密码，以及通过 Web 浏览器的安全漏洞安装恶意软件。
 
 仅 2007 年下半年，在 Mozilla 浏览器中就发现了 88 个安全漏洞，Safari 浏览器 22 个， IE 浏览器 18个， Opera 浏览器 12个。link:http://eval.symantec.com/mktginfo/enterprise/white_papers/b-whitepaper_internet_security_threat_report_xiii_04-2008.en-us.pdf[赛门铁克《互联网安全威胁报告》]指出，仅 2007 年下半年，在浏览器插件中就发现了 239 个安全漏洞。link:http://pandalabs.pandasecurity.com/mpack-uncovered/[Mpack] 这个攻击框架非常活跃、经常更新，其作用是利用这些漏洞发起攻击。对于那些从事网络犯罪的黑客而言，利用 Web 应用框架中的 SQL 注入漏洞，在数据表的每个文本字段中插入恶意代码是非常有吸引力的。2008 年 4 月，超过 51 万个网站遭到了这类攻击，其中包括英国政府、联合国和其他一些重要网站。
-
-横幅广告是相对较新、不太常见的切入点。link:http://blog.trendmicro.com/myspace-excite-and-blick-serve-up-malicious-banner-ads/[趋势科技]指出，2008年早些时候，在流行网站（如 MySpace 和 Excite）的横幅广告中出现了恶意代码。
 
 [[html-javascript-injection]]
 ===== HTML / JavaScript 注入
@@ -790,7 +788,7 @@ pass:[www.attacker.com] 的日志文件中将出现类似这样的一条记录�
 GET http://www.attacker.com/_app_session=836c1c25278e5b321d6bea4f19cb57e2
 ----
 
-在 cookie 中添加 `httpOnly` 标志可以规避这种攻击，这个标志可以禁止 JavaScript 读取 `document.cookie` 属性。IE v6.SP1、 Firefox v2.0.0.5 和 Opera 9.5 以及更高版本的浏览器都支持 `httpOnly` 标志，Safari 浏览器也在考虑支持这个标志。但其他浏览器（如 WebTV）或旧版浏览器（如 Mac 版 IE 5.5）不支持这个标志，因此遇到上述攻击时会导致网页无法加载。需要注意的是，即便设置了 `httpOnly` 标志，通过 link:https://www.owasp.org/index.php/HTTPOnly#Browsers_Supporting_HttpOnly[Ajax] 仍然可以读取 cookie。
+在 cookie 中添加 `httpOnly` 标志可以规避这种攻击，这个标志可以禁止 JavaScript 读取 `document.cookie` 属性。IE v6.SP1、 Firefox v2.0.0.5、Opera 9.5、Safari 4 和 Chrome 1.0.154 以及更高版本的浏览器都支持 `httpOnly` 标志，Safari 浏览器也在考虑支持这个标志。但其他浏览器（如 WebTV）或旧版浏览器（如 Mac 版 IE 5.5）不支持这个标志，因此遇到上述攻击时会导致网页无法加载。需要注意的是，即便设置了 `httpOnly` 标志，通过 link:https://www.owasp.org/index.php/HTTPOnly#Browsers_Supporting_HttpOnly[Ajax] 仍然可以读取 cookie。
 
 [[defacement]]
 ====== 涂改信息
@@ -837,7 +835,7 @@ s = sanitize(user_input, tags: tags, attributes: %w(href title))
 
 通过规定允许使用的标签，`sanitize()` 完美地完成了过滤输入的任务。不管攻击者使出什么样的花招、设计出多么畸型的标签，都难逃被过滤的命运。
 
-接下来应该转义应用的所有输出，特别是在需要显示未经过滤的用户输入时（例如前面提到的的搜索表单的例子）。使用 `escapeHTML()` 方法（或其别名 `h()` 方法），把 HTML 中的字符 `&`、`"`、`<` 和 `>` 替换为对应的转义字符 `+&amp;+`、`+&quot;+`、`+&lt;+` 和 `+&gt;+`。然而作为程序员，我们往往很容易忘记这项工作，因此推荐使用 `SafeErb` 这个 gem，它会提醒我们转义来自外部的字符串。
+接下来应该转义应用的所有输出，特别是在需要显示未经过滤的用户输入时（例如前面提到的的搜索表单的例子）。使用 `escapeHTML()` 方法（或其别名 `h()` 方法），把 HTML 中的字符 `&`、`"`、`<` 和 `>` 替换为对应的转义字符 `+&amp;+`、`+&quot;+`、`+&lt;+` 和 `+&gt;+`。
 
 [[obfuscation-and-encoding-injection]]
 ====== 混淆和编码注入

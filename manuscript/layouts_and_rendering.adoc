@@ -445,6 +445,8 @@ render formats: :xml
 render formats: [:json, :xml]
 ----
 
+如果指定格式的模板不存在，抛出 `ActionView::MissingTemplate` 错误。
+
 [[finding-layouts]]
 ===== 查找布局
 
@@ -684,6 +686,8 @@ redirect_to photos_url
 ----
 redirect_back(fallback_location: root_path)
 ----
+
+NOTE: `redirect_to` 和 `redirect_back` 不会立即导致方法返回，停止执行，它们只是设定 HTTP 响应。方法中位于其后的语句会继续执行。如果需要停止执行，使用 `return` 语句或其他终止机制。
 
 [[getting-a-different-redirect-status-code]]
 ===== 设置不同的重定向状态码
@@ -1186,7 +1190,7 @@ WARNING: 注意，必须指定图像的扩展名。
 +
 [source,erb]
 ----
-<%= form_for(@q) do |f| %>
+<%= form_for(search) do |f| %>
   <h1>Search form:</h1>
   <fieldset>
     <%= yield f %>

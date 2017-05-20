@@ -169,7 +169,7 @@ end
 [source,ruby]
 ----
 create_table :accounts do |t|
-  t.belongs_to :supplier, index: true, unique: true, foreign_key: true
+  t.belongs_to :supplier, index: { unique: true }, foreign_key: true
   # ...
 end
 ----
@@ -421,7 +421,7 @@ end
 class CreateSuppliers < ActiveRecord::Migration[5.0]
   def change
     create_table :suppliers do |t|
-      t.string  :name
+      t.string :name
       t.timestamps
     end
 
@@ -645,6 +645,24 @@ end
 
 如果声明关联之前已经定义了模型，则要在迁移中使用 `add_column` 创建外键。
 
+为了提升查询性能，最好为外键添加索引；为了保证参照完整性，最好为外键添加约束：
+
+[source,ruby]
+----
+class CreateBooks < ActiveRecord::Migration[5.0]
+  def change
+    create_table :books do |t|
+      t.datetime :published_at
+      t.string   :book_number
+      t.integer  :author_id
+    end
+
+    add_index :books, :author_id
+    add_foreign_key :books, :authors
+  end
+end
+----
+
 [[creating-join-tables-for-has-and-belongs-to-many-associations]]
 ===== 创建 `has_and_belongs_to_many` 关联所需的联结表
 
@@ -777,39 +795,71 @@ class Book < ApplicationRecord
 end
 ----
 
-默认情况下，Active Record 并不知道关联中两个模型之间的联系。这可能导致同一对象的两个副本不同步：
+通过关联的名称，Active Record 能探知这两个模型之间建立的是双向关联。这样一来，Active Record 只会加载一个 `Author` 对象副本，从而确保应用运行效率更高效，并避免数据不一致。
 
 [source,ruby]
 ----
 a = Author.first
 b = a.books.first
 a.first_name == b.author.first_name # => true
-a.first_name = 'Manny'
-a.first_name == b.author.first_name # => false
+a.first_name = 'David'
+a.first_name == b.author.first_name # => true
 ----
 
-之所以会发生这种情况，是因为 `a` 和 `b.author` 在内存中是同一数据的两种表述，修改其中一个并不会自动刷新另一个。Active Record 提供了 `:inverse_of` 选项，可以告知 Rails 两者之间的关系：
+Active Record 能自动识别多数具有标准名称的双向关联。然而，具有下述选项的关联无法识别：
+
+- `:conditions`
+- `:through`
+- `:polymorphic`
+- `:class_name`
+- `:foreign_key`
+
+例如，对下属模型来说：
 
 [source,ruby]
 ----
 class Author < ApplicationRecord
-  has_many :books, inverse_of: :author
+  has_many :books
 end
 
 class Book < ApplicationRecord
-  belongs_to :author, inverse_of: :books
+  belongs_to :writer, class_name: 'Author', foreign_key: 'author_id'
 end
 ----
 
-这么修改之后，Active Record 只会加载一个作者对象，从而避免数据的不一致性，提高应用的执行效率：
+Active Record 就无法自动识别这个双向关联：
 
 [source,ruby]
 ----
 a = Author.first
 b = a.books.first
-a.first_name == b.author.first_name # => true
-a.first_name = 'Manny'
-a.first_name == b.author.first_name # => true
+a.first_name == b.writer.first_name # => true
+a.first_name = 'David'
+a.first_name == b.writer.first_name # => false
+----
+
+Active Record 提供了 `:inverse_of` 选项，可以通过它明确声明双向关联：
+
+[source,ruby]
+----
+class Author < ApplicationRecord
+  has_many :books, inverse_of: 'writer'
+end
+
+class Book < ApplicationRecord
+  belongs_to :writer, class_name: 'Author', foreign_key: 'author_id'
+end
+----
+
+在 `has_many` 声明中指定 `:inverse_of` 选项后，Active Record 便能识别双向关联：
+
+[source,ruby]
+----
+a = Author.first
+b = a.books.first
+a.first_name == b.writer.first_name # => true
+a.first_name = 'David'
+a.first_name == b.writer.first_name # => true
 ----
 
 `inverse_of` 有些限制：
@@ -817,14 +867,6 @@ a.first_name == b.author.first_name # => true
 * 不支持 `:through` 关联；
 * 不支持 `:polymorphic` 关联；
 * 不支持 `:as` 选项；
-* `belongs_to` 关联会忽略 `has_many` 关联的 `inverse_of` 选项；
-
-每种关联都会尝试自动找到关联的另一端，并且设置 `:inverse_of` 选项（根据关联的名称）。使用标准名称的关联都有这种功能。但是，如果在关联中设置了下面这些选项，将无法自动设置 `:inverse_of`：
-
-* `:conditions`
-* `:through`
-* `:polymorphic`
-* `:foreign_key`
 
 [[detailed-association-reference]]
 === 关联详解
@@ -1643,7 +1685,7 @@ WARNING: 对象始终会从数据库中删除，忽略 `:dependent` 选项。
 [[methods-added-by-has-many-collection-objects]]
 ====== `collection=(objects)`
 
-`collection=` 方法让关联对象数组只包含指定的对象，根据需求会添加或删除对象。
+`collection=` 方法让关联对象数组只包含指定的对象，根据需求会添加或删除对象。改动会持久存入数据库。
 
 [[methods-added-by-has-many-collection-singular-ids]]
 ====== `collection_singular_ids`
@@ -1658,7 +1700,7 @@ WARNING: 对象始终会从数据库中删除，忽略 `:dependent` 选项。
 [[methods-added-by-has-many-collection-singular-ids-ids]]
 ====== `collection_singular_ids=(ids)`
 
-`collection_singular_ids=` 方法让关联对象数组中只包含指定的主键，根据需要会增删 ID。
+`collection_singular_ids=` 方法让关联对象数组中只包含指定的主键，根据需要会增删 ID。改动会持久存入数据库。
 
 [[methods-added-by-has-many-collection-clear]]
 ====== `collection.clear`
@@ -2211,12 +2253,10 @@ NOTE: 这个方法是 `collection.concat` 和 `collection.push` 的别名。
 @part.assemblies.delete(@assembly1)
 ----
 
-WARNING: 这个方法不会触发联结记录上的回调。
-
 [[methods-added-by-has-and-belongs-to-many-collection-destroy-object]]
 ====== `collection.destroy(object, ...)`
 
-`collection.destroy` 方法在联结表中的记录上调用 `destroy` 方法，从集合中删除一个或多个对象，还会触发回调。这个方法不会销毁对象本身。
+`collection.destroy` 方法把集合中指定对象在联结表中的记录删除。这个方法不会销毁对象本身。
 
 [source,ruby]
 ----
@@ -2226,7 +2266,7 @@ WARNING: 这个方法不会触发联结记录上的回调。
 [[methods-added-by-has-and-belongs-to-many-collection-objects]]
 ====== `collection=(objects)`
 
-`collection=` 方法让集合只包含指定的对象，根据需求会添加或删除对象。
+`collection=` 方法让集合只包含指定的对象，根据需求会添加或删除对象。改动会持久存入数据库。
 
 [[methods-added-by-has-and-belongs-to-many-collection-singular-ids]]
 ====== `collection_singular_ids`
@@ -2241,7 +2281,7 @@ WARNING: 这个方法不会触发联结记录上的回调。
 [[methods-added-by-has-and-belongs-to-many-collection-singular-ids-ids]]
 ====== `collection_singular_ids=(ids)`
 
-`collection_singular_ids=` 方法让集合中只包含指定的主键，根据需要会增删 ID。
+`collection_singular_ids=` 方法让集合中只包含指定的主键，根据需要会增删 ID。改动会持久存入数据库。
 
 [[methods-added-by-has-and-belongs-to-many-collection-clear]]
 ====== `collection.clear`

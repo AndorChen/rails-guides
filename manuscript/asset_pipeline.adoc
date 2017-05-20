@@ -59,7 +59,7 @@ NOTE: 如果 Gemfile 中包含 `sass-rails` gem，Rails 就会自动使用这个
 
 Asset Pipeline 的特性之一是连接静态资源文件，目的是减少渲染网页时浏览器发起的请求次数。Web 浏览器能够同时发起的请求次数是有限的，因此更少的请求次数可能意味着更快的应用加载速度。
 
-Sprockets 把所有 JavaScript 文件连接为一个主 `.js` 文件，把所有 CSS 文件连接为一个主 `.css` 文件。后文会介绍，我们可以按需定制连接文件的方式。在生产环境中，Rails 会在每个文件名中插入 MD5 指纹，以便 Web 浏览器缓存文件。当我们修改了文件内容，Rails 会自动修改文件名中的指纹，从而让原有缓存失效。
+Sprockets 把所有 JavaScript 文件连接为一个主 `.js` 文件，把所有 CSS 文件连接为一个主 `.css` 文件。后文会介绍，我们可以按需定制连接文件的方式。在生产环境中，Rails 会在每个文件名中插入 SHA256 指纹，以便 Web 浏览器缓存文件。当我们修改了文件内容，Rails 会自动修改文件名中的指纹，从而让原有缓存失效。
 
 Asset Pipeline 的特性之二是简化或压缩静态资源文件。对于 CSS 文件，会删除空格和注释。对于 JavaScript 文件，可以进行更复杂的处理，我们可以从内置选项中选择处理方式，也可以自定义处理方式。
 
@@ -241,7 +241,7 @@ Sprockets 没有为访问静态资源文件添加任何新方法，而是继续�
 <%= javascript_include_tag "application", "data-turbolinks-track" => "reload" %>
 ----
 
-在常规视图中，我们可以像下面这样访问 `public/assets/images` 文件夹中的图像：
+在常规视图中，我们可以像下面这样访问 `app/assets/images` 文件夹中的图像：
 
 [source,erb]
 ----
@@ -250,7 +250,7 @@ Sprockets 没有为访问静态资源文件添加任何新方法，而是继续�
 
 如果在应用中启用了 Asset Pipeline，并且未在当前环境中禁用 Asset Pipeline，那么这个图像文件将由 Sprockets 处理。如果图像的位置是 `public/assets/rails.png`，那么将由 Web 服务器处理。
 
-如果文件请求包含哈希值，例如 `public/assets/rails-af27b6a414e6da00003503148be9b409.png`，处理的方式也是一样的。关于如何生成哈希值的介绍，请参阅 <<in-production>>。
+如果文件请求包含 SHA256 哈希值，例如 `public/assets/rails-f90d8a84c707a8dc923fca1ca1895ae8ed0a09237f6992015fef1e11be77c023.png`，处理的方式也是一样的。关于如何生成哈希值的介绍，请参阅 <<in-production>>。
 
 Sprockets 还会检查 `config.assets.paths` 中指定的路径，其中包括 Rails 应用的标准路径和 Rails 引擎添加的路径。
 
@@ -420,6 +420,18 @@ config.assets.raise_runtime_errors = false
 
 当此选项设置为 `true` 时，Asset Pipeline 会检查应用中加载的所有静态资源文件是否都已包含在 `config.assets.precompile` 列表中。如果此时 `config.assets.digest` 也设置为 `true`，Asset Pipeline 会要求所有对静态资源文件的请求都包含指纹（digest）。
 
+[[raise-an-error-when-an-asset-is-not-found]]
+==== 找不到静态资源时抛出错误
+
+如果使用的 sprockets-rails 是 3.2.0 或以上版本，可以配置找不到静态资源时的行为。如果禁用了“静态资源后备机制”，找不到静态资源时抛出错误。
+
+[source,ruby]
+----
+config.assets.unknown_asset_fallback = false
+----
+
+如果启用了“静态资源后备机制”，找不到静态资源时，输出路径，而不抛出错误。静态资源后备机制默认启用。
+
 [[turning-digests-off]]
 ==== 关闭指纹
 
@@ -470,7 +482,7 @@ config.assets.debug = false
 
 在生产环境中，Sprockets 会使用前文介绍的指纹机制。默认情况下，Rails 假定静态资源文件都经过了预编译，并将由 Web 服务器处理。
 
-在预编译阶段，Sprockets 会根据静态资源文件的内容生成 MD5，并在保存文件时把这个 MD5 添加到文件名中。Rails 辅助方法会用这些包含指纹的文件名代替清单文件中的文件名。
+在预编译阶段，Sprockets 会根据静态资源文件的内容生成 SHA256 哈希值，并在保存文件时把这个哈希值添加到文件名中。Rails 辅助方法会用这些包含指纹的文件名代替清单文件中的文件名。
 
 例如，下面的代码：
 
@@ -536,36 +548,30 @@ NOTE: 这个匹配器（及预编译数组的其他成员；见后文）会匹�
 
 [source,ruby]
 ----
-Rails.application.config.assets.precompile += ['admin.js', 'admin.css', 'swfObject.js']
+Rails.application.config.assets.precompile += %w( admin.js admin.css )
 ----
 
 NOTE: 添加到 `precompile` 数组的文件名应该以 `.js` 或 `.css` 结尾，即便实际添加的是 CoffeeScript 或 Sass 文件也是如此。
 
-`assets:precompile` 这个 Rake 任务还会成生 `manifest-md5hash.json` 文件，其内容是所有静态资源文件及其指纹的列表。有了这个文件，Rails 辅助方法不需要 Sprockets 就能获得静态资源文件对应的指纹。下面是一个典型的 `manifest-md5hash.json` 文件的例子：
+`assets:precompile` 这个 Rake 任务还会成生 `.sprockets-manifest-md5hash.json` 文件（其中 `md5hash` 是一个 MD5 哈希值），其内容是所有静态资源文件及其指纹的列表。有了这个文件，Rails 辅助方法不需要 Sprockets 就能获得静态资源文件对应的指纹。下面是一个典型的 `.sprockets-manifest-md5hash.json` 文件的例子：
 
 [source,json]
 ----
-{"files":{"application-723d1be6cc741a3aabb1cec24276d681.js":
-{"logical_path":"application.js","mtime":"2013-07-26T22:55:03-07:00",
-"size":302506,"digest":"723d1be6cc741a3aabb1cec24276d681"},
-"application-12b3c7dd74d2e9df37e7cbb1efa76a6d.css":
-{"logical_path":"application.css","mtime":"2013-07-26T22:54:54-07:00",
-"size":1560,"digest":"12b3c7dd74d2e9df37e7cbb1efa76a6d"},
-"application-1c5752789588ac18d7e1a50b1f0fd4c2.css":
-{"logical_path":"application.css","mtime":"2013-07-26T22:56:17-07:00",
-"size":1591,"digest":"1c5752789588ac18d7e1a50b1f0fd4c2"},
-"favicon-a9c641bf2b81f0476e876f7c5e375969.ico":{"logical_path":"favicon.ico",
-"mtime":"2013-07-26T23:00:10-07:00","size":1406,"digest":
-"a9c641bf2b81f0476e876f7c5e375969"},"my_image-231a680f23887d9dd70710ea5efd3c62
-.png":{"logical_path":"my_image.png","mtime":"2013-07-26T23:00:27-07:00",
-"size":6646,"digest":"231a680f23887d9dd70710ea5efd3c62"}},"assets":
-{"application.js":"application-723d1be6cc741a3aabb1cec24276d681.js",
-"application.css":"application-1c5752789588ac18d7e1a50b1f0fd4c2.css",
-"favicon.ico":"favicona9c641bf2b81f0476e876f7c5e375969.ico","my_image.png":
-"my_image-231a680f23887d9dd70710ea5efd3c62.png"}}
+{"files":{"application-aee4be71f1288037ae78b997df388332edfd246471b533dcedaa8f9fe156442b.js":{"logical_path":"application.js","mtime":"2016-12-23T20:12:03-05:00","size":412383,
+"digest":"aee4be71f1288037ae78b997df388332edfd246471b533dcedaa8f9fe156442b","integrity":"sha256-ruS+cfEogDeueLmX3ziDMu39JGRxtTPc7aqPn+FWRCs="},
+"application-86a292b5070793c37e2c0e5f39f73bb387644eaeada7f96e6fc040a028b16c18.css":{"logical_path":"application.css","mtime":"2016-12-23T19:12:20-05:00","size":2994,
+"digest":"86a292b5070793c37e2c0e5f39f73bb387644eaeada7f96e6fc040a028b16c18","integrity":"sha256-hqKStQcHk8N+LA5fOfc7s4dkTq6tp/lub8BAoCixbBg="},
+"favicon-8d2387b8d4d32cecd93fa3900df0e9ff89d01aacd84f50e780c17c9f6b3d0eda.ico":{"logical_path":"favicon.ico","mtime":"2016-12-23T20:11:00-05:00","size":8629,
+"digest":"8d2387b8d4d32cecd93fa3900df0e9ff89d01aacd84f50e780c17c9f6b3d0eda","integrity":"sha256-jSOHuNTTLOzZP6OQDfDp/4nQGqzYT1DngMF8n2s9Dto="},
+"my_image-f4028156fd7eca03584d5f2fc0470df1e0dbc7369eaae638b2ff033f988ec493.png":{"logical_path":"my_image.png","mtime":"2016-12-23T20:10:54-05:00","size":23414,
+"digest":"f4028156fd7eca03584d5f2fc0470df1e0dbc7369eaae638b2ff033f988ec493","integrity":"sha256-9AKBVv1+ygNYTV8vwEcN8eDbxzaequY4sv8DP5iOxJM="}},
+"assets":{"application.js":"application-aee4be71f1288037ae78b997df388332edfd246471b533dcedaa8f9fe156442b.js",
+"application.css":"application-86a292b5070793c37e2c0e5f39f73bb387644eaeada7f96e6fc040a028b16c18.css",
+"favicon.ico":"favicon-8d2387b8d4d32cecd93fa3900df0e9ff89d01aacd84f50e780c17c9f6b3d0eda.ico",
+"my_image.png":"my_image-f4028156fd7eca03584d5f2fc0470df1e0dbc7369eaae638b2ff033f988ec493.png"}}
 ----
 
-`manifest-md5hash.json` 文件默认位于 `config.assets.prefix` 选项所指定的位置的根目录（默认为 `/assets` 文件夹）。
+`.sprockets-manifest-md5hash.json` 文件默认位于 `config.assets.prefix` 选项所指定的位置的根目录（默认为 `/assets` 文件夹）。
 
 NOTE: 在生产环境中，如果有些预编译后的文件丢失了，Rails 就会抛出 `Sprockets::Helpers::RailsHelper::AssetPaths::AssetNotPrecompiledError` 异常，提示所丢失文件的文件名。
 
@@ -642,7 +648,7 @@ config.assets.prefix = "/dev-assets"
 config.assets.compile = true
 ----
 
-如前文所述，静态资源文件会在首次请求时被编译和缓存，辅助方法会把清单文件中的文件名转换为带 MD5 哈希值的版本。
+如前文所述，静态资源文件会在首次请求时被编译和缓存，辅助方法会把清单文件中的文件名转换为带 SHA256 哈希值的版本。
 
 Sprockets 还会把 `Cache-Control` HTTP 首部设置为 `max-age=31536000`，意思是服务器和客户端浏览器的所有缓存的过期时间是 1 年。这样在本地浏览器缓存或中间缓存中找到所需静态资源文件的可能性会大大增加，从而减少从服务器上获取静态资源文件的请求次数。
 
@@ -931,29 +937,22 @@ end
 [[making-your-library-or-gem-a-pre-processor]]
 === 使用代码库或 gem 作为预处理器
 
-由于 Sprockets 使用 link:https://github.com/rtomayko/tilt[Tilt] 作为不同模板引擎的通用接口，一个 gem 只要实现了 Tilt 的模板引擎协议就可以用作预处理器。通常的做法是，继承 `Tilt::Template` 类并重新实现 `prepare` 方法（用于初始化模板）和 `evaluate` 方法（返回处理后的内容）。原始内容储存在 `data` 中。更多介绍请参阅 link:https://github.com/rtomayko/tilt/blob/master/lib/tilt/template.rb[`Tilt::Template` 类的源码]。
+Sprockets 使用 Processors、Transformers、Compressors 和 Exporters 扩展功能。详情参阅“link:https://github.com/rails/sprockets/blob/master/guides/extending_sprockets.md[Extending Sprockets]”一文。下述示例注册一个预处理器，在 text/css 文件（.css）默认添加一个注释。
 
 [source,ruby]
 ----
-module BangBang
-  class Template < ::Tilt::Template
-    def prepare
-      # 在此处进行初始化操作
-    end
-
-    # 为源模板添加 "!"
-    def evaluate(scope, locals, &block)
-      "#{data}!"
-    end
+module AddComment
+  def self.call(input)
+    { data: input[:data] + "/* Hello From my sprockets extension */" }
   end
 end
 ----
 
-在添加 `Template` 类后，就可以把这个类和模板文件的扩展名关联起来：
+有了修改输入数据的模块后，还要把它注册为指定 MIME 类型的预处理器：
 
 [source,ruby]
 ----
-Sprockets.register_engine '.bang', BangBang::Template
+Sprockets.register_preprocessor 'text/css', AddComment
 ----
 
 [[upgrading-from-old-versions-of-rails]]
@@ -994,12 +993,12 @@ config.assets.js_compressor = :uglifier
 # 在找不到已编译的静态资源文件的情况下，不退回到 Asset Pipeline
 config.assets.compile = false
 
-# 为静态资源文件的 URL 地址生成指纹。新版 Rails 将不推荐使用此选项
+# 为静态资源文件的 URL 地址生成指纹
 config.assets.digest = true
 
 # 预编译附加的静态资源文件（application.js、application.css 和所有
 # 已添加的非 JS/CSS 文件）
-# config.assets.precompile += %w( search.js )
+# config.assets.precompile += %w( admin.js admin.css )
 ----
 
 Rails 4 及更高版本不会再在 `test.rb` 配置文件中添加 Sprockets 的默认设置，因此需要手动完成。需要添加的默认设置包括 `config.assets.compile = true`、`config.assets.compress = false`、`config.assets.debug = false` 和 `config.assets.digest = false`。

@@ -2,8 +2,8 @@
 :slug: railsguides
 :translator: 安道/chinakr
 :translator-email: andor.chen.27@email.com
-:revnumber: 5.0.2.1
-:revdate: 2017-03-20T20:00:00+08:00
+:revnumber: 5.1.1.1
+:revdate: 2017-05-20T20:00:00+08:00
 :lang: zh-CN
 :description: Rails 全方位解读。
 :keywords: rails, guide, guides, 指南
@@ -36,7 +36,7 @@
 :epub-cover-image: rails-guides-cover.jpg
 :cover-page-title: 封面
 :ebook-theme: rails_guides
-:rails-version: 5.0.2
+:rails-version: 5.1.1
 
 ifeval::["{ebook-format}" != "html"]
 include::manuscript/foreword.adoc[]
@@ -141,6 +141,8 @@ include::manuscript/maintenance_policy.adoc[]
 include::manuscript/release_notes.adoc[]
 
 include::manuscript/upgrading_ruby_on_rails.adoc[]
+
+include::manuscript/5_1_release_notes.adoc[]
 
 include::manuscript/5_0_release_notes.adoc[]
 

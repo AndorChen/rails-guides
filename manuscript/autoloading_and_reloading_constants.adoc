@@ -822,17 +822,17 @@ WHERE "polygons"."type" IN ("Rectangle")
 
 这不是缺陷，查询包含了所有已知的 `Rectangle` 子代。
 
-为了确保能正确处理，而不管代码的执行顺序，可以在定义根类的文件底部手动加载子代：
+为了确保能正确处理，而不管代码的执行顺序，可以在定义各个中间类的文件底部手动加载子类：
 
 [source,ruby]
 ----
-# app/models/polygon.rb
-class Polygon < ApplicationRecord
+# app/models/rectangle.rb
+class Rectangle < Polygon
 end
 require_dependency 'square'
 ----
 
-只有最小辈的子代需要以这种方式加载。直接子类无需预加载。如果层次结构较深，中间类会自底向上递归自动加载，因为相应的常量作为超类出现在类定义中。
+每个中间类（首尾之外的类）都要这么做。根类并没有通过类型限定查询，因此无需知道所有子代。
 
 [[autoloading-and-require]]
 ==== 自动加载和 `require`

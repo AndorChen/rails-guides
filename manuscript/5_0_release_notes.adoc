@@ -16,7 +16,7 @@ Rails 5.0 的重要变化：
 - Turbolinks 5
 - 要求 Ruby 2.2.2+
 
-本文只涵盖重要变化。若想了解缺陷修正和小变化，请查看更新日志，或者 GitHub 中 Rails 主仓库的link:https://github.com/rails/rails/commits/5-0-stable[提交历史]。
+本文只涵盖重要变化。若想了解缺陷修正和小变化，请查看更新日志或 GitHub 中 Rails 主仓库的link:https://github.com/rails/rails/commits/5-0-stable[提交历史]。
 --
 
 [[upgrading-to-rails-5-0]]
@@ -30,9 +30,7 @@ Rails 5.0 的重要变化：
 [[action-cable]]
 ==== Action Cable
 
-https://github.com/rails/rails/pull/22586[拉取请求]
-
-Action Cable 是 Rails 4 新增的框架，其作用是把 https://en.wikipedia.org/wiki/WebSocket[WebSockets] 无缝集成到 Rails 应用中。
+Action Cable 是 Rails 5 新增的框架，其作用是把 https://en.wikipedia.org/wiki/WebSocket[WebSockets] 无缝集成到 Rails 应用中。
 
 有了 Action Cable，你就可以使用与 Rails 应用其他部分一样的风格和形式使用 Ruby 编写实时功能，而且兼顾性能和可伸缩性。这是一个全栈框架，既提供了客户端 JavaScript 框架，也提供了服务器端 Ruby 框架。你对使用 Active Record 或其他 ORM 编写的领域模型有完全的访问能力。
 
@@ -112,7 +110,7 @@ model.attributes # => {field_without_db_column: [1, 2, 3]}
 
 Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方式。
 
-详情参见link:http://api.rubyonrails.org/classes/ActiveRecord/Attributes/ClassMethods.html[文档]。
+详情参见link:http://api.rubyonrails.org/v5.0.1/classes/ActiveRecord/Attributes/ClassMethods.html[文档]。
 
 [[test-runner]]
 ==== 测试运行程序
@@ -363,6 +361,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 支持在事务型测试中使用 `after_commit` 回调。（link:https://github.com/rails/rails/pull/18662[拉取请求]）
 - 添加 `foreign_key_exists?` 方法，检查表中是否有外键。（link:https://github.com/rails/rails/pull/18662[拉取请求]）
 - 为 `touch` 方法添加 `:time` 选项，使用当前时间之外的时间更新记录的时间戳。（link:https://github.com/rails/rails/pull/18956[拉取请求]）
+- 修改事务回调，不再抑制错误。在此之前，事务回调抛出的错误会做特殊处理，输出到日志中，除非设定了 `raise_in_transactional_callbacks = true` 选项（最近弃用了）。现在，这些错误不再做特殊处理，而是直接冒泡，与其他回调的行为保持一致。（link:https://github.com/rails/rails/commit/07d3d402341e81ada0214f2cb2be1da69eadfe72[提交]）
 
 [[active-model]]
 === Active Model
@@ -468,7 +467,7 @@ Dirty Tracking:: 通过属性的类型可以改变 Dirty Tracking 的执行方�
 - 让 `TaggedLogging` 支持多次实例化日志记录器，避免共享标签。（link:https://github.com/rails/rails/pull/9065[拉取请求]）
 
 [[credits]]
-=== 名誉榜
+=== 荣誉榜
 
 得益于link:http://contributors.rubyonrails.org/[众多贡献者]，Rails 才能变得这么稳定和强健。向他们致敬！
 

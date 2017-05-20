@@ -45,7 +45,9 @@ Ruby on Rails 最新版的缺陷最受关注。此外，Rails 核心团队始终
 提供重现问题的方式有助于别人帮你确认、研究并最终解决问题。为此，你可以提供可执行的测试用例。为了简化这一过程，我们准备了几个缺陷报告模板供你参考：
 
 - 报告 Active Record（模型、数据库）问题的模板：link:https://github.com/rails/rails/blob/master/guides/bug_report_templates/active_record_gem.rb[gem] / https://github.com/rails/rails/blob/master/guides/bug_report_templates/active_record_master.rb[master]
+- 报告 Active Record（迁移）问题的模板：link:https://github.com/rails/rails/blob/master/guides/bug_report_templates/active_record_migrations_gem.rb[gem] / https://github.com/rails/rails/blob/master/guides/bug_report_templates/active_record_migrations_master.rb[master]
 - 报告 Action Pack（控制器、路由）问题的模板：link:https://github.com/rails/rails/blob/master/guides/bug_report_templates/action_controller_gem.rb[gem] / https://github.com/rails/rails/blob/master/guides/bug_report_templates/action_controller_master.rb[master]
+- 报告 Active Job 问题的模板：link:https://github.com/rails/rails/blob/master/guides/bug_report_templates/active_job_gem.rb[gem] / https://github.com/rails/rails/blob/master/guides/bug_report_templates/active_job_master.rb[master]
 - 其他问题的通用模板：link:https://github.com/rails/rails/blob/master/guides/bug_report_templates/generic_gem.rb[gem] / https://github.com/rails/rails/blob/master/guides/bug_report_templates/generic_master.rb[master]
 
 这些模板包含样板代码，供你着手编写测试用例，分别针对 Rails 的发布版（`*_gem.rb`）和最新开发版（`*_master.rb`）。
@@ -128,38 +130,26 @@ Ruby on Rails 主要有两份文档：这份指南，帮你学习 Ruby on Rails�
 
 你可以帮助改进这份 Rails 指南，把它变得更简单、更为一致，也更易于理解。你可以添加缺少的信息、更正错误、修正错别字或者针对最新的 Rails 开发版做更新。
 
-如果经常做贡献，可以向 http://github.com/rails/rails[Rails] 发送拉取请求，或者向 http://rubyonrails.org/core[Rails 核心团队]索要 docrails 的提交权限。请勿直接向 docrails 发送拉取请求，如果想征询别人对你的改动有何意见，在 Rails 的问题追踪系统中询问。
-
-docrails 定期合并到 master 分支，因此 Ruby on Rails 的文档能得到及时更新。
-
-如果你对文档的改动有疑问，可以在 Rails 的问题追踪系统发工单。
+为此，可以向 http://github.com/rails/rails[Rails 项目]发送拉取请求。
 
 如果你想为文档做贡献，请阅读<<api_documentation_guidelines#api-documentation-guidelines>>和<<ruby_on_rails_guides_guidelines#ruby-on-rails-guides-guidelines>>。
-
-[[NOTE]]
-====
-前面说过，常规的代码补丁应该有适当的文档覆盖度。docrails 项目只是为了在单独的地方改进文档。
-====
 
 [NOTE]
 ====
 为了减轻 CI 服务器的压力，关于文档的提交消息中应该包含 `[ci skip]`，跳过构建步骤。只修改文档的提交一定要这么做。
 ====
 
-[WARNING]
-====
-docrails 有个十分严格的方针：不能触碰任何代码，不管改动有多小都不行。通过 docrails 只能编辑 RDoc 和指南。此外，在 docrails 中也不能编辑 CHANGELOG。
-====
-
 [[translating-rails-guides]]
 === 翻译 Rails 指南
 
-我们欢迎人们自发把 Rails 指南翻译成其他语言。如果你想把 Rails 指南翻译成你的母语，请遵照下述步骤：
+我们欢迎人们自发把 Rails 指南翻译成其他语言。翻译时请遵照下述步骤：
 
-- 派生项目（rails/rails）
+- 派生项目 pass:[https://github.com/rails/rails]
 - 为你的语言添加一个文件夹，例如针对意大利语的 guides/source/it-IT
 - 把 guides/source 中的内容复制到你创建的文件夹中，然后翻译
 - 不要翻译 HTML 文件，因为那是自动生成的
+
+注意，翻译不提交到 Rails 仓库中。如前所述，翻译在你派生的项目中操作。这么做的原因是，或许只有英语文档适合通过补丁维护。
 
 如果想生成这份指南的 HTML 格式，进入 guides 目录，然后执行（以 it-IT 为例）：
 
@@ -180,8 +170,8 @@ $ bundle exec rake guides:generate:html GUIDES_LANGUAGE=it-IT
 
 - 意大利语：link:$$https://github.com/rixlabs/docrails$$[]
 - 西班牙语：link:$$http://wiki.github.com/gramos/docrails$$[]
-- 波兰语：link:$$http://github.com/apohllo/docrails/tree/master$$[]
-- 法语：link:$$http://github.com/railsfrance/docrails$$[]
+- 波兰语：link:$$https://github.com/apohllo/docrails/tree/master$$[]
+- 法语：link:$$https://github.com/railsfrance/docrails$$[]
 - 捷克语：link:$$https://github.com/rubyonrails-cz/docrails/tree/czech$$[]
 - 土耳其语：link:$$https://github.com/ujk/docrails/tree/master$$[]
 - 韩语：link:$$https://github.com/rorlakr/rails-guides$$[]
@@ -288,33 +278,11 @@ Rails 遵守下述简单的编程风格约定：
 [[benchmark-your-code]]
 ==== 对你的代码做基准测试
 
-如果你的改动对 Rails 的性能有影响，请使用 https://github.com/evanphx/benchmark-ips[benchmark-ips] gem 做基准测试，并提供测试结果以供比较。
+如果你的改动对 Rails 的性能有影响，请对你的代码做基准测试，衡量影响。请把基准测试脚本与结果一起分享出来。应该考虑把这个信息写入提交消息，以便后续开发者验证你的发现，确定是否仍有必要修改。（例如，Ruby VM 最新的优化出来后，以前的优化可能就没必要了。）
 
-下面是使用 benchmark-ips 的一个示例：
+针对你所关注的情况做优化十分简单，但是在其他情况下可能导致回归错误。英雌，应该在一些典型的情况下测试你的改动。理想情况下，你应该在从生产应用中抽离出来的真实场景中测试。
 
-[source,ruby]
-----
-require 'benchmark/ips'
-
-Benchmark.ips do |x|
-  x.report('addition') { 1 + 2 }
-  x.report('addition with send') { 1.send(:+, 2) }
-end
-----
-
-上述代码会生成一份报告，包含下述信息：
-
-[source]
-----
-Calculating -------------------------------------
-            addition   132.013k i/100ms
-  addition with send   125.413k i/100ms
--------------------------------------------------
-            addition      9.677M (± 1.7%) i/s -     48.449M
-  addition with send      6.794M (± 1.1%) i/s -     33.987M
-----
-
-详情参见 benchmark-ips 的link:https://github.com/evanphx/benchmark-ips/blob/master/README.md[自述文件]。
+你可以从link:https://github.com/rails/rails/blob/master/guides/bug_report_templates/benchmark.rb[基准测试模板]入手，模板中有使用 https://github.com/evanphx/benchmark-ips[benchmark-ips] gem 的样板代码。这个模板针对相对独立的改动，可以直接放在脚本中。
 
 [[running-tests]]
 ==== 运行测试
@@ -361,7 +329,9 @@ $ bundle exec ruby -w -Itest test/mail_layout_test.rb -n test_explicit_class_lay
 [[testing-active-record]]
 ===== 测试 Active Record
 
-首先，创建所需的数据库。对 MySQL 和 PostgreSQL 来说，运行 SQL 语句 `create database activerecord_unittest` 和 `create database activerecord_unittest2` 就行。SQLite3 无需这一步。
+首先，创建所需的数据库。必要的表名、用户名和密码参见 `activerecord/test/config.example.yml`。
+
+对 MySQL 和 PostgreSQL 来说，运行 SQL 语句 `create database activerecord_unittest` 和 `create database activerecord_unittest2` 就行。SQLite3 无需这一步。
 
 只使用 SQLite3 运行 Active Record 的测试组件：
 
@@ -445,11 +415,6 @@ CHANGELOG 中的记录应该概述所做的改动，并且在末尾加上作者�
 ==== 更新 Gemfile.lock
 
 有些改动需要更新依赖。此时，要执行 `bundle update` 命令，获取依赖的正确版本，并且随改动一起提交 `Gemfile.lock` 文件。
-
-[[sanity-check]]
-==== 健全性检查
-
-在提交之前，你不一定是唯一查看代码的人。如果你认识其他使用 Rails 的人，试着邀请他们检查你的代码。如果不认识使用 Rails 的人，可以在 IRC 聊天室中找人帮忙，或者在 rails-core 邮件列表中发布你的想法。在公开补丁之前做检查是一种“冒烟测试”：如果你不能让另一个开发者认同你的代码，核心团队可能也不会认同。
 
 [[commit-your-changes]]
 ==== 提交改动
@@ -691,7 +656,7 @@ $ git format-patch master --stdout > ~/my_changes.patch
 
 [source,sh]
 ----
-$ git checkout -b my_backport_branch 3-2-stable
+$ git checkout -b my_backport_branch 4-2-stable
 $ git apply ~/my_changes.patch
 ----
 
@@ -704,4 +669,4 @@ $ git apply ~/my_changes.patch
 [[rails-contributors]]
 === Rails 贡献者
 
-所有贡献者，不管是通过 master 还是 docrails 贡献的，都在 http://contributors.rubyonrails.org/[Rails Contributors 页面]中列出。
+所有贡献者都在 http://contributors.rubyonrails.org/[Rails Contributors 页面]中列出。

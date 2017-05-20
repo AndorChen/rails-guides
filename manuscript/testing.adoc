@@ -10,7 +10,7 @@
 读完本文后，您将学到：
 
 * Rails 测试术语；
-* 如何为应用编写单元测试、功能测试和集成测试；
+* 如何为应用编写单元测试、功能测试、集成测试和系统测试；
 * 其他常用的测试方法和插件。
 --
 
@@ -36,15 +36,21 @@ Rails 测试还可以模拟浏览器请求，无需打开浏览器就能测试�
 [source,sh]
 ----
 $ ls -F test
-controllers/    helpers/        mailers/        test_helper.rb
-fixtures/       integration/    models/
+controllers/           helpers/               mailers/               system/                test_helper.rb
+fixtures/              integration/           models/                application_system_test_case.rb
 ----
 
-`models` 目录存放模型的测试，`controllers` 目录存放控制器的测试，`integration` 目录存放涉及多个控制器交互的测试。此外，还有一个目录用于存放邮件程序的测试，以及一个目录用于存放辅助方法的测试。
+`helpers` 目录存放视图辅助方法的测试，`mailers` 目录存放邮件程序的测试，`models` 目录存放模型的测试，`controllers` 目录存放控制器的测试，`integration` 目录存放涉及多个控制器交互的测试。此外，还有一个目录用于存放邮件程序的测试，以及一个目录用于存放辅助方法的测试。
+
+`system` 目录存放系统测试，在浏览器中全面测试应用。系统测试模拟用户的交互，还能测试 JavaScript。系统测试源自 Capybara，在浏览器中测试应用。
 
 测试数据使用固件（fixture）组织，存放在 `fixtures` 目录中。
 
+如果先期生成了作业测试，还会创建 `jobs` 目录。
+
 `test_helper.rb` 文件存储测试的默认配置。
+
+`application_system_test_case.rb` 文件存储系统测试的默认配置。
 
 [[the-test-environment]]
 ==== 测试环境
@@ -122,7 +128,7 @@ def test_the_truth
 end
 ----
 
-不过，使用 `test` 能让测试具有更易读的名称。如果愿意，依然可以使用常规的方式定义方法。
+虽然可以像普通的方法那样定义测试，但是使用 `test` 宏能指定更易读的测试名称。
 
 [NOTE]
 ====
@@ -325,7 +331,6 @@ end
 | `assert_not_in_delta( expected, actual, [delta], [msg] )` | 确保 `expected` 和 `actual` 的差值不在 `delta` 的范围内。
 | `assert_throws( symbol, [msg] ) { block }` | 确保指定的块会抛出指定符号表示的异常。
 | `assert_raises( exception1, exception2, ... ) { block }` | 确保指定块会抛出指定异常中的一个。
-| `assert_nothing_raised { block }` | 确保指定的块不会抛出任何异常。
 | `assert_instance_of( class, obj, [msg] )` | 确保 `obj` 是 `class` 的实例。
 | `assert_not_instance_of( class, obj, [msg] )` | 确保 `obj` 不是 `class` 的实例。
 | `assert_kind_of( class, obj, [msg] )` | 确保 `obj` 是 `class` 或其后代的实例。
@@ -336,7 +341,6 @@ end
 | `assert_not_operator( obj1, operator, [obj2], [msg] )` | 确保 `obj1.operator(obj2)` 不成立。
 | `assert_predicate( obj, predicate, [msg] )` | 确保 `obj.predicate` 为真，例如 `assert_predicate str, :empty?`。
 | `assert_not_predicate( obj, predicate, [msg] )` | 确保 `obj.predicate` 为假，例如 `assert_not_predicate str, :empty?`。
-| `assert_send( array, [msg] )` | 确保能在 `array[0]` 对应的对象上调用 `array[1]` 对应的方法，并且传入 `array[2]` 之后的值作为参数，例如 `assert_send [@user, :full_name, 'Sam Smith']`。很独特吧？
 | `flunk( [msg] )` | 确保失败。可以用这个断言明确标记未完成的测试。
 |===
 
@@ -359,6 +363,7 @@ Minitest 这个测试框架是模块化的，因此还可以自己创建断言�
 
 | `assert_difference(expressions, difference = 1, message = nil) {...}` | 运行代码块前后数量变化了多少（通过 `expression` 表示）。
 | `assert_no_difference(expressions, message = nil, &block)` | 运行代码块前后数量没变多少（通过 `expression` 表示）。
+| `assert_nothing_raised { block }` | 确保指定的块不会抛出任何异常。
 | `assert_recognizes(expected_options, path, extras={}, message=nil)` | 断言正确处理了指定路径，而且解析的参数（通过 `expected_options` 散列指定）与路径匹配。基本上，它断言 Rails 能识别 `expected_options` 指定的路由。
 | `assert_generates(expected_path, options, defaults={}, extras = {}, message=nil)` | 断言指定的选项能生成指定的路径。作用与 `assert_recognizes` 相反。`extras` 参数用于构建查询字符串。`message` 参数用于为断言失败定制错误消息。
 | `assert_response(type, message = nil)` | 断言响应的状态码。可以指定表示 200-299 的 `:success`，表示 300-399 的 `:redirect`，表示 404 的 `:missing`，或者表示 500-599 的 `:error`。此外，还可以明确指定数字状态码或对应的符号。详情参见link:http://rubydoc.info/github/rack/rack/master/Rack/Utils#HTTP_STATUS_CODES-constant[完整的状态码列表]及其link:http://rubydoc.info/github/rack/rack/master/Rack/Utils#SYMBOL_TO_STATUS_CODE-constant[与符号的对应关系]。
@@ -377,6 +382,7 @@ Minitest 这个测试框架是模块化的，因此还可以自己创建断言�
 - http://api.rubyonrails.org/classes/ActionView/TestCase.html[`ActionView::TestCase`]
 - http://api.rubyonrails.org/classes/ActionDispatch/IntegrationTest.html[`ActionDispatch::IntegrationTest`]
 - http://api.rubyonrails.org/classes/ActiveJob/TestCase.html[`ActiveJob::TestCase`]
+- http://api.rubyonrails.org/classes/ActionDispatch/SystemTestCase.html[`ActionDispatch::SystemTestCase`]
 
 这些类都引入了 `Minitest::Assertions`，因此可以在测试中使用所有基本断言。
 
@@ -622,6 +628,161 @@ create  test/fixtures/articles.yml
 
 模型测试没有专门的超类（如 `ActionMailer::TestCase`），而是继承自 http://api.rubyonrails.org/classes/ActiveSupport/TestCase.html[`ActiveSupport::TestCase`]。
 
+[[system-testing]]
+=== 系统测试
+
+系统测试是完整的浏览器测试，可用于测试应用的 JavaScript 和用户体验。系统测试建立在 Capybara 之上。
+
+系统测试可以在真实的浏览器中运行，也可以在无界面驱动中运行，用于测试用户与应用的交互。
+
+系统测试存放在应用的 `test/system` 目录中。Rails 为创建系统测试骨架提供了一个生成器：
+
+[source,sh]
+----
+$ bin/rails generate system_test users_create
+      invoke test_unit
+      create test/system/users_creates_test.rb
+----
+
+下面是一个新生成的系统测试：
+
+[source,ruby]
+----
+require "application_system_test_case"
+
+class UsersCreatesTest < ApplicationSystemTestCase
+  # test "visiting the index" do
+  #   visit users_creates_url
+  #
+  #   assert_selector "h1", text: "UsersCreate"
+  # end
+end
+----
+
+默认情况下，系统测试使用 Selenium 驱动在 Chrome 浏览器中运行，界面尺寸为 1400x1400。下一节说明如何修改默认设置。
+
+[[changing-the-default-settings]]
+==== 修改默认设置
+
+修改系统测试的默认设置十分简单。所有配置都做了抽象，你只需关注测试本身。
+
+创建新应用或生成脚手架时，会在 `test` 目录中创建 `application_system_test_case.rb` 文件。系统测试的配置都在这个文件中。
+
+如果想修改默认设置，只需修改系统测试使用的驱动。假如你想把 Selenium 驱动换成 Poltergeist。首先，在 `Gemfile` 中添加 Poltergeist gem。然后，在 `application_system_test_case.rb` 文件中这么做：
+
+[source,ruby]
+----
+require "test_helper"
+require "capybara/poltergeist"
+
+class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+  driven_by :poltergeist
+end
+----
+
+驱动名称是 `driven_by` 必须的参数。`driven_by` 接受的可选参数有：`:using`，指定使用的浏览器（仅供有界面的驱动使用，如 Selenium）；`:screen_size`，修改截图的尺寸。
+
+[source,ruby]
+----
+require "test_helper"
+
+class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+  driven_by :selenium, using: :firefox
+end
+----
+
+如果所需的 Capybara 配置 Rails 提供的多，可以把所有配置都放在 `application_system_test_case.rb` 文件中。
+
+其他设置参见 https://github.com/teamcapybara/capybara#setup[Capybara 的文档]。
+
+[[screenshot-helper]]
+==== 截图辅助方法
+
+`ScreenshotHelper` 用于截取测试的截图。这有助于查看测试失败时的界面，或者以后通过截图调试。
+
+这个模块提供了两个方法：`take_screenshot` 和 `take_failed_screenshot`。Rails 在 `after_teardown` 中调用了 `take_failed_screenshot`。
+
+`take_screenshot` 辅助方法可以放在测试的任何位置，用于捕获浏览器的截图。
+
+[[implementing-a-system-test]]
+==== 编写系统测试
+
+下面我们为前面开发的博客应用添加一个系统测试。这个系统测试访问首页，然后新建一篇博客文章。
+
+如果使用的是脚手架生成器，已经自动创建了系统测试骨架。否则，先生成系统测试骨架：
+
+[source,sh]
+----
+$ bin/rails generate system_test articles
+----
+
+这个命令会为你创建一个测试文件，在命令行中的输出如下：
+
+[source]
+----
+invoke  test_unit
+create    test/system/articles_test.rb
+----
+
+打开那个文件，编写第一个断言：
+
+[source,ruby]
+----
+require "application_system_test_case"
+
+class ArticlesTest < ApplicationSystemTestCase
+  test "viewing the index" do
+    visit articles_path
+    assert_selector "h1", text: "Articles"
+  end
+end
+----
+
+如果这个测试在文章索引页面发现有一级标题，便能通过。
+
+运行系统测试：
+
+[source,sh]
+----
+$ bin/rails test:system
+----
+
+NOTE: 如果只运行 `bin/rails test`，系统测试不会运行。若想运行系统测试，必须使用 `bin/rails test:system`。
+
+[[creating-articles-system-test]]
+===== 编写新建文章的系统测试
+
+下面测试在博客中新建文章的流程。
+
+[source,ruby]
+----
+test "creating an article" do
+  visit articles_path
+
+  click_on "New Article"
+
+  fill_in "Title", with: "Creating an Article"
+  fill_in "Body", with: "Created this article successfully!"
+
+  click_on "Create Article"
+
+  assert_text "Creating an Article"
+end
+----
+
+首先，调用 `visit` 访问 `articles_path`，进入文章索引页面。
+
+然后，`click_on "New Article"` 在索引页面上找到“New Article”按钮，转到 `/articles/new` 页面。
+
+接着，测试在标题和正文框中填入指定的文本。填完之后，点击“Create Article”，发送 POST 请求，在数据库中新建一篇文章。
+
+此时会重定向回到文章索引页面，我们再断言页面中有那篇文章的标题。
+
+[[implementing-a-system-test-taking-it-further]]
+===== 继续测试
+
+系统测试与集成测试类似，可以测试用户与控制器、模型和视图的交互，但是系统测试更强健，能模拟用户使用应用的真实过程。你可以继续测试，测试用户在应用中可能执行的任何操作，例如发表评论、删除文章、发布草稿，等等。
+
 [[integration-testing]]
 === 集成测试
 
@@ -851,6 +1012,17 @@ end
 
 现在你可以运行所有测试，应该都能通过。
 
+[NOTE]
+====
+如果你按照 <<getting_started#basic-authentication>>的操作做了，要在 `setup` 块中添加下述代码，这样测试才能全部通过：
+
+[source,ruby]
+----
+request.headers['Authorization'] = ActionController::HttpAuthentication::Basic.
+  encode_credentials('dhh', 'secret')
+----
+====
+
 [[available-request-types-for-functional-tests]]
 ==== 功能测试中可用的请求类型
 
@@ -907,11 +1079,24 @@ cookies["are_good_for_u"]     cookies[:are_good_for_u]
 [[instance-variables-available]]
 ==== 可用的实例变量
 
-在功能测试中还可以使用下面三个实例变量：
+在功能测试中，发送请求之后还可以使用下面三个实例变量：
 
 * `@controller`：处理请求的控制器
 * `@request`：请求对象
 * `@response`：响应对象
+
+[source,ruby]
+----
+class ArticlesControllerTest < ActionDispatch::IntegrationTest
+  test "should get index" do
+    get articles_url
+
+    assert_equal "index", @controller.action_name
+    assert_equal "application/x-www-form-urlencoded", @request.media_type
+    assert_match "Articles", @response.body
+  end
+end
+----
 
 [[setting-headers-and-cgi-variables]]
 ==== 设定首部和 CGI 变量
@@ -921,10 +1106,10 @@ http://tools.ietf.org/search/rfc2616#section-5.3[HTTP 首部] 和 http://tools.i
 [source,ruby]
 ----
 # 设定一个 HTTP 首部
-get articles_url, headers: "Content-Type" => "text/plain" # 模拟有自定义首部的请求
+get articles_url, headers: { "Content-Type": "text/plain" } # 模拟有自定义首部的请求
 
 # 设定一个 CGI 变量
-get articles_url, headers: "HTTP_REFERER" => "http://example.com/home" # 模拟有自定义环境变量的请求
+get articles_url, headers: { "HTTP_REFERER": "http://example.com/home" } # 模拟有自定义环境变量的请求
 ----
 
 [[testing-flash-notices]]
@@ -1106,7 +1291,7 @@ end
 
 [source,ruby]
 ----
-#test/test_helper.rb
+# test/test_helper.rb
 
 module SignInHelper
   def sign_in_as(user)
@@ -1138,7 +1323,7 @@ end
 [[testing-routes]]
 === 测试路由
 
-与 Rails 应用中其他各方面内容一样，路由也可以测试。
+与 Rails 应用中其他各方面内容一样，路由也可以测试。路由测试存放在 `test/controllers/` 目录中，或者与控制器测试写在一起。
 
 [NOTE]
 ====
@@ -1314,6 +1499,8 @@ end
 
 在这个测试中，我们发送了一封邮件，并把返回对象赋值给 `email` 变量。首先，我们确保邮件已经发送了；随后，确保邮件中包含预期的内容。`read_fixture` 这个辅助方法的作用是从指定的文件中读取内容。
 
+NOTE: 仅当邮件内容只有一种格式时（HTML 或纯文本）才可使用 `email.body.to_s`。如果邮件程序提供了两种格式，可以使用 `email.text_part.body.to_s` 和 `email.html_part.body.to_s` 分别测试。
+
 `invite` 固件的内容如下：
 
 [source]
@@ -1379,7 +1566,7 @@ end
 
 这个测试相当简单，只是断言作业能做预期的事情。
 
-默认情况下，`ActiveJob::TestCase` 把队列适配器设为 `:async`，因此作业是异步执行的。此外，在运行任何测试之前，它会清理之前执行的和入队的作业，因此我们可以放心假定在当前测试的作用域中没有已经执行的作业。
+默认情况下，`ActiveJob::TestCase` 把队列适配器设为 `:test`，因此作业是内联执行的。此外，在运行任何测试之前，它会清理之前执行的和入队的作业，因此我们可以放心假定在当前测试的作用域中没有已经执行的作业。
 
 [[custom-assertions-and-testing-jobs-inside-other-components]]
 ==== 自定义断言和测试其他组件中的作业

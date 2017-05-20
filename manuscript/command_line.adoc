@@ -74,7 +74,7 @@ $ rails new commandsapp
 $ cd commandsapp
 $ bin/rails server
 => Booting Puma
-=> Rails 5.0.0 application starting in development on http://0.0.0.0:3000
+=> Rails 5.1.0 application starting in development on http://0.0.0.0:3000
 => Run `rails server -h` for more startup options
 Puma starting in single mode...
 * Version 3.0.2 (ruby 2.3.0-p0), codename: Plethora of Penguin Pinatas
@@ -246,7 +246,7 @@ Description:
 
 [NOTE]
 ====
-全部可用的字段类型，请查看 `TableDefinition` 类的 http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html#method-i-column[API 文档]。
+`type` 参数可用的全部字段类型参见 `SchemaStatements` 模块中 http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_column[`add_column` 方法的 API 文档]。`index` 参数为相应的列生成索引。
 ====
 
 不过我们暂且不直接生成模型（后文再生成），先来使用脚手架（scaffold）。Rails 中的脚手架会生成资源所需的全部文件，包括模型、模型所用的迁移、处理模型的控制器、查看数据的视图，以及各部分的测试组件。
@@ -338,7 +338,7 @@ $ bin/rails console staging
 [source,sh]
 ----
 $ bin/rails console --sandbox
-Loading development environment in sandbox (Rails 5.0.0)
+Loading development environment in sandbox (Rails 5.1.0)
 Any modifications you make will be rolled back on exit
 irb(main):001:0>
 ----
@@ -473,8 +473,8 @@ db:fixtures:load                    Loads fixtures into the ...
 db:migrate                          Migrate the database ...
 db:migrate:status                   Display status of migrations
 db:rollback                         Rolls the schema back to ...
-db:schema:cache:clear               Clears a db/schema_cache.dump file
-db:schema:cache:dump                Creates a db/schema_cache.dump file
+db:schema:cache:clear               Clears a db/schema_cache.yml file
+db:schema:cache:dump                Creates a db/schema_cache.yml file
 db:schema:dump                      Creates a db/schema.rb file ...
 db:schema:load                      Loads a schema.rb file ...
 db:seed                             Loads the seed data ...
@@ -500,12 +500,12 @@ tmp:create
 ----
 $ bin/rails about
 About your application's environment
-Rails version             5.0.0
+Rails version             5.1.0
 Ruby version              2.2.2 (x86_64-linux)
 RubyGems version          2.4.6
-Rack version              1.6
+Rack version              2.0.1
 JavaScript Runtime        Node.js (V8)
-Middleware                Rack::Sendfile, ActionDispatch::Static, ActionDispatch::Executor, #<ActiveSupport::Cache::Strategy::LocalCache::Middleware:0x007ffd131a7c88>, Rack::Runtime, Rack::MethodOverride, ActionDispatch::RequestId, Rails::Rack::Logger, ActionDispatch::ShowExceptions, ActionDispatch::DebugExceptions, ActionDispatch::RemoteIp, ActionDispatch::Reloader, ActionDispatch::Callbacks, ActiveRecord::Migration::CheckPending, ActiveRecord::ConnectionAdapters::ConnectionManagement, ActiveRecord::QueryCache, ActionDispatch::Cookies, ActionDispatch::Session::CookieStore, ActionDispatch::Flash, Rack::Head, Rack::ConditionalGet, Rack::ETag
+Middleware:               Rack::Sendfile, ActionDispatch::Static, ActionDispatch::Executor, ActiveSupport::Cache::Strategy::LocalCache::Middleware, Rack::Runtime, Rack::MethodOverride, ActionDispatch::RequestId, ActionDispatch::RemoteIp, Sprockets::Rails::QuietAssets, Rails::Rack::Logger, ActionDispatch::ShowExceptions, WebConsole::Middleware, ActionDispatch::DebugExceptions, ActionDispatch::Reloader, ActionDispatch::Callbacks, ActiveRecord::Migration::CheckPending, ActionDispatch::Cookies, ActionDispatch::Session::CookieStore, ActionDispatch::Flash, Rack::Head, Rack::ConditionalGet, Rack::ETag
 Application root          /home/foobar/commandsapp
 Environment               development
 Database adapter          sqlite3
@@ -579,7 +579,14 @@ app/models/article.rb:
 使用内置的注解或自定义的注解时，注解的名称（FIXME、BUG 等）不会在输出中显示。
 ====
 
-默认情况下，`rails notes` 在 `app`、`config`、`db`、`lib` 和 `test` 目录中搜索。如果想搜索其他目录，可以通过 `SOURCE_ANNOTATION_DIRECTORIES` 环境变量指定，各个目录使用逗号分隔。
+默认情况下，`rails notes` 在 `app`、`config`、`db`、`lib` 和 `test` 目录中搜索。如果想搜索其他目录，可以通过 `config.annotations.register_directories` 选项配置。
+
+[source,ruby]
+----
+config.annotations.register_directories("spec", "vendor")
+----
+
+此外，还可以通过 `SOURCE_ANNOTATION_DIRECTORIES` 环境变量指定，目录之间使用逗号分开。
 
 [source,sh]
 ----

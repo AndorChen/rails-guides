@@ -9,6 +9,7 @@
 
 读完本文后，您将学到：
 
+* Action Cable 是什么，以及对前后端的集成；
 * 如何设置 Action Cable；
 * 如何设置频道（channel）；
 * Action Cable 的部署和架构设置。
@@ -48,7 +49,7 @@ module ApplicationCable
       self.current_user = find_verified_user
     end
 
-    protected
+    private
       def find_verified_user
         if current_user = User.find_by(id: cookies.signed[:user_id])
           current_user
@@ -219,9 +220,9 @@ WebNotificationsChannel.broadcast_to(
 )
 ----
 
-调用 `WebNotificationsChannel.broadcast_to` 将向当前订阅适配器（默认为 Redis）的发布/订阅队列推送一条消息，并为每个用户设置不同的广播名。对于 ID 为 1 的用户，广播名是 `web_notifications_1`。
+调用 `WebNotificationsChannel.broadcast_to` 将向当前订阅适配器（生产环境默认为 `redis`，开发和测试环境默认为 `async`）的发布/订阅队列推送一条消息，并为每个用户设置不同的广播名。对于 ID 为 1 的用户，广播名是 `web_notifications:1`。
 
-通过调用 `received` 回调方法，频道会使用流把到达 `web_notifications_1` 的消息直接发送给客户端。
+通过调用 `received` 回调方法，频道会使用流把到达 `web_notifications:1` 的消息直接发送给客户端。
 
 [[client-server-interactions-subscriptions]]
 ==== 订阅
@@ -289,7 +290,7 @@ App.cable.subscriptions.create { channel: "ChatChannel", room: "Best Room" },
 [source,ruby]
 ----
 # 在应用的某个部分中调用，例如 NewCommentJob
-ChatChannel.broadcast_to(
+ActionCable.server.broadcast(
   "chat_#{room}",
   sent_by: 'Paul',
   body: 'This is a cool chat app.'
@@ -398,7 +399,7 @@ App.cable.subscriptions.create "AppearanceChannel",
   buttonSelector = "[data-behavior~=appear_away]"
 
   install: ->
-    $(document).on "page:change.appearance", =>
+    $(document).on "turbolinks:load.appearance", =>
       @appear()
 
     $(document).on "click.appearance", buttonSelector, =>
@@ -467,9 +468,9 @@ WebNotificationsChannel.broadcast_to(
 )
 ----
 
-调用 `WebNotificationsChannel.broadcast_to` 将向当前订阅适配器的发布/订阅队列推送一条消息，并为每个用户设置不同的广播名。对于 ID 为 1 的用户，广播名是 `web_notifications_1`。
+调用 `WebNotificationsChannel.broadcast_to` 将向当前订阅适配器的发布/订阅队列推送一条消息，并为每个用户设置不同的广播名。对于 ID 为 1 的用户，广播名是 `web_notifications:1`。
 
-通过调用 `received` 回调方法，频道会用流把到达 `web_notifications_1` 的消息直接发送给客户端。作为参数传递的数据散列，将作为第二个参数传递给服务器端的广播调用，数据在传输前使用 JSON 进行编码，到达服务器后由 `received` 解码。
+通过调用 `received` 回调方法，频道会用流把到达 `web_notifications:1` 的消息直接发送给客户端。作为参数传递的数据散列，将作为第二个参数传递给服务器端的广播调用，数据在传输前使用 JSON 进行编码，到达服务器后由 `received` 解码。
 
 [[more-complete-examples]]
 ==== 更完整的例子
@@ -497,7 +498,28 @@ test:
 production:
   adapter: redis
   url: redis://10.10.3.153:6381
+  channel_prefix: appname_production
 ----
+
+[[adapter-configuration]]
+===== 配置适配器
+
+下面是终端用户可用的订阅适配器。
+
+[[async-adapter]]
+====== async 适配器
+
+async 适配器只适用于开发和测试环境，不应该在生产环境使用。
+
+[[redis-adapter]]
+====== Redis 适配器
+
+Action Cable 包含两个 Redis 适配器：常规的 Redis 和事件型 Redis。这两个适配器都要求用户提供指向 Redis 服务器的 URL。此外，多个应用使用同一个 Redis 服务器时，可以设定 `channel_prefix`，以免名称冲突。详情参见 https://redis.io/topics/pubsub#database-amp-scoping[Redis PubSub 文档]。
+
+[[postgresql-adapter]]
+====== PostgreSQL 适配器
+
+PostgreSQL 适配器使用 Active Record 的连接池，因此使用应用的 `config/database.yml` 数据库配置连接。以后可能会变。link:https://github.com/rails/rails/issues/27214[#27214]
 
 [[allowed-request-origins]]
 ==== 允许的请求来源
@@ -526,12 +548,12 @@ config.action_cable.disable_request_forgery_protection = true
 [[other-configurations]]
 ==== 其他配置
 
-另一个常见的配置选项，是应用于每个连接记录器的日志标签。下面是 Basecamp 使用的配置：
+另一个常见的配置选项，是应用于每个连接记录器的日志标签。下述示例在有用户账户时使用账户 ID，没有时则标记为“no-account”：
 
 [source,ruby]
 ----
 config.action_cable.log_tags = [
-  -> request { request.env['bc.account_id'] || "no-account" },
+  -> request { request.env['user_account_id'] || "no-account" },
   :action_cable,
   -> request { request.uuid }
 ]
@@ -539,7 +561,7 @@ config.action_cable.log_tags = [
 
 关于所有配置选项的完整列表，请参阅 `ActionCable::Server::Configuration` 类的 API 文档。
 
-还要注意，服务器提供的数据库连接在数量上至少应该和职程（worker）相等。职程池的默认大小为 100，也就是说数据库连接数量至少为 100。职程池的大小可以通过 `config/database.yml` 文件中的 `pool` 属性设置。
+还要注意，服务器提供的数据库连接在数量上至少应该和职程（worker）相等。职程池的默认大小为 100，也就是说数据库连接数量至少为 4。职程池的大小可以通过 `config/database.yml` 文件中的 `pool` 属性设置。
 
 [[running-standalone-cable-servers]]
 === 运行独立的 Cable 服务器
@@ -570,7 +592,7 @@ Cable 服务器可以和普通应用服务器分离。此时，Cable 服务器�
 [source,ruby]
 ----
 # cable/config.ru
-require_relative 'config/environment'
+require_relative '../config/environment'
 Rails.application.eager_load!
 
 run ActionCable.server

@@ -11,15 +11,15 @@
 
 * 如何理解 `config/routes.rb` 文件中的代码；
 * 如何使用推荐的资源式风格或 `match` 方法构建路由；
-* 控制器动作预期收到什么参数；
+* 如何声明传给控制器动作的路由参数；
 * 如何使用路由辅助方法自动创建路径和 URL 地址；
-* 约束和 Rack 端点等高级技术。
+* 创建约束和挂载 Rack 端点等高级技术。
 --
 
 [[the-purpose-of-the-rails-router]]
 === Rails 路由的用途
 
-Rails 路由能够识别 URL 地址，并把它们分派给控制器动作进行处理。它还能生成路径和 URL 地址，从而避免在视图中硬编码字符串。
+Rails 路由能够识别 URL 地址，并把它们分派给控制器动作或 Rack 应用进行处理。它还能生成路径和 URL 地址，从而避免在视图中硬编码字符串。
 
 [[connecting-urls-to-code]]
 ==== 把 URL 地址连接到代码
@@ -814,36 +814,26 @@ NOTE: 如果我们为资源路由添加了过多动作，就需要考虑一下�
 [[bound-parameters]]
 ==== 绑定参数
 
-在声明普通路由时，我们可以使用符号，将其作为 HTTP 请求的一部分。其中有两个特殊符号：`:controller` 会被映射到控制器的名称上，`:action` 会被映射到控制器动作的名称上。例如，下面的路由：
+在声明普通路由时，我们可以使用符号，将其作为 HTTP 请求的一部分。例如，下面的路由：
 
 [source,ruby]
 ----
-get ':controller(/:action(/:id))'
+get 'photos(/:id)', to: :display
 ----
 
-在处理 `/photos/show/1` 请求时（假设这个路由是第一个匹配的路由），会把请求映射到 `Photos` 控制器的 `show` 动作上，并把参数 1 传入 `params[:id]`。而 `/photos` 请求，也会被这个路由映射到 `PhotosController#index` 上，因为 `:action` 和 `:id` 都在括号中，是可选参数。
+在处理 `/photos/1` 请求时（假设这个路由是第一个匹配的路由），会把请求映射到 `Photos` 控制器的 `display` 动作上，并把参数 1 传入 `params[:id]`。而 `/photos` 请求，也会被这个路由映射到 `PhotosController#display` 上，因为 `:id` 在括号中，是可选参数。
 
 [[dynamic-segments]]
 ==== 动态片段
 
-在声明普通路由时，我们可以根据需要使用多个动态片段（dynamic segment）。除了 `:controller` 和 `:action`，其他动态片段都会传入 `params`，以便在控制器动作中使用。例如，对于下面的路由：
+在声明普通路由时，我们可以根据需要使用多个动态片段（dynamic segment）。动态片段会传入 `params`，以便在控制器动作中使用。例如，对于下面的路由：
 
 [source,ruby]
 ----
-get ':controller/:action/:id/:user_id'
+get 'photos/:id/:user_id', to: 'photos#show'
 ----
 
-`/photos/show/1/2` 路径会被映射到 `Photos` 控制器的 `show` 动作上。此时，`params[:id]` 的值是 `"1"`，`params[:user_id]` 的值是 `"2"`。
-
-[NOTE]
-====
-`:namespace` 或 `:module` 不能用作动态片段。如果需要这一功能，可以通过为控制器添加约束，来匹配所需的命名空间。例如：
-
-[source,ruby]
-----
-get ':controller(/:action(/:id))', controller: /admin\/[^\/]+/
-----
-====
+`/photos/1/2` 路径会被映射到 `Photos` 控制器的 `show` 动作上。此时，`params[:id]` 的值是 `"1"`，`params[:user_id]` 的值是 `"2"`。
 
 TIP: 默认情况下，在动态片段中不能使用小圆点（`.`），因为小圆点是格式化路由（formatted route）的分隔符。如果想在动态片段中使用小圆点，可以通过添加约束来实现相同效果，例如，`id: /[^\/]+/` 可以匹配除斜线外的一个或多个字符。
 
@@ -854,10 +844,10 @@ TIP: 默认情况下，在动态片段中不能使用小圆点（`.`），因为
 
 [source,ruby]
 ----
-get ':controller/:action/:id/with_user/:user_id'
+get 'photos/:id/with_user/:user_id', to: 'photos#show'
 ----
 
-这个路由可以响应像 `/photos/show/1/with_user/2` 这样的路径，此时，`params` 的值为 `{ controller: 'photos', action: 'show', id: '1', user_id: '2' }`。
+这个路由可以响应像 `/photos/1/with_user/2` 这样的路径，此时，`params` 的值为 `{ controller: 'photos', action: 'show', id: '1', user_id: '2' }`。
 
 [[the-query-string]]
 ==== 查询字符串
@@ -866,31 +856,31 @@ get ':controller/:action/:id/with_user/:user_id'
 
 [source,ruby]
 ----
-get ':controller/:action/:id'
+get 'photos/:id', to: 'photos#show'
 ----
 
-`/photos/show/1?user_id=2` 路径会被映射到 `Photos` 控制器的 `show` 动作上，此时，`params` 的值是 `{ controller: 'photos', action: 'show', id: '1', user_id: '2' }`。
+`/photos/1?user_id=2` 路径会被映射到 `Photos` 控制器的 `show` 动作上，此时，`params` 的值是 `{ controller: 'photos', action: 'show', id: '1', user_id: '2' }`。
 
 [[defining-defaults]]
 ==== 定义默认值
 
-通过定义默认值，我们可以避免在路由声明中显式使用 `:controller` 和 `:action` 符号：
-
-[source,ruby]
-----
-get 'photos/:id', to: 'photos#show'
-----
-
-这个路由会把 `/photos/12` 路径映射到 `Photos` 控制器的 `show` 动作上。
-
-在路由声明中，我们还可以使用 `:defaults` 选项（其值为散列）定义更多默认值。对于未声明为动态片段的参数，也可以使用 `:defaults` 选项。例如：
+`:defaults` 选项设定的散列为路由定义默认值。未通过动态片段定义的参数也可以指定默认值。例如：
 
 [source,ruby]
 ----
 get 'photos/:id', to: 'photos#show', defaults: { format: 'jpg' }
 ----
 
-这个路由会把 `photos/12` 路径映射到 `Photos` 控制器的 `show` 动作上，并把 `params[:format]` 的值设置为 `"jpg"`。
+Rails 会把 `/photos/12` 路径映射到 `Photos` 控制器的 `show` 动作上，并把 `params[:format]` 设为 `"jpg"`。
+
+`defaults` 还有块的形式，可为多个路由定义默认值：
+
+[source,ruby]
+----
+defaults format: :json do
+  resources :photos
+end
+----
 
 NOTE: 出于安全考虑，Rails 不允许用查询参数来覆盖默认值。只有一种情况下可以覆盖默认值，即通过 URL 路径替换来覆盖动态片段。
 

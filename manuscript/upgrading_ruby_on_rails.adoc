@@ -52,7 +52,7 @@ Ruby 1.8.7 p248 和 p249 有一些缺陷，会导致 Rails 崩溃。 Ruby Enterp
 [[the-update-task]]
 ==== `update` 任务
 
-Rails 提供了 `app:update` 任务（4.2 及之前的版本是 `rails:update`）。更新 `Gemfile` 中的 Rails 版本号之后，运行这个任务。这个任务在交互式会话中协助你创建新文件和修改旧文件。
+Rails 提供了 `app:update` 任务（4.2 及之前的版本是 `rake rails:update`）。更新 `Gemfile` 中的 Rails 版本号之后，运行这个任务。这个任务在交互式会话中协助你创建新文件和修改旧文件。
 
 [source,sh]
 ----
@@ -70,6 +70,39 @@ Overwrite /myapp/config/application.rb? (enter "h" for help) [Ynaqdh]
 ----
 
 别忘了检查差异，以防有意料之外的改动。
+
+[[upgrading-from-rails-5-0-to-rails-5-1]]
+=== 从 Rails 5.0 升级到 5.1
+
+Rails 5.1 的变动参见<<5_1_release_notes#ruby-on-rails-5-1-release-notes,发布记>>。
+
+[[top-level-hashwithindifferentaccess-is-soft-deprecated]]
+==== 温和弃用顶层 `HashWithIndifferentAccess` 类
+
+如果你的应用使用顶层 `HashWithIndifferentAccess` 类，应该逐渐转用 `ActiveSupport::HashWithIndifferentAccess` 类。
+
+这只是一项温和的弃用，目前代码不受影响，也不看看到提醒，但是以后会删除这个常量。
+
+此外，如果 YAML 文档转储中包含这个类的对象，要重新加载并转储，以便引用正确的常量，防止以后无法加载。
+
+[[application-secrets-now-loaded-with-all-keys-as-symbols]]
+==== `application.secrets` 全部使用符号键索引
+
+如果你的应用在 `config/secrets.yml` 中存储嵌套的配置，现在所有键都通过符号加载，请勿再使用字符串加载。
+
+请把
+
+[source,ruby]
+----
+Rails.application.secrets[:smtp_settings]["address"]
+----
+
+改为：
+
+[source,ruby]
+----
+Rails.application.secrets[:smtp_settings][:address]
+----
 
 [[upgrading-from-rails-4-2-to-rails-5-0]]
 === 从 Rails 4.2 升级到 5.0
@@ -139,9 +172,19 @@ end
 [[rails-controller-testing]]
 ==== Rails 控制器测试
 
+[[extraction-of-some-helper-methods-to-rails-controller-testing]]
+===== 某些辅助方法提取到 `rails-controller-testing` 中了
+
 `assigns` 和 `assert_template` 提取到 `rails-controller-testing` gem 中了。如果想继续在控制器测试中使用这两个方法，把 `gem 'rails-controller-testing'` 添加到 `Gemfile` 中。
 
 如果使用 RSpec 做测试，还要做些配置，详情参见这个 gem 的文档。
+
+[[new-behavior-when-uploading-files]]
+===== 上传文件的新行为
+
+如果在测试中使用 `ActionDispatch::Http::UploadedFile` 上传文件，要换成类似的 `Rack::Test::UploadedFile` 类。
+
+详情参见 https://github.com/rails/rails/issues/26404[#26404 工单]。
 
 [[autoloading-is-disabled-after-booting-in-the-production-environment]]
 ==== 在生产环境启动后不再自动加载

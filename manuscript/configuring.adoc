@@ -75,7 +75,7 @@ end
 
 - `config.beginning_of_week` 设定一周从周几开始。可接受的值是有效的周几符号（如 `:monday`）。
 
-- `config.cache_store` 配置 Rails 缓存使用哪个存储器。可用的选项有：`:memory_store`、`:file_store`、`:mem_cache_store`、`:null_store`，或者实现了缓存 API 的对象。如果存在 `tmp/cache` 目录，默认值为 `:file_store`，否则为 `:memory_store`。
+- `config.cache_store` 配置 Rails 缓存使用哪个存储器。可用的选项有：`:memory_store`、`:file_store`、`:mem_cache_store`、`:null_store`，或者实现了缓存 API 的对象。默认值为 `:file_store`。
 
 - `config.colorize_logging` 指定在日志中记录信息时是否使用 ANSI 颜色代码。默认值为 `true`。
 
@@ -111,9 +111,9 @@ end
 
 - `config.filter_parameters` 用于过滤不想记录到日志中的参数，例如密码或信用卡卡号。默认，Rails 把 `Rails.application.config.filter_parameters += [:password]` 添加到 `config/initializers/filter_parameter_logging.rb` 文件中，过滤密码。过滤的参数部分匹配正则表达式。
 
-- `config.force_ssl` 强制所有请求经由 `ActionDispatch::SSL` 中间件处理，即通过 HTTPS 伺服，而且把 `config.action_mailer.default_url_options` 设为 `{ protocol: 'https' }`。SSL 通过设定 `config.ssl_options` 选项配置，详情参见 http://edgeapi.rubyonrails.org/classes/ActionDispatch/SSL.html[`ActionDispatch::SSL` 的文档]。
+- `config.force_ssl` 强制所有请求经由 `ActionDispatch::SSL` 中间件处理，即通过 HTTPS 伺服，而且把 `config.action_mailer.default_url_options` 设为 `{ protocol: 'https' }`。SSL 通过设定 `config.ssl_options` 选项配置，详情参见 http://api.rubyonrails.org/classes/ActionDispatch/SSL.html[`ActionDispatch::SSL` 的文档]。
 
-- `config.log_formatter` 定义 Rails 日志记录器的格式化程序。这个选项的默认值在开发和测试环境中是 `ActiveSupport::Logger::SimpleFormatter` 的实例，在生产环境中是 `Logger::Formatter`。如果为 `config.logger` 设定了值，必须在包装到 `ActiveSupport::TaggedLogging` 实例中之前手动把格式化程序的值传给日志记录器，Rails 不会为你代劳。
+- `config.log_formatter` 定义 Rails 日志记录器的格式化程序。这个选项的默认值在所有环境中都是 `ActiveSupport::Logger::SimpleFormatter` 的实例。如果为 `config.logger` 设定了值，必须在包装到 `ActiveSupport::TaggedLogging` 实例中之前手动把格式化程序的值传给日志记录器，Rails 不会为你代劳。
 
 - `config.log_level` 定义 Rails 日志记录器的详细程度。在所有环境中，这个选项的默认值都是 `:debug`。可用的日志等级有 `:debug`、`:info`、`:warn`、`:error`、`:fatal` 和 `:unknown`。
 
@@ -134,7 +134,7 @@ end
 
 mylogger           = MyLogger.new(STDOUT)
 mylogger.formatter = config.log_formatter
-config.logger = ActiveSupport::TaggedLogging.new(mylogger)
+config.logger      = ActiveSupport::TaggedLogging.new(mylogger)
 ----
 
 - `config.middleware` 用于配置应用的中间件。详情参见 <<configuring-middleware>>。
@@ -145,7 +145,7 @@ config.logger = ActiveSupport::TaggedLogging.new(mylogger)
 
 - `config.public_file_server.enabled` 配置 Rails 从 public 目录中伺服静态文件。这个选项的默认值是 `false`，但在生产环境中设为 `false`，因为应该使用运行应用的服务器软件（如 NGINX 或 Apache）伺服静态文件。在生产环境中如果使用 WEBrick 运行或测试应用（不建议在生产环境中使用 WEBrick），把这个选项设为 `true`。否则无法使用页面缓存，也无法请求 public 目录中的文件。
 
-- `config.session_store` 通常在 `config/initializers/session_store.rb` 文件中设定，用于指定使用哪个类存储会话。可用的值有 `:cookie_store`（默认值）、`:mem_cache_store` 和 `:disabled`。最后一个值告诉 Rails 不处理会话。也可以指定自定义的会话存储器：
+- `config.session_store` 指定使用哪个类存储会话。可用的值有 `:cookie_store`（默认值）、`:mem_cache_store` 和 `:disabled`。最后一个值告诉 Rails 不处理会话。cookie 存储器中的会话键默认使用应用的名称。也可以指定自定义的会话存储器：
 +
 [source,ruby]
 ----
@@ -173,17 +173,23 @@ config.session_store :my_custom_store
 
 - `config.assets.precompile` 设定运行 `rake assets:precompile` 任务时要预先编译的其他静态资源（除 `application.css` 和 `application.js` 之外）。
 
+- `config.assets.unknown_asset_fallback` 在使用 sprockets-rails 3.2.0 或以上版本时用于修改 Asset Pipeline 找不到静态资源时的行为。默认为 `true`。
+
 - `config.assets.prefix` 定义伺服静态资源的前缀。默认为 `/assets`。
 
 - `config.assets.manifest` 定义静态资源预编译器使用的清单文件的完整路径。默认为 `public` 文件夹中 `config.assets.prefix` 设定的目录中的 `manifest-<random>.json`。
 
-- `config.assets.digest` 设定是否在静态资源的名称中包含 MD5 指纹。默认为 `true`。
+- `config.assets.digest` 设定是否在静态资源的名称中包含 SHA256 指纹。默认为 `true`。
 
 - `config.assets.debug` 禁止拼接和压缩静态文件。在 `development.rb` 文件中默认设为 `true`。
+
+`config.assets.version` 是在生成 SHA256 哈希值过程中使用的一个字符串。修改这个值可以强制重新编译所有文件。
 
 - `config.assets.compile` 是一个旗标，设定在生产环境中是否启用实时 Sprockets  编译。
 
 - `config.assets.logger` 接受一个符合 Log4r 接口的日志记录器，或者默认的 Ruby `Logger` 类。默认值与 `config.logger` 相同。如果设为 `false`，不记录对静态资源的伺服。
+
+- `config.assets.quiet` 禁止在日志中记录对静态资源的请求。在 `development.rb` 文件中默认设为 `true`。
 
 [[configuring-generators]]
 ==== 配置生成器
@@ -243,10 +249,6 @@ end
 
 - `ActionDispatch::Callbacks` 在伺服请求之前运行准备回调。
 
-- `ActiveRecord::ConnectionAdapters::ConnectionManagement` 在每次请求后清理活跃的连接，除非请求环境的 `rack.test` 键为 `true`。
-
-- `ActiveRecord::QueryCache` 缓存请求中生成的所有 SELECT 查询。如果有 INSERT 或 UPDATE 查询，清空所有缓存。
-
 - `ActionDispatch::Cookies` 为请求设定 cookie。
 
 - `ActionDispatch::Session::CookieStore` 负责把会话存储在 cookie 中。可以把 `config.action_controller.session_store` 改为其他值，换成其他中间件。此外，可以使用 `config.action_controller.session_options` 配置传给这个中间件的选项。
@@ -269,6 +271,13 @@ config.middleware.use Magical::Unicorns
 [source,ruby]
 ----
 config.middleware.insert_before Rack::Head, Magical::Unicorns
+----
+
+也可以使用索引把中间件插入指定的具体位置。例如，若想把 `Magical::Unicorns` 中间件插入栈顶，可以这么做：
+
+[source,ruby]
+----
+config.middleware.insert_before 0, Magical::Unicorns
 ----
 
 此外，还有 `insert_after`。它把中间件添加到另一个中间件的后面：
@@ -305,6 +314,33 @@ config.middleware.delete Rack::MethodOverride
 
 - `config.i18n.load_path` 设定 Rails 寻找本地化文件的路径。默认为 `config/locales/*.{yml,rb}`。
 
+- `config.i18n.fallbacks` 设定没有翻译时的回落行为。下面是这个选项的单个使用示例：
++
+--
+** 设为 `true`，回落到默认区域设置：
++
+[source,ruby]
+----
+config.i18n.fallbacks = true
+----
+
+** 设为一个区域设置数据：
++
+[source,ruby]
+----
+config.i18n.fallbacks = [:tr, :en]
+----
+
+** 还可以为各个区域设置设定不同的回落语言。例如，如果想把 `:tr` 作为 `:az` 的回落语言，把 `:de` 和 :en` 作为 `:da` 的回落语言，可以这么做：
++
+[source,ruby]
+----
+config.i18n.fallbacks = { az: :tr, da: [:de, :en] }
+# 或
+config.i18n.fallbacks.map = { az: :tr, da: [:de, :en] }
+----
+--
+
 [[configuring-active-record]]
 ==== 配置 Active Record
 
@@ -329,7 +365,7 @@ config.middleware.delete Rack::MethodOverride
 
 - `config.active_record.schema_format` 控制把数据库模式转储到文件中时使用的格式。可用的值有：`:ruby`（默认），与所用的数据库无关；`:sql`，转储 SQL 语句（可能与数据库有关）。
 
-- `config.active_record.error_on_ignored_order_or_limit` 指定批量查询时如果忽略顺序或数量限制是否抛出错误。设为 `true` 时抛出错误，设为 `false` 时发出提醒。默认为 `false`。
+- `config.active_record.error_on_ignored_order_or_limit` 指定批量查询时如果忽略顺序是否抛出错误。设为 `true` 时抛出错误，设为 `false` 时发出提醒。默认为 `false`。
 
 - `config.active_record.timestamped_migrations` 控制迁移使用整数还是时间戳编号。默认为 `true`，使用时间戳。如果有多个开发者共同开发同一个应用，建议这么设置。
 
@@ -352,6 +388,8 @@ config.middleware.delete Rack::MethodOverride
 - `config.active_record.warn_on_records_fetched_greater_than` 为查询结果的数量设定一个提醒阈值。如果查询返回的记录数量超过这一阈值，在日志中记录一个提醒。可用于标识可能导致内存泛用的查询。
 
 - `config.active_record.index_nested_attribute_errors` 让嵌套的 `has_many` 关联错误显示索引。默认为 `false`。
+
+- `config.active_record.use_schema_cache_dump` 设为 `true` 时，用户可以从 `db/schema_cache.yml` 文件中获取模式缓存信息，而不用查询数据库。默认为 `true`。
 
 MySQL 适配器添加了一个配置选项：
 
@@ -390,7 +428,19 @@ MySQL 适配器添加了一个配置选项：
 
 - `config.action_controller.action_on_unpermitted_parameters` 设定在发现没有允许的参数时记录日志还是抛出异常。设为 `:log` 或 `:raise` 时启用。开发和测试环境的默认值是 `:log`，其他环境的默认值是 `false`。
 
-- `config.action_controller.always_permitted_parameters` 设定一个参数白名单列表，默认始终允许。默认值是 `['controller', 'action']`。
+- `config.action_controller.always_permitted_parameters` 设定一组默认允许传入的参数白名单。默认值为 `['controller', 'action']`。
+
+- `config.action_controller.enable_fragment_cache_logging` 指明是否像下面这样在日志中详细记录片段缓存的读写操作：
++
+[source]
+----
+Read fragment views/v1/2914079/v1/2914079/recordings/70182313-20160225015037000000/d0bdf2974e1ef6d31685c3b392ad0b74 (0.6ms)
+Rendered messages/_message.html.erb in 1.2 ms [cache hit]
+Write fragment views/v1/2914079/v1/2914079/recordings/70182313-20160225015037000000/3b4e249ac9d168c617e32e84b99218b5 (1.1ms)
+Rendered recordings/threads/_thread.html.erb in 1.5 ms [cache miss]
+Rendered messages/_message.html.erb in 1.2 ms [cache hit]
+Rendered recordings/threads/_thread.html.erb in 1.5 ms [cache miss]
+----
 
 [[configuring-action-dispatch]]
 ==== 配置 Action Dispatch
@@ -412,6 +462,10 @@ config.action_dispatch.default_headers = {
 
 - `config.action_dispatch.tld_length` 设定应用的 TLD（top-level domain，顶级域名）长度。默认为 `1`。
 
+- `config.action_dispatch.ignore_accept_header` 设定是否忽略请求中的 Accept 首部。默认为 `false`。
+
+- `config.action_dispatch.x_sendfile_header` 指定服务器具体使用的 X-Sendfile 首部。通过服务器加速发送文件时用得到。例如，使用 Apache 时设为 'X-Sendfile'。
+
 - `config.action_dispatch.http_auth_salt` 设定 HTTP Auth 的盐值。默认为 `'http authentication'`。
 
 - `config.action_dispatch.signed_cookie_salt` 设定签名 cookie 的盐值。默认为 `'signed cookie'`。
@@ -427,23 +481,23 @@ config.action_dispatch.default_headers = {
 [source,ruby]
 ----
 config.action_dispatch.rescue_responses = {
-  'ActionController::RoutingError'              => :not_found,
-  'AbstractController::ActionNotFound'          => :not_found,
-  'ActionController::MethodNotAllowed'          => :method_not_allowed,
-  'ActionController::UnknownHttpMethod'         => :method_not_allowed,
-  'ActionController::NotImplemented'            => :not_implemented,
-  'ActionController::UnknownFormat'             => :not_acceptable,
-  'ActionController::InvalidAuthenticityToken'  => :unprocessable_entity,
-  'ActionController::InvalidCrossOriginRequest' => :unprocessable_entity,
-  'ActionDispatch::ParamsParser::ParseError'    => :bad_request,
-  'ActionController::BadRequest'                => :bad_request,
-  'ActionController::ParameterMissing'          => :bad_request,
-  'Rack::QueryParser::ParameterTypeError'       => :bad_request,
-  'Rack::QueryParser::InvalidParameterError'    => :bad_request,
-  'ActiveRecord::RecordNotFound'                => :not_found,
-  'ActiveRecord::StaleObjectError'              => :conflict,
-  'ActiveRecord::RecordInvalid'                 => :unprocessable_entity,
-  'ActiveRecord::RecordNotSaved'                => :unprocessable_entity
+  'ActionController::RoutingError'               => :not_found,
+  'AbstractController::ActionNotFound'           => :not_found,
+  'ActionController::MethodNotAllowed'           => :method_not_allowed,
+  'ActionController::UnknownHttpMethod'          => :method_not_allowed,
+  'ActionController::NotImplemented'             => :not_implemented,
+  'ActionController::UnknownFormat'              => :not_acceptable,
+  'ActionController::InvalidAuthenticityToken'   => :unprocessable_entity,
+  'ActionController::InvalidCrossOriginRequest'  => :unprocessable_entity,
+  'ActionDispatch::Http::Parameters::ParseError' => :bad_request,
+  'ActionController::BadRequest'                 => :bad_request,
+  'ActionController::ParameterMissing'           => :bad_request,
+  'Rack::QueryParser::ParameterTypeError'        => :bad_request,
+  'Rack::QueryParser::InvalidParameterError'     => :bad_request,
+  'ActiveRecord::RecordNotFound'                 => :not_found,
+  'ActiveRecord::StaleObjectError'               => :conflict,
+  'ActiveRecord::RecordInvalid'                  => :unprocessable_entity,
+  'ActiveRecord::RecordNotSaved'                 => :unprocessable_entity
 }
 ----
 +
@@ -492,6 +546,8 @@ end
 
 - `config.action_view.debug_missing_translation` 设定是否把缺少的翻译键放在 `<span>` 标签中。默认为 `true`。
 
+- `config.action_view.form_with_generates_remote_forms` 指明 `form_with` 是否生成远程表单。默认为 `true`。
+
 [[configuring-action-mailer]]
 ==== 配置 Action Mailer
 
@@ -507,6 +563,9 @@ end
 ** `:user_name`：如果邮件服务器需要验证身份，通过这个选项设定用户名。
 ** `:password`：如果邮件服务器需要验证身份，通过这个选项设定密码。
 ** `:authentication`：如果邮件服务器需要验证身份，要通过这个选项设定验证类型。这个选项的值是一个符号，可以是 `:plain`、`:login` 或 `:cram_md5`。
+** `:enable_starttls_auto`：检测 SMTP 服务器是否启用了 STARTTLS，如果启用就使用。默认为 `true`。
+** `:openssl_verify_mode`：使用 TLS 时可以设定 OpenSSL 检查证书的方式。需要验证自签名或通配证书时用得到。值为 `:none` 或 `:peer`，或相应的常量 OpenSSL::SSL::VERIFY_NONE` 或 `OpenSSL::SSL::VERIFY_PEER`。
+** `:ssl/:tls`：通过 SMTP/TLS 连接 SMTP。
 
 - `config.action_mailer.sendmail_settings` 用于详细配置 `sendmail` 发送方法。值是一个选项散列，包含下述选项：
 +
@@ -577,15 +636,13 @@ Active Support 有一些配置选项：
 
 - `config.active_support.bare` 指定在启动 Rails 时是否加载 `active_support/all`。默认为 `nil`，即加载 `active_support/all`。
 
-- `config.active_support.test_order` 设定执行测试用例的顺序。可用的值是 `:random` 和 `:sorted`。对新生成的应用来说，在 `config/environments/test.rb` 文件中设为 `:random`。如果应用没指定测试顺序，在 Rails 5.0 之前默认为 `:sorted`，之后默认为 `:random`。
+- `config.active_support.test_order` 设定执行测试用例的顺序。可用的值是 `:random` 和 `:sorted`。默认为 `:random`。
 
 - `config.active_support.escape_html_entities_in_json` 指定在 JSON 序列化中是否转义 HTML 实体。默认为 `true`。
 
 - `config.active_support.use_standard_json_time_format` 指定是否把日期序列化成 ISO 8601 格式。默认为 `true`。
 
 - `config.active_support.time_precision` 设定 JSON 编码的时间值的精度。默认为 `3`。
-
-- `ActiveSupport.halt_callback_chains_on_return_false` 指定是否可以通过在前置回调中返回 `false` 停止 Active Record 和 Active Model 回调链。设为 `false` 时，只能通过 `throw(:abort)` 停止回调链。设为 `true` 时，可以通过返回 `false` 停止回调链（Rails 5 之前版本的行为），但是会发出弃用提醒。在弃用期内默认为 `true`。新的 Rails 5 应用会生成一个名为 `callback_terminator.rb` 的初始化文件，把值设为 `false`。执行 `rails app:update` 命令时不会添加这个文件，因此把旧应用升级到 Rails 5 后依然可以通过返回 `false` 停止回调链，不过会显示弃用提醒，提示用户升级代码。
 
 - `ActiveSupport::Logger.silencer` 设为 `false` 时静默块的日志。默认为 `true`。
 
@@ -1189,7 +1246,7 @@ end
 
 - `finisher_hook`：在应用初始化过程结束的位置提供一个钩子，并且运行应用、Railtie 和引擎的所有 `config.after_initialize` 块。
 
-- `set_routes_reloader`：让 Action Dispatch 使用 `ActionDispatch::Callbacks.to_prepare` 重新加载路由文件。
+- `set_routes_reloader_hook`：让 Action Dispatch 使用 `ActionDispatch::Callbacks.to_prepare` 重新加载路由文件。
 
 - `disable_dependency_loading`：如果 `config.eager_load` 为 `true`，禁止自动加载依赖。
 
@@ -1207,7 +1264,7 @@ development:
   timeout: 5000
 ----
 
-连接池默认在 Active Record 内部处理，因此所有应用服务器（Thin、mongrel、Unicorn，等等）的行为应该一致。数据库连接池一开始是空的，随着连接数的增加，会不断创建，直至连接池上限。
+连接池默认在 Active Record 内部处理，因此所有应用服务器（Thin、Puma、Unicorn，等等）的行为应该一致。数据库连接池一开始是空的，随着连接数的增加，会不断创建，直至连接池上限。
 
 每个请求在首次访问数据库时会检出连接，请求结束再检入连接。这样，空出的连接位置就可以提供给队列中的下一个请求使用。
 
@@ -1302,7 +1359,7 @@ Disallow: /
 [source,ruby]
 ----
 group :development do
-  gem 'listen', '~> 3.0.4'
+  gem 'listen', '>= 3.0.5', '< 3.2'
 end
 ----
 

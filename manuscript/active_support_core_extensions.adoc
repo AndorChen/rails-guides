@@ -411,7 +411,7 @@ account.to_query('company[name]')
 
 因此得到的值可以作为查询字符串使用。
 
-`Array#to_query` 方法在各个元素上调用 `to_query` 方法，键为 `+_key_[]+`，然后使用 `"&"` 合并：
+`Array#to_query` 方法在各个元素上调用 `to_query` 方法，键为 `key[]`，然后使用 `"&"` 合并：
 
 [source,ruby]
 ----
@@ -570,60 +570,6 @@ NOTE: 在 `active_support/core_ext/object/inclusion.rb` 文件中定义。
 
 [[extensions-to-module]]
 === `Module` 的扩展
-
-[[alias-method-chain]]
-==== `alias_method_chain`
-
-WARNING: 这个方法已经弃用，请使用 `Module#prepend`。
-
-在 Ruby 中，可以把方法包装成其他方法，这叫别名链（alias chain）。
-
-例如，想在功能测试中把参数看做字符串，就像在真正的请求中一样，但希望保留赋值数字等值的便利，可以在文件 `test/test_helper.rb` 中包装 `ActionDispatch::IntegrationTest#process` 方法：
-
-[source,ruby]
-----
-ActionDispatch::IntegrationTest.class_eval do
-  # 保存原 process 方法的引用
-  alias_method :original_process, :process
-
-  # 现在重新定义 process，委托给 original_process
-  def process('GET', path, params: nil, headers: nil, env: nil, xhr: false)
-    params = Hash[*params.map {|k, v| [k, v.to_s]}.flatten]
-    original_process('GET', path, params: params)
-  end
-end
-----
-
-`get`、`post` 等方法就是委托这个方法实现的。
-
-这种技术有个问题，`:original_process` 方法可能已经存在了。为了避免方法重名，人们发明了一种链状结构：
-
-[source,ruby]
-----
-ActionDispatch::IntegrationTest.class_eval do
-  def process_with_stringified_params(...)
-    params = Hash[*params.map {|k, v| [k, v.to_s]}.flatten]
-    process_without_stringified_params(method, path, params: params)
-  end
-  alias_method :process_without_stringified_params, :process
-  alias_method :process, :process_with_stringified_params
-end
-----
-
-`alias_method_chain` 方法可以简化上述过程：
-
-[source,ruby]
-----
-ActionDispatch::IntegrationTest.class_eval do
-  def process_with_stringified_params(...)
-    params = Hash[*params.map {|k, v| [k, v.to_s]}.flatten]
-    process_without_stringified_params(method, path, params: params)
-  end
-  alias_method_chain :process, :stringified_params
-end
-----
-
-NOTE: 在 `active_support/core_ext/module/aliasing.rb` 文件中定义。
 
 [[attributes]]
 ==== 属性
@@ -785,59 +731,6 @@ M.parents       # => [X::Y, X, Object]
 ----
 
 NOTE: 在 `active_support/core_ext/module/introspection.rb` 文件中定义。
-
-[[qualified-constant-names]]
-===== 限定的常量名
-
-常规的 `const_defined?`、`const_get` 和 `const_set` 方法接受裸常量名。Active Support 扩展了这个 API，可以传入相对限定的常量名。
-
-新定义的方法是 `qualified_const_defined?`、`qualified_const_get` 和 `qualified_const_set`。它们的参数应该是相对接收者的限定常量名：
-
-[source,ruby]
-----
-Object.qualified_const_defined?("Math::PI")       # => true
-Object.qualified_const_get("Math::PI")            # => 3.141592653589793
-Object.qualified_const_set("Math::Phi", 1.618034) # => 1.618034
-----
-
-参数也可以是裸常量名：
-
-[source,ruby]
-----
-Math.qualified_const_get("E") # => 2.718281828459045
-----
-
-这些方法的行为与内置的对应方法类似。不过，`qualified_constant_defined?` 方法接受一个可选参数（第二个），指明判断时是否检查祖先树。沿路径检查时，表达式中的每个常量都会考虑这个参数。
-
-例如：
-
-[source,ruby]
-----
-module M
-  X = 1
-end
-
-module N
-  class C
-    include M
-  end
-end
-----
-
-此时，`qualified_const_defined?` 的行为如下：
-
-[source,ruby]
-----
-N.qualified_const_defined?("C::X", false) # => false
-N.qualified_const_defined?("C::X", true)  # => true
-N.qualified_const_defined?("C::X")        # => true
-----
-
-如上例所示，第二个参数的默认值为 `true`，跟 `const_defined?` 一样。
-
-为了与内置方法保持连贯，只接受相对路径。完全限定常量名，如 `::Math::PI`，会抛出 `NameError` 异常。
-
-NOTE: 在 `active_support/core_ext/module/qualified_const.rb` 文件中定义。
 
 [[reachable]]
 ==== 可达性
@@ -1110,7 +1003,8 @@ class A
   class_attribute :x, instance_reader: false
 end
 
-A.new.x = 1 # NoMethodError
+A.new.x = 1
+A.new.x # NoMethodError
 ----
 
 为了方便，`class_attribute` 还会定义实例判断方法，对实例读值方法的返回值做双重否定。在上例中，判断方法是 `x?`。
@@ -1847,20 +1741,6 @@ NOTE: 在 `active_support/core_ext/string/inflections.rb` 文件中定义。
 "Admin::Hotel::ReservationUtils".deconstantize # => "Admin::Hotel"
 ----
 
-例如，Active Support 在 `Module#qualified_const_set` 中使用了这个方法：
-
-[source,ruby]
-----
-def qualified_const_set(path, value)
-  QualifiedConstUtils.raise_if_absolute(path)
-
-  const_name = path.demodulize
-  mod_name = path.deconstantize
-  mod = mod_name.empty? ? self : qualified_const_get(mod_name)
-  mod.const_set(const_name, value)
-end
-----
-
 NOTE: 在 `active_support/core_ext/string/inflections.rb` 文件中定义。
 
 [[parameterize]]
@@ -2343,7 +2223,7 @@ BigDecimal.new(5.00, 6).to_s("e")  # => "0.5E1"
 ----
 [[1, 2], [2, 3], [3, 4]].sum    # => [1, 2, 2, 3, 3, 4]
 %w(foo bar baz).sum             # => "foobarbaz"
-{a: 1, b: 2, c: 3}.sum # => [:b, 2, :c, 3, :a, 1]
+{a: 1, b: 2, c: 3}.sum          # => [:b, 2, :c, 3, :a, 1]
 ----
 
 空集合的元素之和默认为零，不过可以自定义：
@@ -3090,7 +2970,7 @@ NOTE: 在 `active_support/core_ext/hash/keys.rb` 文件中定义。
 [source,ruby]
 ----
 {nil => nil, 1 => 1, a: :a}.stringify_keys
-# => {"" => nil, "a" => :a, "1" => 1}
+# => {"" => nil, "1" => 1, "a" => :a}
 ----
 
 遇到冲突的键时，只会从中选择一个。选择哪个值并不确定。
@@ -3137,7 +3017,7 @@ NOTE: 在 `active_support/core_ext/hash/keys.rb` 文件中定义。
 [source,ruby]
 ----
 {nil => nil, 1 => 1, "a" => "a"}.symbolize_keys
-# => {1=>1, nil=>nil, :a=>"a"}
+# => {nil=>nil, 1=>1, :a=>"a"}
 ----
 
 WARNING: 注意，在上例中，只有键变成了符号。
@@ -3226,7 +3106,7 @@ Ruby 原生支持从字符串和数组中提取切片。Active Support 为散列
 [source,ruby]
 ----
 {a: 1, b: 2, c: 3}.slice(:a, :c)
-# => {:c=>3, :a=>1}
+# => {:a=>1, :c=>3}
 
 {a: 1, b: 2, c: 3}.slice(:b, :X)
 # => {:b=>2} # 不存在的键会被忽略
@@ -3331,6 +3211,22 @@ end
 ----
 
 NOTE: 在 `active_support/core_ext/regexp.rb` 文件中定义。
+
+[[match-questionmark]]
+==== `match?`
+
+Rails 实现了 `Regexp#match?` 方法，供 Ruby 2.4 之前的版本使用：
+
+[source,ruby]
+----
+/oo/.match?('foo')    # => true
+/oo/.match?('bar')    # => false
+/oo/.match?('foo', 1) # => true
+----
+
+这个向后移植的版本与原生的 `match?` 方法具有相同的接口，但是调用方没有未设定 `$1` 等副作用，不过速度没什么优势。定义这个方法的目的是编写与 2.4 兼容的代码。Rails 内部有用到这个判断方法。
+
+只有 Ruby 未定义 `Regexp#match?` 方法时，Rails 才会定义，因此在 Ruby 2.4 或以上版本中运行的代码使用的是原生版本，性能有保障。
 
 [[extensions-to-range]]
 === `Range` 的扩展

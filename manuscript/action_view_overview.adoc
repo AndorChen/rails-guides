@@ -275,13 +275,6 @@ json.email("alex@example.com")
 <%= render partial: "product", locals: { product: @product } %>
 ----
 
-`as` 选项用于为局部变量指定不同的名称。例如，把局部变量的名称由 `product` 改为 `item`：
-
-[source,erb]
-----
-<%= render partial: "product", as: "item" %>
-----
-
 `object` 选项用于直接指定想要在局部视图中使用的对象，常用于模板对象位于其他地方（例如位于其他实例变量或局部变量中）的情况。例如，下面的代码：
 
 [source,erb]
@@ -296,11 +289,18 @@ json.email("alex@example.com")
 <%= render partial: "product", object: @item %>
 ----
 
-`object` 和 `as` 选项还可一起使用：
+使用 `as` 选项可以为局部变量指定别的名称。例如，如果想把 `product` 换成 `item`，可以这么做：
 
 [source,erb]
 ----
 <%= render partial: "product", object: @item, as: "item" %>
+----
+
+这等效于：
+
+[source,erb]
+----
+<%= render partial: "product", locals: { item: @item } %>
 ----
 
 [[rendering-collections]]
@@ -1659,7 +1659,7 @@ number_with_delimiter(12345678) # => 12,345,678
 [source,ruby]
 ----
 number_with_precision(111.2345)     # => 111.235
-number_with_precision(111.2345, 2)  # => 111.23
+number_with_precision(111.2345, precision: 2)  # => 111.23
 ----
 
 [[sanitizehelper]]
@@ -1724,7 +1724,7 @@ strip_links('Blog: <a href="http://myblog.com/">Visit</a>.')
 [[strip-tags-html]]
 ===== `strip_tags(html)` 方法
 
-`strip_tags(html)` 方法用于清除包括注释在内的所有 HTML 标签。此方法使用 html-scanner 解析 HTML，因此其 HTML 解析能力受到 html-scanner 的限制。
+`strip_tags(html)` 方法用于清除包括注释在内的所有 HTML 标签。这个方法的功能由 rails-html-sanitizer gem 提供。
 
 [source,ruby]
 ----

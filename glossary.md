@@ -11,3 +11,4 @@
 | redirect | 重定向 | |
 | authentication | 身份验证 | |
 | header | 首部 | |
+| initializer | 初始化脚本 | |

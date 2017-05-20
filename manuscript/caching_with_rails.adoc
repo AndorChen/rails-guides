@@ -242,7 +242,7 @@ render partial: "documents/document", collection: @project.documents.where(publi
 
 有时需要缓存特定的值或查询结果，而不是缓存视图片段。Rails 的缓存机制能存储任何类型的信息。
 
-实现低层缓存最有效的方式是使用 `Rails.cache.fetch` 方法。这个方法既能读取也能写入缓存。传入单个参数时，获取指定的键，返回缓存中的值。传入块时，在指定键上缓存块的结果，并返回结果。
+实现低层缓存最有效的方式是使用 `Rails.cache.fetch` 方法。这个方法既能读取也能写入缓存。传入单个参数时，获取指定的键，返回缓存中的值。如果传入块，块中的代码在缓存缺失时执行。块返回的值将写入缓存，存在指定键的名下，然后返回那个返回值。如果命中缓存，直接返回缓存的值，而不执行块中的代码。
 
 下面举个例子。应用中有个 `Product` 模型，它有个实例方法，在竞争网站中查找商品的价格。这个方法返回的数据特别适合使用低层缓存：
 
@@ -346,7 +346,7 @@ config.cache_store = MyCacheStore.new
 config.cache_store = :memory_store, { size: 64.megabytes }
 ----
 
-如果运行多个 Ruby on Rails 服务器进程（例如使用 mongrel_cluster 或 Phusion Passenger），各个实例之间无法共享缓存数据。这个缓存存储器不适合大型应用使用。不过，适合只有几个服务器进程的低流量小型应用使用，也适合在开发环境和测试环境中使用。
+如果运行多个 Ruby on Rails 服务器进程（例如使用 Phusion Passenger 或 Puma 集群模式），各个实例之间无法共享缓存数据。这个缓存存储器不适合大型应用使用。不过，适合只有几个服务器进程的低流量小型应用使用，也适合在开发环境和测试环境中使用。
 
 [[activesupport-cache-filestore]]
 ==== `ActiveSupport::Cache::FileStore`
@@ -467,6 +467,25 @@ class ProductsController < ApplicationController
 end
 ----
 
+有时，我们需要缓存响应，例如永不过期的静态页面。为此，可以使用 `http_cache_forever` 辅助方法，让浏览器和代理无限期缓存。
+
+默认情况下，缓存的响应是私有的，只在用户的 Web 浏览器中缓存。如果想让代理缓存响应，设定 `public: true`，让代理把缓存的响应提供给所有用户。
+
+使用这个辅助方法时，`last_modified` 首部的值被设为 `Time.new(2011, 1, 1).utc`，`expires` 首部的值被设为 100 年。
+
+WARNING: 使用这个方法时要小心，因为浏览器和代理不会作废缓存的响应，除非强制清除浏览器缓存。
+
+[source,ruby]
+----
+class HomeController < ApplicationController
+  def index
+    http_cache_forever(public: true) do
+      render
+    end
+  end
+end
+----
+
 [[strong-v-s-weak-etags]]
 ==== 强 Etag 与弱 Etag
 
@@ -498,6 +517,19 @@ end
 ----
 response.strong_etag = response.body
 # => "618bbc92e2d35ea1945008b42799b0e7"
+----
+
+[[caching-in-development]]
+=== 在开发环境中测试缓存
+
+我们经常需要在开发模式中测试应用采用的缓存策略。Rails 提供的 Rake 任务 `dev:cache` 能轻易启停缓存。
+
+[source,sh]
+----
+$ bin/rails dev:cache
+Development mode is now being cached.
+$ bin/rails dev:cache
+Development mode is no longer being cached.
 ----
 
 [[references]]

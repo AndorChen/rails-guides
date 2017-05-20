@@ -116,20 +116,25 @@ Rails 团队极力推荐使用这种方式编写 CoffeeScript（以及 JavaScrip
 [[built-in-helpers]]
 === 内置的辅助方法
 
+[[remote-elements]]
+==== 远程元素
+
 Rails 提供了很多视图辅助方法协助你生成 HTML，如果想在元素上实现 Ajax 效果也没问题。
 
 因为使用的是非侵入式 JavaScript，所以 Ajax 相关的辅助方法其实分成两部分，一部分是 JavaScript 代码，一部分是 Ruby 代码。
 
-如果没有禁用 Asset Pipeline，link:https://github.com/rails/jquery-ujs/blob/master/src/rails.js[rails.js] 负责提供 JavaScript 代码，常规的 Ruby 视图辅助方法负责生成 DOM 标签。
+如果没有禁用 Asset Pipeline，link:https://github.com/rails/rails-ujs/blob/master/src/rails-ujs.coffee[rails-ujs] 负责提供 JavaScript 代码，常规的 Ruby 视图辅助方法负责生成 DOM 标签。
 
-[[form_for]]
-==== `form_for`
+应用在处理远程元素的过程中触发的不同事件参见下文。
 
-http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for[`form_for` 方法]协助编写表单，可指定 `:remote` 选项，用法如下：
+[[form-with]]
+===== `form_with`
+
+http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_with[`form_with` 方法]协助编写表单，默认假定表单使用 Ajax。如果不想使用 Ajax，把 `:local` 选项传给 `form_with`。
 
 [source,erb]
 ----
-<%= form_for(@article, remote: true) do |f| %>
+<%= form_with(model: @article) do |f| %>
   ...
 <% end %>
 ----
@@ -138,7 +143,7 @@ http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-f
 
 [source,html]
 ----
-<form accept-charset="UTF-8" action="/articles" class="new_article" data-remote="true" id="new_article" method="post">
+<form action="/articles" method="post" data-remote="true">
   ...
 </form>
 ----
@@ -156,33 +161,10 @@ $(document).ready ->
     $("#new_article").append "<p>ERROR</p>"
 ----
 
-显然你需要的功能比这要复杂，上面的例子只是个入门。关于事件的更多内容请阅读 https://github.com/rails/jquery-ujs/wiki/ajax[jquery-ujs 的维基]。
-
-[[form-tag]]
-==== `form_tag`
-
-http://api.rubyonrails.org/classes/ActionView/Helpers/FormTagHelper.html#method-i-form_tag[`form_tag` 方法]的作用与 `form_for` 类似，也可指定 `:remote` 选项，如下所示：
-
-[source,erb]
-----
-<%= form_tag('/articles', remote: true) do %>
-  ...
-<% end %>
-----
-
-生成的 HTML 如下：
-
-[source,html]
-----
-<form accept-charset="UTF-8" action="/articles" data-remote="true" method="post">
-  ...
-</form>
-----
-
-其他用法都和 `form_for` 一样。详情参见文档。
+显然你需要的功能比这要复杂，上面的例子只是个入门。
 
 [[link-to]]
-==== `link_to`
+===== `link_to`
 
 http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-link_to[`link_to` 方法]用于生成链接，可以指定 `:remote` 选项，用法如下：
 
@@ -198,7 +180,7 @@ http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-li
 <a href="/articles/1" data-remote="true">an article</a>
 ----
 
-绑定的 Ajax 事件和 `form_for` 方法一样。下面举个例子。假如有一个文章列表，我们想只点击一个链接就删除所有文章。视图代码如下：
+绑定的 Ajax 事件和 `form_with` 方法一样。下面举个例子。假如有一个文章列表，我们想只点击一个链接就删除所有文章。视图代码如下：
 
 [source,erb]
 ----
@@ -215,7 +197,7 @@ $ ->
 ----
 
 [[button-to]]
-==== `button_to`
+===== `button_to`
 
 http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-button_to[`button_to` 方法]用于生成按钮，可以指定 `:remote` 选项，用法如下：
 
@@ -233,7 +215,132 @@ http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-bu
 </form>
 ----
 
-因为生成的就是一个表单，所以 `form_for` 的全部信息都可使用。
+因为生成的就是一个表单，所以 `form_with` 的全部信息都可使用。
+
+[[customize-remote-elements]]
+==== 定制远程元素
+
+不编写任何 JavaScript 代码，仅通过 `data-remote` 属性就能定制元素的行为。此外，还可以指定额外的 `data-` 属性。
+
+[[data-method]]
+===== `data-method`
+
+链接始终发送 HTTP GET 请求。然而，如果你的应用使用 http://en.wikipedia.org/wiki/Representational_State_Transfer[REST 架构]，有些链接其实要对服务器中的数据做些操作，因此必须发送 GET 之外的请求。这个属性用于标记这类链接，明确指定使用“post”、“put”或“delete”方法。
+
+Rails 的处理方式是，点击链接后，在文档中构建一个隐藏的表单，把表单的 `action` 属性的值设为链接的 `href` 属性值，把表单的 `method` 属性的值设为链接的 `data-method` 属性值，然后提交表单。
+
+NOTE: 由于通过表单提交 GET 和 POST 之外的请求未得到浏览器的广泛支持，所以其他 HTTP 方法其实是通过 POST 发送的，意欲发送的请求在 `_method` 参数中指明。Rails 能自动检测并处理这种情况。
+
+[[data-url-and-data-params]]
+===== `data-url` 和 `data-params`
+
+页面中有些元素并不指向任何 URL，但是却想让它们触发 Ajax 调用。为元素设定 `data-url` 和 `data-remote` 属性将向指定的 URL 发送 Ajax 请求。还可以通过 `data-params` 属性指定额外的参数。
+
+例如，可以利用这一点在复选框上触发操作：
+
+[source,html]
+----
+<input type="checkbox" data-remote="true"
+    data-url="/update" data-params="id=10" data-method="put">
+----
+
+[[data-type]]
+===== `data-type`
+
+此外，在含有 `data-remote` 属性的元素上还可以通过 `data-type` 属性明确定义 Ajax 的 `dataType`。
+
+[[confirmations]]
+==== 确认
+
+可以在链接和表单上添加 `data-confirm` 属性，让用户确认操作。呈献给用户的是 JavaScript `confirm()` 对话框，内容为 `data-confirm` 属性的值。如果用户选择“取消”，操作不会执行。
+
+在链接上添加这个属性后，对话框在点击链接后弹出；在表单上添加这个属性后，对话框在提交时弹出。例如：
+
+[source,erb]
+----
+<%= link_to "Dangerous zone", dangerous_zone_path,
+  data: { confirm: 'Are you sure?' } %>
+----
+
+生成的 HTML 为：
+
+[source,html]
+----
+<a href="..." data-confirm="Are you sure?">Dangerous zone</a>
+----
+
+在表单的提交按钮上也可以设定这个属性。这样可以根据所按的按钮定制提醒消息。此时，不能在表单元素上设定 `data-confirm` 属性。
+
+默认使用的是 JavaScript 确认对话框，不过你可以定制这一行为，监听 `confirm` 时间，在对话框弹出之前触发。若想禁止弹出默认的对话框，让事件句柄返回 `false`。
+
+[[automatic-disabling]]
+==== 自动禁用
+
+还可以使用 `disable-with` 属性在提交表单的过程中禁用输入元素。这样能避免用户不小心点击两次，发送两个重复的 HTTP 请求，导致后端无法正确处理。这个属性的值是按钮处于禁用状态时显示的新值。
+
+带有 `data-method` 属性的链接也可设定这个属性。
+
+例如：
+
+[source,erb]
+----
+<%= form_with(model: @article.new) do |f| %>
+  <%= f.submit data: { "disable-with": "Saving..." } %>
+<%= end %>
+----
+
+生成的表单包含：
+
+[source,html]
+----
+<input data-disable-with="Saving..." type="submit">
+----
+
+[[dealing-with-ajax-events]]
+=== 处理 Ajax 事件
+
+带 `data-remote` 属性的元素具有下述事件。
+
+NOTE: 这些事件绑定的句柄的第一个参数始终是事件对象。下面列出的是事件对象之后的其他参数。例如，如果列出的参数是 `xhr, settings`，那么定义句柄时要写为 `function(event, xhr, settings)`。
+
+|===
+| 事件名 | 额外参数 | 触发时机
+
+| `ajax:before`
+|
+| 在整个 Ajax 调用开始之前，如果被停止了，就不再调用。
+
+| `ajax:beforeSend`
+| `xhr, options`
+| 在发送请求之前，如果被停止了，就不再发送。
+
+| `ajax:send`
+| `xhr`
+| 发送请求时。
+
+| `ajax:success`
+| `xhr, status, err`
+| Ajax 调用结束，返回表示成功的响应时。
+
+| `ajax:error`
+| `xhr, status, err`
+| Ajax 调用结束，返回表示失败的响应时。
+
+| `ajax:complete`
+| `xhr, status`
+| Ajax 调用结束时，不管成功还是失败。
+
+| `ajax:aborted:file`
+| `elements`
+| 有非空文件输入时，如果被停止了，就不再调用。
+|===
+
+[[stoppable-events]]
+==== 可停止的事件
+
+如果在 `ajax:before` 或 `ajax:beforeSend` 的句柄中返回 `false`，不会发送 Ajax 请求。`ajax:before` 事件可用于在序列化之前处理表单数据。`ajax:beforeSend` 事件也可用于添加额外的请求首部。
+
+如果停止 `ajax:aborted:file` 事件，允许浏览器通过常规方式（即不是 Ajax）提交表单这个默认行为将失效，表单根本无法提交。利用这一点可以自行实现通过 Ajax 上传文件的变通方式。
 
 [[server-side-concerns]]
 === 服务器端处理
@@ -267,7 +374,7 @@ class UsersController < ApplicationController
 
 <br>
 
-<%= form_for(@user, remote: true) do |f| %>
+<%= form_with(model: @user) do |f| %>
   <%= f.label :name %><br>
   <%= f.text_field :name %>
   <%= f.submit %>
@@ -295,7 +402,7 @@ def create
   respond_to do |format|
     if @user.save
       format.html { redirect_to @user, notice: 'User was successfully created.' }
-      format.js   {}
+      format.js
       format.json { render json: @user, status: :created, location: @user }
     else
       format.html { render action: "new" }

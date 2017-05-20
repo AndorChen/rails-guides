@@ -356,7 +356,7 @@ class UserMailer < ApplicationMailer
     mail(to: @user.email,
          subject: 'Welcome to My Awesome Site') do |format|
       format.html { render 'another_template' }
-      format.text { render text: 'Render text' }
+      format.text { render plain: 'Render text' }
     end
   end
 end
@@ -494,7 +494,7 @@ config.action_mailer.default_url_options = { host: 'example.com' }
 <%= user_url(@user, host: 'example.com') %>
 ----
 
-NOTE: `GET` 之外的链接需要 https://github.com/rails/jquery-ujs[jQuery UJS]，在邮件模板中无法使用。如若不然，都会变成常规的 `GET` 请求。
+NOTE: `GET` 之外的链接需要 https://github.com/rails/rails-ujs[rails-ujs] 或 https://github.com/rails/jquery-ujs[jQuery UJS]，在邮件模板中无法使用。如若不然，都会变成常规的 `GET` 请求。
 
 [[adding-images-in-action-mailer-views]]
 ==== 在邮件视图中添加图像
@@ -671,7 +671,7 @@ Action Mailer 继承自 `AbstractController`，因此为控制器定义的辅助
 - `:password`：如果邮件服务器要验证身份，使用这个选项设定密码。
 - `:authentication`：如果邮件服务器要验证身份，使用这个选项指定验证类型。这个选项的值是一个符号，可以是 `:plain`（发送明文密码）、`:login`（发送 Base64 编码的密码）或 `:cram_md5`（使用挑战-应答机制交换信息，使用 MD5 算法哈希重要的信息）。
 - `:enable_starttls_auto`：检测 SMTP 服务器有没有启用 STARTTLS，如果有，就使用它。默认值为 `true`。
-- `:openssl_verify_mode`：使用 TLS 时，可以设定 OpenSSL 检查证书的方式。验证自签或泛域名证书时这特别有用。可以使用某个 OpenSSL 验证常量（'none'、'peer'、'client_once'、'fail_if_no_peer_cert')）或直接使用常量（`OpenSSL::SSL::VERIFY_NONE`、`OpenSSL::SSL::VERIFY_PEER` ……）。
+- `:openssl_verify_mode`：使用 TLS 时，可以设定 OpenSSL 检查证书的方式。验证自签或泛域名证书时这特别有用。可以使用某个 OpenSSL 验证常量（'none' 或 'peer'）或直接使用常量（`OpenSSL::SSL::VERIFY_NONE` 或 `OpenSSL::SSL::VERIFY_PEER`）。
 | `sendmail_settings` a| 覆盖 `:sendmail` 发送方式的选项：
 
 - `:location`：sendmail 可执行文件的位置。默认为 `/usr/sbin/sendmail`。

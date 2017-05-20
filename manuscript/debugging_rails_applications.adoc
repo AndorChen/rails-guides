@@ -315,7 +315,7 @@ end
 [source]
 ----
 => Booting Puma
-=> Rails 5.0.0 application starting in development on http://0.0.0.0:3000
+=> Rails 5.1.0 application starting in development on http://0.0.0.0:3000
 => Run `rails server -h` for more startup options
 Puma starting in single mode...
 * Version 3.4.0 (ruby 2.3.1-p112), codename: Owl Bowl Brawl
@@ -442,11 +442,11 @@ Processing by ArticlesController#index as HTML
 --> #0  ArticlesController.index
       at /PathToProject/app/controllers/articles_controller.rb:8
     #1  ActionController::BasicImplicitRender.send_action(method#String, *args#Array)
-      at /PathToGems/actionpack-5.0.0/lib/action_controller/metal/basic_implicit_render.rb:4
+      at /PathToGems/actionpack-5.1.0/lib/action_controller/metal/basic_implicit_render.rb:4
     #2  AbstractController::Base.process_action(action#NilClass, *args#Array)
-      at /PathToGems/actionpack-5.0.0/lib/abstract_controller/base.rb:181
+      at /PathToGems/actionpack-5.1.0/lib/abstract_controller/base.rb:181
     #3  ActionController::Rendering.process_action(action, *args)
-      at /PathToGems/actionpack-5.0.0/lib/action_controller/metal/rendering.rb:30
+      at /PathToGems/actionpack-5.1.0/lib/action_controller/metal/rendering.rb:30
 ...
 ----
 
@@ -456,7 +456,7 @@ Processing by ArticlesController#index as HTML
 ----
 (byebug) frame 2
 
-[176, 185] in /PathToGems/actionpack-5.0.0/lib/abstract_controller/base.rb
+[176, 185] in /PathToGems/actionpack-5.1.0/lib/abstract_controller/base.rb
    176:       # is the intended way to override action dispatching.
    177:       #
    178:       # Notice that the first argument is the method to be dispatched
@@ -594,7 +594,6 @@ Processing by ArticlesController#index as HTML
 @new_record = true
 @readonly = false
 @transaction_state = nil
-@txn = nil
 ----
 
 `display` 命令可用于监视变量，查看在代码执行过程中变量值的变化：
@@ -658,7 +657,7 @@ Processing by ArticlesController#index as HTML
 ----
 (byebug) step
 
-[49, 58] in /PathToGems/activesupport-5.0.0/lib/active_support/core_ext/numeric/time.rb
+[49, 58] in /PathToGems/activesupport-5.1.0/lib/active_support/core_ext/numeric/time.rb
    49:
    50:   # Returns a Duration instance matching the number of weeks provided.
    51:   #
@@ -891,16 +890,10 @@ Valgrind 提供了很多工具，能自动检测很多内存管理和线程问�
 * https://github.com/smartinez87/exception_notification/tree/master[Exception Notifier]：提供了一个邮件程序和一组默认的邮件模板，Rails 应用出现问题后发送邮件通知；
 * https://github.com/charliesome/better_errors[Better Errors]：使用全新的页面替换 Rails 默认的错误页面，显示更多的上下文信息，例如源码和变量的值；
 * https://github.com/dejan/rails_panel[RailsPanel]：一个 Chrome 扩展，在浏览器的开发者工具中显示 `development.log` 文件的内容，显示的内容包括：数据库查询时间、渲染时间、总时间、参数列表、渲染的视图，等等。
+* https://github.com/pry/pry[Pry]：一个 IRB 替代品，可作为开发者的运行时控制台。
 
 [[references]]
 === 参考资源
 
-* http://bashdb.sourceforge.net/ruby-debug/home-page.html[ruby-debug 首页]
-* https://github.com/cldwalker/debugger[debugger 首页]
 * https://github.com/deivid-rodriguez/byebug[byebug 首页]
 * https://github.com/rails/web-console[web-console 首页]
-* http://www.sitepoint.com/debug-rails-app-ruby-debug/[文章：Debugging a Rails application with ruby-debug]
-* http://railscasts.com/episodes/54-debugging-ruby-revised[Ryan Bates 制作的视频“Debugging Ruby (revised)”]
-* http://railscasts.com/episodes/24-the-stack-trace[Ryan Bates 制作的视频“The Stack Trace”]
-* http://railscasts.com/episodes/56-the-logger[Ryan Bates 制作的视频“The Logger”]
-* http://bashdb.sourceforge.net/ruby-debug.html[Debugging with ruby-debug]

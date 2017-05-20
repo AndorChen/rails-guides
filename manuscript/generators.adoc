@@ -230,7 +230,16 @@ $ bin/rails generate scaffold User name:string
 
 通过上述输出不难看出 Rails 3.0 及以上版本中生成器的工作方式。脚手架生成器其实什么也不生成，只是调用其他生成器。因此，我们可以添加、替换和删除任何生成器。例如，脚手架生成器调用了 scaffold_controller 生成器，而它调用了 erb、test_unit 和 helper 生成器。因为各个生成器的职责单一，所以可以轻易复用，从而避免代码重复。
 
-我们定制工作流程的第一步是，不让脚手架生成样式表、JavaScript 和测试固件文件。为此，我们要像下面这样修改配置：
+使用脚手架生成资源时，如果不想生成默认的 `app/assets/stylesheets/scaffolds.scss` 文件，可以禁用 `scaffold_stylesheet`：
+
+[source,ruby]
+----
+  config.generators do |g|
+    g.scaffold_stylesheet false
+  end
+----
+
+其次，我们可以不让脚手架生成样式表、JavaScript 和测试固件文件。为此，我们要像下面这样修改配置：
 
 [source,ruby]
 ----
@@ -489,6 +498,25 @@ $ rails new thud -m https://gist.github.com/radar/722911/raw/
 ----
 
 本章最后一节虽然不说明如何生成大多数已知的优秀模板，但是会详细说明可用的方法，供你自己开发模板。那些方法也可以在生成器中使用。
+
+[[adding-command-line-arguments]]
+=== 添加命令行参数
+
+Rails 的生成器可以轻易修改，接受自定义的命令行参数。这个功能源自 http://www.rubydoc.info/github/erikhuda/thor/master/Thor/Base/ClassMethods#class_option-instance_method[Thor]：
+
+[source,ruby]
+----
+class_option :scope, type: :string, default: 'read_products'
+----
+
+现在，生成器可以这样调用：
+
+[source,sh]
+----
+$ rails generate initializer --scope write_products
+----
+
+在生成器类内部，命令行参数通过 `options` 方法访问。
 
 [[generator-methods]]
 === 生成器方法

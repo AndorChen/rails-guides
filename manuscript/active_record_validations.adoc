@@ -228,7 +228,7 @@ end
 [source,ruby]
 ----
 class Person < ApplicationRecord
-  validates :terms_of_service, acceptance: true, message: 'must be abided'
+  validates :terms_of_service, acceptance: { message: 'must be abided' }
 end
 ----
 
@@ -320,7 +320,7 @@ class Account < ApplicationRecord
 end
 ----
 
-`exclusion` 方法要指定 `:in` 选项，设置哪些值不能作为属性的值。`:in` 选项有个别名 `:with`，作用相同。上面的例子设置了 `:message` 选项，演示如何获取属性的值。
+`exclusion` 方法要指定 `:in` 选项，设置哪些值不能作为属性的值。`:in` 选项有个别名 `:with`，作用相同。上面的例子设置了 `:message` 选项，演示如何获取属性的值。`:message` 选项的完整参数参见 <<message>>。
 
 默认的错误消息是“is reserved”。
 
@@ -354,7 +354,7 @@ class Coffee < ApplicationRecord
 end
 ----
 
-`inclusion` 方法要指定 `:in` 选项，设置可接受哪些值。`:in` 选项有个别名 `:within`，作用相同。上面的例子设置了 `:message` 选项，演示如何获取属性的值。
+`inclusion` 方法要指定 `:in` 选项，设置可接受哪些值。`:in` 选项有个别名 `:within`，作用相同。上面的例子设置了 `:message` 选项，演示如何获取属性的值。`:message` 选项的完整参数参见 <<message>>。
 
 该方法的默认错误消息是“is not included in the list”。
 
@@ -407,11 +407,6 @@ end
 ----
 
 否则，会尝试使用 `Float` 把值转换成数字。
-
-[WARNING]
-====
-注意，上面的正则表达式允许最后出现换行符。
-====
 
 [source,ruby]
 ----
@@ -670,6 +665,8 @@ class Coffee < ApplicationRecord
 end
 ----
 
+`:message` 选项的完整参数参见 <<message>>。
+
 [[allow-blank]]
 ==== `:allow_blank`
 
@@ -690,7 +687,7 @@ Topic.create(title: nil).valid? # => true
 
 前面已经介绍过，如果验证失败，会把 `:message` 选项指定的字符串添加到 `errors` 集合中。如果没指定这个选项，Active Record 使用各个验证辅助方法的默认错误消息。`:message` 选项的值是一个字符串或一个 `Proc` 对象。
 
-字符串消息中可以包含 `%{value}`、`%{attribute}` 和 `%{model}`，在验证失败时它们会被替换成具体的值。
+字符串消息中可以包含 `%{value}`、`%{attribute}` 和 `%{model}`，在验证失败时它们会被替换成具体的值。替换通过 I18n gem 实现，而且占位符必须精确匹配，不能有空格。
 
 `Proc` 形式的消息有两个参数：验证的对象，以及包含 `:model`、`:attribute` 和 `:value` 键值对的散列。
 
@@ -792,18 +789,6 @@ class Order < ApplicationRecord
   def paid_with_card?
     payment_type == "card"
   end
-end
-----
-
-[[using-a-string-with-if-and-unless]]
-==== 使用字符串
-
-`:if` 和 `:unless` 选项的值还可以是字符串，但必须是有效的 Ruby 代码，传给 `eval` 方法执行。当字符串表示的条件非常短时才应该使用这种形式。
-
-[source,ruby]
-----
-class Person < ApplicationRecord
-  validates :surname, presence: true, if: "name.nil?"
 end
 ----
 

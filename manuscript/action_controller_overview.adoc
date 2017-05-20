@@ -22,7 +22,7 @@
 [[what-does-a-controller-do-questionmark]]
 === 控制器的作用
 
-Action Controller 是 MVC 中的 C（控制器）。路由决定使用哪个控制器处理请求后，控制器负责解析请求，生成相应的输出。Action Controller 会代为处理大多数底层工作，使用智能的约定，让整个过程清晰明了。
+Action Controller 是 MVC 中的 C（控制器）。路由器决定使用哪个控制器处理请求后，控制器负责解析请求，生成相应的输出。Action Controller 会代为处理大多数底层工作，使用智能的约定，让整个过程清晰明了。
 
 在大多数按照 http://en.wikipedia.org/wiki/Representational_state_transfer[REST] 架构开发的应用中，控制器会接收请求（开发者不可见），从模型中获取数据，或把数据写入模型，再通过视图生成 HTML。如果控制器需要做其他操作，也没问题，以上只不过是控制器的主要作用。
 
@@ -63,7 +63,7 @@ end
 
 详情参阅<<layouts_and_rendering#layouts-and-rendering-in-rails>>。
 
-`ApplicationController` 继承自 `ActionController::Base`。后者定义了许多有用的方法。本文会介绍部分方法，如果想知道定义了哪些方法，可查阅 API 文档或源码。
+`ApplicationController` 继承自 `ActionController::Base`。后者定义了许多有用的方法。本文会介绍部分方法，如果想知道定义了哪些方法，可查阅 http://api.rubyonrails.org/classes/ActionController.html[API 文档]或源码。
 
 只有公开方法才作为动作调用。所以最好减少对外可见的方法数量（使用 `private` 或 `protected`），例如辅助方法和过滤器方法。
 
@@ -209,7 +209,7 @@ end
 [source,ruby]
 ----
 class PeopleController < ActionController::Base
-  # 这会导致 ActiveModel::ForbiddenAttributes 异常抛出
+  # 这会导致 ActiveModel::ForbiddenAttributesError 异常抛出
   # 因为没有明确指明允许赋值的属性就批量更新了
   def create
     Person.create(params[:person])
@@ -255,6 +255,15 @@ params.permit(:id)
 params.permit(id: [])
 ----
 
+有时无法或不便声明散列参数或其内部结构的有效键，此时可以映射为一个空散列：
+
+[source,ruby]
+----
+params.permit(preferences: {})
+----
+
+但是要注意，这样就能接受任何输入了。此时，`permit` 确保返回的结构中只有允许的标量，其他值都会过滤掉。
+
 若想允许传入整个参数散列，可以使用 `permit!` 方法：
 
 [source,ruby]
@@ -262,7 +271,7 @@ params.permit(id: [])
 params.require(:log_entry).permit!
 ----
 
-此时，允许传入整个 `:log_entry` 散列及嵌套散列。使用 `permit!` 时要特别注意，因为这么做模型中所有现有的属性及后续添加的属性都允许进行批量赋值。
+此时，允许传入整个 `:log_entry` 散列及嵌套散列，不再检查是不是允许的标量值。使用 `permit!` 时要特别注意，因为这么做模型中所有现有的属性及后续添加的属性都允许进行批量赋值。
 
 [[nested-parameters]]
 ===== 嵌套参数
@@ -344,7 +353,7 @@ CookieStore 可以存储大约 4KB 数据，比其他几种存储机制少很多
 
 关于会话存储的更多信息，参阅<<security#ruby-on-rails-security-guide>>。
 
-如果想使用其他会话存储机制，可以在 `config/initializers/session_store.rb` 文件中修改：
+如果想使用其他会话存储机制，可以在一个初始化脚本中修改：
 
 [source,ruby]
 ----
@@ -354,7 +363,7 @@ CookieStore 可以存储大约 4KB 数据，比其他几种存储机制少很多
 # Rails.application.config.session_store :active_record_store
 ----
 
-签署会话数据时，Rails 会用到会话的键（cookie 的名称）。这个值可以在 `config/initializers/session_store.rb` 中修改：
+签署会话数据时，Rails 会用到会话的键（cookie 的名称）。这个值也可以在一个初始化脚本中修改：
 
 [source,ruby]
 ----
@@ -809,7 +818,7 @@ end
 [[the-request-object]]
 ==== `request` 对象
 
-`request` 对象中有很多客户端请求的有用信息。可用方法的完整列表参阅 http://api.rubyonrails.org/classes/ActionDispatch/Request.html[API 文档]。下面说明部分属性：
+`request` 对象中有很多客户端请求的有用信息。可用方法的完整列表参阅 http://api.rubyonrails.org/classes/ActionDispatch/Request.html[Rails API 文档]和 http://www.rubydoc.info/github/rack/rack/Rack/Request[Rack 文档]。下面说明部分属性：
 
 |===
 | `request` 对象的属性 | 作用
@@ -835,7 +844,7 @@ end
 [[the-response-object]]
 ==== `response` 对象
 
-`response` 对象通常不直接使用。`response` 对象在动作的执行过程中构建，把渲染的数据回送给用户。不过有时可能需要直接访问响应，比如在后置过滤器中。`response` 对象上的方法有些可以用于赋值。
+`response` 对象通常不直接使用。`response` 对象在动作的执行过程中构建，把渲染的数据回送给用户。不过有时可能需要直接访问响应，比如在后置过滤器中。`response` 对象上的方法有些可以用于赋值。若想了解全部可用方法，参阅 http://api.rubyonrails.org/classes/ActionDispatch/Response.html[Rails API 文档]和 http://www.rubydoc.info/github/rack/rack/Rack/Response[Rack 文档]。
 
 |===
 | `response` 对象的属性 | 作用

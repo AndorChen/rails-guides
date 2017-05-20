@@ -150,6 +150,7 @@ API 应用默认包含下述中间件：
 - `ActionDispatch::RemoteIp`
 - `ActionDispatch::Reloader`
 - `ActionDispatch::Callbacks`
+- `ActiveRecord::Migration::CheckPending`
 - `Rack::Head`
 - `Rack::ConditionalGet`
 - `Rack::ETag`
@@ -217,7 +218,6 @@ end
 
 [source,ruby]
 ----
-
 # Apache 和 lighttpd
 config.action_dispatch.x_sendfile_header = "X-Sendfile"
 
@@ -312,6 +312,13 @@ API 应用（使用 `ActionController::API`）默认有下述控制器模块：
 ----
 $ bin/rails c
 >> ActionController::API.ancestors - ActionController::Metal.ancestors
+=> [ActionController::API,
+    ActiveRecord::Railties::ControllerRuntime,
+    ActionDispatch::Routing::RouteSet::MountedHelpers,
+    ActionController::ParamsWrapper,
+    ... ,
+    AbstractController::Rendering,
+    ActionView::ViewPaths]
 ----
 
 [[adding-other-modules]]

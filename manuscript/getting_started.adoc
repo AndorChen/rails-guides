@@ -58,15 +58,15 @@ TIP: 文中的示例代码使用 UNIX 风格的命令行提示符 $，如果你�
 [[installing-rails]]
 ==== 安装 Rails
 
-打开命令行：在 Mac OS X 中打开 Terminal.app，在 Windows 中要在开始菜单中选择“运行”，然后输入“cmd.exe”。本文中所有以 $ 开头的代码，都应该在命令行中执行。首先确认是否安装了 Ruby 的最新版本：
+打开命令行：在 macOS 中打开 Terminal.app，在 Windows 中要在开始菜单中选择“运行”，然后输入“cmd.exe”。本文中所有以 $ 开头的代码，都应该在命令行中执行。首先确认是否安装了 Ruby 的最新版本：
 
 [source,sh]
 ----
 $ ruby -v
-ruby 2.3.0p0
+ruby 2.3.1p112
 ----
 
-TIP: 有很多工具可以帮助你快速地在系统中安装 Ruby 和 Ruby on Rails。Windows 用户可以使用 link:http://railsinstaller.org/[Rails Installer]，Mac OS X 用户可以使用 link:https://github.com/tokaido/tokaidoapp[Tokaido]。更多操作系统中的安装方法请访问 link:https://www.ruby-lang.org/en/documentation/installation/[ruby-lang.org]。
+TIP: 有很多工具可以帮助你快速地在系统中安装 Ruby 和 Ruby on Rails。Windows 用户可以使用 link:http://railsinstaller.org/[Rails Installer]，macOS 用户可以使用 link:https://github.com/tokaido/tokaidoapp[Tokaido]。更多操作系统中的安装方法请访问 link:https://www.ruby-lang.org/en/documentation/installation/[ruby-lang.org]。
 
 很多类 UNIX 系统都预装了版本较新的 SQLite3。在 Windows 中，通过 Rails Installer 安装 Rails 会同时安装 SQLite3。其他操作系统中 SQLite3 的安装方法请参阅 link:https://www.sqlite.org/[SQLite3 官网]。接下来，确认 SQLite3 是否在 PATH 中：
 
@@ -91,7 +91,7 @@ $ gem install rails
 $ rails --version
 ----
 
-如果执行结果类似 `Rails 5.0.0`，那么就可以继续往下读了。
+如果执行结果类似 `Rails 5.1.0`，那么就可以继续往下读了。
 
 
 [[creating-the-blog-application]]
@@ -124,7 +124,7 @@ $ cd blog
 | 文件/文件夹 | 作用
 
 | `app/`
-| 包含应用的控制器、模型、视图、辅助方法、邮件程序和静态资源文件。这个文件夹是本文剩余内容关注的重点。
+| 包含应用的控制器、模型、视图、辅助方法、邮件程序、频道、作业和静态资源文件。这个文件夹是本文剩余内容关注的重点。
 
 | `bin/`
 | 包含用于启动应用的 rails 脚本，以及用于安装、更新、部署或运行应用的其他脚本。
@@ -164,6 +164,9 @@ $ cd blog
 
 | `vendor/`
 | 包含第三方代码，如第三方 gem。
+
+| `.gitignore`
+| 告诉 Git 要忽略的文件（或模式）。详情参见 https://help.github.com/articles/ignoring-files[GitHub 帮助文档]。
 |===
 
 [[hello-rails]]
@@ -183,7 +186,7 @@ $ bin/rails server
 
 TIP: Windows 用户需要把 `bin` 文件夹下的脚本文件直接传递给 Ruby 解析器，例如 `ruby bin\rails server`。
 
-TIP: 编译 CoffeeScript 和压缩 JavaScript 静态资源文件需要 JavaScript 运行时，如果没有运行时，在压缩静态资源文件时会报错，提示没有 `execjs`。Mac OS X 和 Windows 一般都提供了 JavaScript 运行时。在 Rails 应用的 Gemfile 中，`therubyracer` gem 被注释掉了，如果需要使用这个 gem，请去掉注释。对于 JRuby 用户，推荐使用 `therubyrhino` 这个运行时，在 JRuby 中创建 Rails 应用的 Gemfile 中默认包含了这个 gem。要查看 Rails 支持的所有运行时，请参阅 link:https://github.com/rails/execjs#readme[ExecJS]。
+TIP: 编译 CoffeeScript 和压缩 JavaScript 静态资源文件需要 JavaScript 运行时，如果没有运行时，在压缩静态资源文件时会报错，提示没有 `execjs`。macOS 和 Windows 一般都提供了 JavaScript 运行时。在 Rails 应用的 Gemfile 中，`therubyracer` gem 被注释掉了，如果需要使用这个 gem，请去掉注释。对于 JRuby 用户，推荐使用 `therubyrhino` 这个运行时，在 JRuby 中创建 Rails 应用的 Gemfile 中默认包含了这个 gem。要查看 Rails 支持的所有运行时，请参阅 link:https://github.com/rails/execjs#readme[ExecJS]。
 
 上述命令会启动 Puma，这是 Rails 默认使用的 Web 服务器。要查看运行中的应用，请打开浏览器窗口，访问 link:$$http://localhost:3000$$[]。这时应该看到默认的 Rails 欢迎页面：
 
@@ -191,7 +194,7 @@ TIP: 编译 CoffeeScript 和压缩 JavaScript 静态资源文件需要 JavaScrip
 .默认的 Rails 欢迎页面
 image::rails_welcome.png[默认的 Rails 欢迎页面]
 
-TIP: 要停止 Web 服务器，请在终端中按 Ctrl+C 键。服务器停止后命令行提示符会重新出现。在大多数类 Unix 系统中，包括 Mac OS X，命令行提示符是 $ 符号。在开发模式中，一般情况下无需重启服务器，服务器会自动加载修改后的文件。
+TIP: 要停止 Web 服务器，请在终端中按 Ctrl+C 键。服务器停止后命令行提示符会重新出现。在大多数类 Unix 系统中，包括 macOS，命令行提示符是 $ 符号。在开发模式中，一般情况下无需重启服务器，服务器会自动加载修改后的文件。
 
 欢迎页面是创建 Rails 应用的冒烟测试，看到这个页面就表示应用已经正确配置，能够正常工作了。
 
@@ -223,6 +226,7 @@ invoke  test_unit
 create    test/controllers/welcome_controller_test.rb
 invoke  helper
 create    app/helpers/welcome_helper.rb
+invoke    test_unit
 invoke  assets
 invoke    coffee
 create      app/assets/javascripts/welcome.coffee
@@ -286,6 +290,7 @@ Rails 提供了 `resources` 方法，用于声明标准的 REST 资源。把 art
 [source,ruby]
 ----
 Rails.application.routes.draw do
+  get 'welcome/index'
 
   resources :articles
 
@@ -382,7 +387,7 @@ ____
 
 第一部分说明缺少哪个模板，这里缺少的是 `articles/new` 模板。Rails 首先查找这个模板，如果找不到再查找 `application/new` 模板。之所以会查找后面这个模板，是因为 `ArticlesController` 继承自 `ApplicationController`。
 
-下一部分是 `request.formats`，说明响应使用的模板格式。当我们在浏览器中请求页面时，`request.formats` 的值是 `text/html`，因此 Rails 会查找 HTML 模板。`request.variants` 指明伺服的是何种物理设备，帮助 Rails 判断该使用哪个模板渲染响应。它的值是空的，因为没有为其提供信息。
+下一部分是 `request.formats`，说明响应使用的模板格式。当我们在浏览器中请求页面时，`request.formats` 的值是 `text/html`，因此 Rails 会查找 HTML 模板。`request.variant` 指明伺服的是何种物理设备，帮助 Rails 判断该使用哪个模板渲染响应。它的值是空的，因为没有为其提供信息。
 
 在本例中，能够工作的最简单的模板位于 `app/views/articles/new.html.erb` 文件中。文件的扩展名很重要：第一个扩展名是模板格式，第二个扩展名是模板处理器。Rails 会尝试在 `app/views` 文件夹中查找 `articles/new` 模板。这个模板的格式只能是 `html`，模板处理器只能是 `erb`、`builder` 和 `coffee` 中的一个。`:erb` 是最常用的 HTML 模板处理器，`:builder` 是 XML 模板处理器，`:coffee` 模板处理器用 CoffeeScript 创建 JavaScript 模板。因为我们要创建 HTML 表单，所以应该使用能够在 HTML 中嵌入 Ruby 的 `ERB` 语言。
 
@@ -494,7 +499,7 @@ end
 
 TIP: 请确保牢固掌握 `params` 方法，这个方法很常用。让我们看一个示例 URL：pass:[http://www.example.com/?username=dhh&email=dhh@email.com]。在这个 URL 中，`params[:username]` 的值是“dhh”，`params[:email]` 的值是“pass:[dhh@email.com]”。
 
-如果再次提交表单，就不会再看到缺少模板错误，而是会看到下面这些内容：
+如果再次提交表单，会看到下面这些内容：
 
 ----
 <ActionController::Parameters {"title"=>"First Article!", "text"=>"This is my first article."} permitted: false>
@@ -632,7 +637,7 @@ article GET    /articles/:id(.:format)      articles#show
 
 和前面一样，我们需要在 `app/controllers/articles_controller.rb` 文件中添加 `show` 动作，并创建对应的视图文件。
 
-NOTE: 常见的做法是按照以下顺序在控制器中放置标准的 CRUD 动作：`index`，`show`，`new`，`edit`，`create`，`update` 和 `destroy`。你也可以按照自己的顺序放置这些动作，但要记住它们都是公开方法，如前文所述，必须放在控制器的私有方法或受保护的方法之前才能正常工作。
+NOTE: 常见的做法是按照以下顺序在控制器中放置标准的 CRUD 动作：`index`，`show`，`new`，`edit`，`create`，`update` 和 `destroy`。你也可以按照自己的顺序放置这些动作，但要记住它们都是公开方法，如前文所述，必须放在私有方法之前才能正常工作。
 
 有鉴于此，让我们像下面这样添加 `show` 动作：
 
@@ -918,9 +923,9 @@ end
 
 [source,erb]
 ----
-<h1>Editing article</h1>
+<h1>Edit article</h1>
 
-<%= form_for :article, url: article_path(@article), method: :patch do |f| %>
+<%= form_for(@article) do |f| %>
 
   <% if @article.errors.any? %>
     <div id="error_explanation">
@@ -956,6 +961,8 @@ end
 ----
 
 上面的代码把表单指向了 `update` 动作，这个动作稍后我们再来定义。
+
+传入 `@article` 对象后，会自动为表单创建 URL，用于提交编辑后的文章。
 
 `method: :patch` 选项告诉 Rails 使用 `PATCH` 方法提交表单。根据 REST 协议，`PATCH` 方法是**更新**资源时使用的 HTTP 方法。
 
@@ -1382,10 +1389,10 @@ $ bin/rails generate controller Comments
 |`app/helpers/comments_helper.rb`
 |视图辅助方法文件
 
-|`app/assets/javascripts/comment.coffee`
+|`app/assets/javascripts/comments.coffee`
 |控制器的 CoffeeScript 文件
 
-|`app/assets/stylesheets/comment.scss`
+|`app/assets/stylesheets/comments.scss`
 |控制器的样式表文件
 |===
 

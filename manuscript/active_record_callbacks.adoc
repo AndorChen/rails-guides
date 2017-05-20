@@ -38,7 +38,7 @@ class User < ApplicationRecord
 
   before_validation :ensure_login_has_a_value
 
-  protected
+  private
     def ensure_login_has_a_value
       if login.nil?
         self.login = email unless email.blank?
@@ -70,7 +70,7 @@ class User < ApplicationRecord
   # :on 选项的值也可以是数组
   after_validation :set_location, on: [ :create, :update ]
 
-  protected
+  private
     def normalize_name
       self.name = name.downcase.titleize
     end
@@ -81,7 +81,7 @@ class User < ApplicationRecord
 end
 ----
 
-通常应该把回调定义为受保护的方法或私有方法。如果把回调定义为公共方法，就可以从模型外部调用回调，这样做违反了对象封装原则。
+通常应该把回调定义为私有方法。如果把回调定义为公共方法，就可以从模型外部调用回调，这样做违反了对象封装原则。
 
 [[available-callbacks]]
 === 可用的回调
@@ -315,7 +315,7 @@ Article destroyed
 [[conditional-callbacks]]
 === 条件回调
 
-和验证一样，我们可以在满足指定条件时再调用回调方法。为此，我们可以使用 `:if` 和 `:unless` 选项，选项的值可以是符号、字符串、`Proc` 或数组。要想指定在哪些条件下调用回调，可以使用 `:if` 选项。要想指定在哪些条件下不调用回调，可以使用 `:unless` 选项。
+和验证一样，我们可以在满足指定条件时再调用回调方法。为此，我们可以使用 `:if` 和 `:unless` 选项，选项的值可以是符号、`Proc` 或数组。要想指定在哪些条件下调用回调，可以使用 `:if` 选项。要想指定在哪些条件下不调用回调，可以使用 `:unless` 选项。
 
 [[using-if-and-unless-with-a-symbol]]
 ==== 使用符号作为 `:if` 和 `:unless` 选项的值
@@ -326,18 +326,6 @@ Article destroyed
 ----
 class Order < ApplicationRecord
   before_save :normalize_card_number, if: :paid_with_card?
-end
-----
-
-[[using-if-and-unless-with-a-string]]
-==== 使用字符串作为 `:if` 和 `:unless` 选项的值
-
-还可以使用字符串作为 `:if` 和 `:unless` 选项的值，这个字符串会通过 `eval` 方法执行，因此必须包含有效的 Ruby 代码。当字符串表示的条件非常短时我们才使用这种方式：
-
-[source,ruby]
-----
-class Order < ApplicationRecord
-  before_save :normalize_card_number, if: "paid_with_card?"
 end
 ----
 
@@ -438,7 +426,7 @@ end
 [source,ruby]
 ----
 class PictureFile < ApplicationRecord
-  after_commit :delete_picture_file_from_disk, on: [:destroy]
+  after_commit :delete_picture_file_from_disk, on: :destroy
 
   def delete_picture_file_from_disk
     if File.exist?(filepath)
@@ -469,4 +457,4 @@ class PictureFile < ApplicationRecord
 end
 ----
 
-WARNING: 对于在事务中创建、更新或删除的模型，`after_commit` 和 `after_rollback` 回调一定会被调用。如果其中有一个回调引发异常，这个异常会被忽略，以避免干扰其他回调。因此，如果回调代码可能引发异常，就需要在回调中救援并进行适当处理。
+WARNING: 在事务中创建、更新或删除模型时会调用 `after_commit` 和 `after_rollback` 回调。然而，如果其中有一个回调引发异常，异常会向上冒泡，后续 `after_commit` 和 `after_rollback` 回调不再执行。因此，如果回调代码可能引发异常，就需要在回调中救援并进行适当处理，以便让其他回调继续运行。

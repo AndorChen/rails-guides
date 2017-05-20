@@ -171,7 +171,7 @@ NOTE: 在使用复选框和单选按钮时一定要指定 `label` 标签。`labe
 [[other-helpers-of-interest]]
 ==== 其他你可能感兴趣的辅助方法
 
-其他值得一提的表单控件包括文本区域、密码框、隐藏输入字段、搜索字段、电话号码字段、日期字段、时间字段、颜色字段、日期时间字段、本地日期时间字段、月份字段、星期字段、URL 地址字段、电子邮件地址字段、数字字段和范围字段：
+其他值得一提的表单控件包括文本区域、密码框、隐藏输入字段、搜索字段、电话号码字段、日期字段、时间字段、颜色字段、本地日期时间字段、月份字段、星期字段、URL 地址字段、电子邮件地址字段、数字字段和范围字段：
 
 [source,erb]
 ----
@@ -471,8 +471,6 @@ form_tag(search_path, method: "patch")
 
 当 Rails 发现生成的选项值和第二个参数指定的值一样时，就会为这个选项添加 `selected` 属性。
 
-TIP: `options_for_select` 辅助方法的第二个参数必须和选项值完全一样。例如，如果选项值是整数 2，就必须指定整数 2，而不是字符串 `"2"`。需要注意的是，从 `params`  散列中提取的值都是字符串。
-
 WARNING: 如果 `select` 标签的 `required` 属性的值为 `true`，`size` 属性的值为 1，`multiple` 属性未设置为 `true`，并且未设置 `:include_blank` 或 `:prompt` 选项时，`:include_blank` 选项的值会被强制设置为 `true`。
 
 我们可以通过散列为选项添加任意属性：
@@ -582,7 +580,7 @@ NOTE: 传递给 `options_for_select` 辅助方法作为参数的嵌套数组，�
 <%= time_zone_select(:person, :time_zone) %>
 ----
 
-Rails 还提供了 `time_zone_options_for_select` 辅助方法用于手动生成定制的时区选择列表。关于 `time_zone_select` 和 `time_zone_options_for_select` 辅助方法的更多介绍，请参阅 API 文档。
+Rails 还提供了 `time_zone_options_for_select` 辅助方法用于手动生成定制的时区选择列表。关于 `time_zone_select` 和 `time_zone_options_for_select` 辅助方法的更多介绍，请参阅 http://api.rubyonrails.org/classes/ActionView/Helpers/FormOptionsHelper.html#method-i-time_zone_options_for_select[API 文档]。
 
 Rails 的早期版本提供了用于生成国家选择列表的 `country_select` 辅助方法，现在这一功能被放入独立的 link:https://github.com/stefanpenner/country_select[country_select 插件]。需要注意的是，在使用这个插件生成国家选择列表时，一些特定地区是否应该被当作国家还存在争议，这也是 Rails 不再内置这一功能的原因。
 
