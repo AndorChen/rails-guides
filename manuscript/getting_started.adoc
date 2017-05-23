@@ -497,7 +497,7 @@ end
 
 这里 `render` 方法接受了一个简单的term:[散列（hash）]作为参数，`:plain` 键的值是 `params[:article].inspect`。`params` 方法是代表表单提交的参数（或字段）的对象。`params` 方法返回 `ActionController::Parameters` 对象，这个对象允许使用字符串或符号访问散列的键。这里我们只关注通过表单提交的参数。
 
-TIP: 请确保牢固掌握 `params` 方法，这个方法很常用。让我们看一个示例 URL：pass:[http://www.example.com/?username=dhh&email=dhh@email.com]。在这个 URL 中，`params[:username]` 的值是“dhh”，`params[:email]` 的值是“pass:[dhh@email.com]”。
+TIP: 请确保牢固掌握 `params` 方法，这个方法很常用。让我们看一个示例 URL：`pass:[http://www.example.com/?username=dhh&email=dhh@email.com]`。在这个 URL 中，`params[:username]` 的值是“dhh”，`params[:email]` 的值是“`pass:[dhh@email.com]`”。
 
 如果再次提交表单，会看到下面这些内容：
 

@@ -272,7 +272,7 @@ protect_from_forgery with: :exception
 
 这行代码会在 Rails 生成的所有表单和 Ajax 请求中包含安全令牌。如果安全令牌验证失败，就会抛出异常。
 
-NOTE: 默认情况下，Rails 自带的https://github.com/rails/rails-ujs[非侵入式脚本适配器]会在每个非 GET Ajax 调用中添加名为 `X-CSRF-Token` 的首部，其值为安全令牌。如果没有这个首部，Rails 不会接受非 GET Ajax 请求。使用其他库调用 Ajax 时，同样要在默认首部中添加 `X-CSRF-Token`。要想获取令牌，请查看应用视图中由 `<%= csrf_meta_tags %>` 这行代码生成的 `<meta name='csrf-token' content='THE-TOKEN'>` 标签。
+NOTE: 默认情况下，Rails 自带的link:https://github.com/rails/rails-ujs[非侵入式脚本适配器]会在每个非 GET Ajax 调用中添加名为 `X-CSRF-Token` 的首部，其值为安全令牌。如果没有这个首部，Rails 不会接受非 GET Ajax 请求。使用其他库调用 Ajax 时，同样要在默认首部中添加 `X-CSRF-Token`。要想获取令牌，请查看应用视图中由 `<%= csrf_meta_tags %>` 这行代码生成的 `<meta name='csrf-token' content='THE-TOKEN'>` 标签。
 
 通常我们会使用持久化 cookie 来储存用户信息，例如使用 `cookies.permanent`。在这种情况下，cookie 不会被清除，CSRF 保护也无法自动生效。如果使用其他 cookie 存储器而不是会话来保存用户信息，我们就必须手动解决这个问题：
 
