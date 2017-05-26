@@ -1,0 +1,17 @@
+<%
+  items.each do |terms, dd|
+    [*terms].each do |dt|
+      %>**<%= dt.text %>**
+
+<%  end
+    unless dd.nil?
+      if dd.text?
+        %><%= dd.text %>
+
+<%    end
+      if dd.blocks?
+        %><%= dd.content %>
+<%    end
+    end
+  end
+-%>

@@ -1,0 +1,13 @@
+<% if @id %><a id="<%= @id %>"></a>
+
+<% end %><%
+[:head, :body, :foot].select {|tsec| !@rows[tsec].empty? }.each do |tsec|
+  @rows[tsec].each do |row|
+    row.each do |cell|
+      %><%= %(| #{cell.text} ) %><%
+    end %> |
+<%  if tsec == :head
+      %><%= '|---' * row.count << '|' %>
+<%  end
+  end
+end %>

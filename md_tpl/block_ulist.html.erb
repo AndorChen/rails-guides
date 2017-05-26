@@ -1,0 +1,7 @@
+<% content.each do |item| -%>
+*   <%= item.text %><%
+if item.blocks? %>
+
+<%= Rebus::Helpers.indent(item.content) %>
+<% end %>
+<% end %>

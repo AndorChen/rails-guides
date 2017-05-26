@@ -1,0 +1,7 @@
+<% if @level != 1
+%><%= attr?('id') ? %(<a class="anchor" id="#{attr('id')}"></a>) : nil %>
+
+<% end
+%><%= '#' * @level %> <%= title %>
+
+<%= content %>

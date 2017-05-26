@@ -1,0 +1,7 @@
+<% case @type
+when :emphasis %><!--emphasis--><%= @text %><!--emphasis--><%
+when :strong %><!--strong--><%= @text %><!--strong--><%
+when :monospaced %><!--monospaced--><%= CGI.unescape_html @text %><!--monospaced--><%
+when :superscript %><sup<%= attr?('role') ? %( #{attr 'role'}) : nil %>><%= @text %></sup><%
+when :subscript %><sub<%= attr?('role') ? %( #{attr 'role'}) : nil %>><%= @text %></sub><%
+end -%>

@@ -1,0 +1,17 @@
+<%
+case @type
+when :xref
+  refid = attr :refid || @target
+  %><% if text.nil?
+    %>[<%= Rebus::Helpers.get_xref_text(refid) || refid %>](<%= Rebus::Helpers.get_xref_target(@target) %>)<%
+    else
+  %>[<%= @text %>](<%= Rebus::Helpers.get_xref_target(@target) %>)<%
+  end %><%
+when :ref %><%= @target %><%
+when :bibref %>[<%= @target %>]<%
+else %><%
+  if @text != @target
+    %>[<%= @text %>](<%= @target %>)<%
+  else %><<%= @target %>><%
+  end %><%
+end %>
