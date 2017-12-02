@@ -30,10 +30,6 @@
 
 [.sponsors]
 --
-image::vpncloud-logo.jpg[]
-
-link:https://ytruby.com/[云梯 VPNCloud]
-
 image::ruby-china-logo.jpg[]
 
 link:https://ruby-china.org/[Ruby China]
