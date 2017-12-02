@@ -18,7 +18,6 @@
 
 ## 赞助商
 
-- [云梯](https://www.ytruby.com)
 - [Ruby China](https://ruby-china.org)
 
 ## 许可证
