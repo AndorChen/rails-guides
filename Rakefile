@@ -10,7 +10,29 @@ end
 
 desc 'Build pdf sample'
 task :sample do
-  system 'bundle exec persie build pdf -s'
+  require 'colorize'
+  require 'persie/dependency'
+
+  unless Persie::Dependency.which 'cpdf'
+    puts 'You must install "cpdf"(https://github.com/coherentgraphics/cpdf-binaries) first'
+  end
+
+  puts '=== Build sample ' << '=' * 55
+  puts 'Generating sample...'
+
+  info = File.read('./book.adoc')
+  info.match /:revnumber:\s*(\d+\.?\d*\.?\d*\.?\w*)/
+  rev = $1
+  info.match /:slug:\s*(\w+)/
+  slug = $1
+
+  page_range = '2-76' # EDIT this
+
+  system "cpdf ./themes/pdf/sample-cover.pdf ./builds/pdf/#{slug}-#{rev}.pdf #{page_range} -o ./builds/pdf/#{slug}-sample.pdf"
+
+  puts '    Done'.colorize(:green)
+  puts "    Location: ./builds/pdf/#{slug}-sample.pdf"
+  puts '=' * 72
 end
 
 desc 'Build epub format'
